@@ -1,0 +1,33 @@
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "../globals.css";
+import UseMeContext, { UserContext } from "@/src/constants/UseMeContext";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Avto Bozor",
+  description: "Avtomobil bozori",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="uz">
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#F4F6F9]! flex flex-col antialiased`}>
+        <UseMeContext>
+          {children}
+        </UseMeContext>
+      </body>
+    </html>
+  );
+}
