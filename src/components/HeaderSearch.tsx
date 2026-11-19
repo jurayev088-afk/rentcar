@@ -26,7 +26,7 @@ export default function HeaderSearch() {
   };
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-lg border border-gray-100">
+    <div className="rounded-[28px] border border-[#d9dde0] bg-white p-4 shadow-[0_14px_36px_rgba(24,31,35,0.12)] sm:p-5">
       <Form
         form={form}
         onFinish={onFinish}
@@ -79,7 +79,7 @@ export default function HeaderSearch() {
             htmlType="submit"
             size="large"
             icon={<SearchOutlined />}
-            className="h-10 rounded-xl font-semibold"
+            className="!h-12 !rounded-full !bg-[#008b50] !px-6 !font-semibold hover:!bg-[#006f40]"
           >
             Mashina qidirish
           </Button>

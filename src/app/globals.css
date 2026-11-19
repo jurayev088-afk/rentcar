@@ -3,8 +3,14 @@
 @custom-variant short (@media (max-height: 760px));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f3f4f5;
+  --foreground: #141718;
+  --green: #008b50;
+  --green-hover: #006f40;
+  --ink: #141718;
+  --muted: #6d7276;
+  --line: #d9dde0;
+  --paper: #f1f2f3;
 }
 
 @theme inline {
@@ -29,9 +35,16 @@ body {
 
 .header {
   width: 100%;
-  height: calc(100vh - 60px);
-  background-image: url("https://media.istockphoto.com/id/907671134/photo/new-red-metallic-sedan-car-in-spotlight-modern-desing-brandless.jpg?s=612x612&w=0&k=20&c=g6NVmjXsj5cjvbkgeYVRLaT8dRxFkfXQYRurE_Pj3bY=");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  min-height: calc(100vh - 78px);
+  background: linear-gradient(135deg, #f1f2f4 2%, #d8dde0 68%, #bbc4c9 100%);
+}
+
+.ant-btn-primary:not(:disabled) {
+  background: var(--green) !important;
+  border-color: var(--green) !important;
+}
+
+.ant-btn-primary:not(:disabled):hover {
+  background: var(--green-hover) !important;
+  border-color: var(--green-hover) !important;
 }

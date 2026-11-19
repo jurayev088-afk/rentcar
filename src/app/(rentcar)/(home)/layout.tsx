@@ -11,7 +11,7 @@ export default function MainLayout({
     <>
       <Navbar />
       <Header />
-      <main className="flex-1 bg-[#F4F6F9]">{children}</main>
+      <main className="flex-1 bg-[#f3f4f5]">{children}</main>
       <Footer />
     </>
   );

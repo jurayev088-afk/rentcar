@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0B1F33] text-white mt-20">
+    <footer className="mt-20 bg-[#141718] text-white">
       <div className="max-w-[1250px] mx-auto px-5 pt-16 pb-8">
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -12,13 +12,13 @@ export default function Footer() {
           <div>
             <Link href="/" className="flex items-center gap-2">
               <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center">
-                <span className="text-[#0B1F33] text-2xl font-black">
+                <span className="text-2xl font-black text-[#008b50]">
                   R
                 </span>
               </div>
 
               <span className="text-2xl font-extrabold tracking-tight">
-                Rent<span className="text-blue-300">Car</span>
+                Rent<span className="text-[#53bb86]">Car</span>
               </span>
             </Link>
 
@@ -32,7 +32,7 @@ export default function Footer() {
                 <a
                   key={item}
                   href="#"
-                  className="px-3 py-2 rounded-lg bg-white/10 text-gray-300 text-xs hover:bg-white hover:text-[#0B1F33] transition"
+                  className="px-3 py-2 rounded-lg bg-white/10 text-gray-300 text-xs hover:bg-white hover:text-[#008b50] transition"
                 >
                   {item}
                 </a>
@@ -71,14 +71,14 @@ export default function Footer() {
             <div className="space-y-5 text-sm">
               <div>
                 <p className="text-gray-500 mb-1">Telefon raqam</p>
-                <a href="tel:+998900000000" className="hover:text-blue-300 transition">
+                <a href="tel:+998900000000" className="hover:text-[#53bb86] transition">
                   +998 90 000 00 00
                 </a>
               </div>
 
               <div>
                 <p className="text-gray-500 mb-1">Elektron pochta</p>
-                <a href="mailto:info@rentcar.uz" className="hover:text-blue-300 transition">
+                <a href="mailto:info@rentcar.uz" className="hover:text-[#53bb86] transition">
                   info@rentcar.uz
                 </a>
               </div>
