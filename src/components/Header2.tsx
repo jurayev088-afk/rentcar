@@ -1,70 +1,52 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import HeaderSearch from "./HeaderSearch";
-import { ArrowRightOutlined, CarOutlined } from "@ant-design/icons";
+import { ArrowRight, CircleArrowDown } from "lucide-react";
 import { useUser } from "../constants/UseMeContext";
+import HeaderSearch from "./HeaderSearch";
 
 export default function Header2() {
   const { user } = useUser();
 
   return (
-    <section className="header relative mt-[78px] overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_18%_40%,rgba(255,255,255,0.7),transparent_62%)]" />
+    <>
+      <div className="mx-auto w-[min(calc(100%-80px),944px)] pt-[35px] max-[860px]:w-[min(calc(100%-40px),760px)] max-[860px]:min-h-[272px] max-[860px]:pt-[30px] max-[600px]:min-h-[calc(205px+clamp(151px,42vw,250px))] max-[600px]:pt-[clamp(24px,3vw,48px)] max-[365px]:w-[calc(100%-28px)] lg:w-[min(calc(100%-8vw),1440px)] lg:pt-[clamp(35px,3.4vw,50px)]">
+        <h1 className="mb-[11px] text-[36px] font-bold leading-[1.05] tracking-[-0.045em] text-[#202427] max-[600px]:text-[clamp(31px,8.6vw,48px)] lg:text-[clamp(36px,3.52vw,53px)]">
+          Yo‘l sizniki.
+          <br />
+          <em className="not-italic text-[#00863e]">Manzilni tanlang.</em>
+        </h1>
 
-      <div className="relative mx-auto grid min-h-[560px] max-w-[1440px] items-center gap-6 px-6 py-14 md:px-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:px-14">
-        <div className="relative z-10 max-w-xl">
-          <div className="mb-6 flex w-fit items-center gap-2 rounded-full border border-[#d9dde0] bg-white/70 px-4 py-2">
-            <CarOutlined className="text-[#008b50]" />
-            <span className="text-sm font-medium text-[#141718]">
-              Avto Bozor — avtomobil bozori
-            </span>
-          </div>
+        <p className="mb-[18px] max-w-[clamp(224px,20vw,300px)] text-[clamp(12px,1.02vw,15px)] font-medium leading-[1.4] max-[860px]:text-xs max-[600px]:mb-3.5 max-[600px]:max-w-[230px] lg:max-w-[clamp(178px,18vw,270px)]">
+          O‘zingizga mos avtomobilni toping. Avtomobilni ijaraga oling yoki bir
+          platformada ijaraga bering.
+        </p>
 
-          <h1 className="text-4xl font-bold leading-[1.05] tracking-[-0.04em] text-[#141718] md:text-5xl lg:text-6xl">
-            O‘zingizga mos
-            <span className="mt-1 block text-[#008b50]">avtomobilni toping.</span>
-          </h1>
+        <div className="flex flex-wrap gap-[11px] max-[365px]:gap-2">
+          <Link
+            href="/cars"
+            className="inline-flex min-h-[30px] items-center justify-center gap-2 whitespace-nowrap rounded-full border border-transparent bg-gradient-to-r from-[#00813d] via-[#008a40] to-[#00813d] px-3.5 text-[clamp(12px,1.07vw,16px)] font-bold text-white no-underline shadow-[0_3px_6px_rgba(0,105,46,0.21)] transition hover:bg-[#006f35] max-[860px]:min-h-10 max-[860px]:px-4 max-[365px]:px-3 lg:min-h-[clamp(30px,3vw,44px)]"
+          >
+            Mashinalarni ko‘rish
+            <ArrowRight className="h-3.5 w-3.5 shrink-0" aria-hidden />
+          </Link>
 
-          <p className="mt-5 max-w-md text-sm leading-7 text-[#6d7276] md:text-base">
-            Xarid qiling, soting, ijaraga oling yoki avtomobilingizni ijaraga
-            bering. Barchasi bir platformada.
-          </p>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/cars"
-              className="inline-flex h-12 items-center gap-3 rounded-full bg-[#008b50] px-6 font-semibold text-white shadow-[0_5px_13px_rgba(0,126,73,0.2)] transition hover:bg-[#006f40]"
-            >
-              Mashinalarni ko‘rish
-              <ArrowRightOutlined />
-            </Link>
-
-            <Link
-              href={user ? "/profile/owner/moshinalarim/qoshish" : "/login"}
-              className="inline-flex h-12 items-center rounded-full border border-[#141718]/20 bg-white px-6 font-semibold text-[#141718] transition hover:border-[#008b50] hover:text-[#008b50]"
-            >
-              Ijaraga berish
-            </Link>
-          </div>
+          <Link
+            href={user ? "/profile/owner/moshinalarim/qoshish" : "/login"}
+            className="inline-flex min-h-[30px] items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[#8e959a] bg-[#e3e6e8]/50 px-3.5 text-[clamp(12px,1.07vw,16px)] font-bold text-[#121516] no-underline transition hover:bg-[#f5f6f7] max-[860px]:min-h-10 max-[860px]:px-4 max-[365px]:px-3 lg:min-h-[clamp(30px,3vw,44px)]"
+          >
+            Ijaraga berish
+          </Link>
         </div>
 
-        <div className="relative h-[280px] sm:h-[360px] lg:h-[440px]">
-          <Image
-            src="/images/hero-premium.jpg"
-            alt="Zamonaviy avtomobil"
-            fill
-            priority
-            sizes="(max-width: 1024px) 100vw, 55vw"
-            className="object-contain object-center lg:object-right"
-          />
-        </div>
       </div>
 
-      <div className="relative z-20 mx-auto w-full max-w-5xl px-6 pb-12 md:px-10">
+      <div
+        id="booking"
+        className="relative z-[2] mx-auto mt-2 w-[min(calc(100%-32px),980px)] max-[365px]:w-[calc(100%-20px)] sm:w-[min(calc(100%-40px),980px)] lg:mt-6 lg:w-[min(calc(100%-48px),1100px)]"
+      >
         <HeaderSearch />
       </div>
-    </section>
+    </>
   );
 }

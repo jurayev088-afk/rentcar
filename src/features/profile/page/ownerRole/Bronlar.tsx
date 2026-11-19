@@ -3,10 +3,7 @@ import UseCarsBron from "@/src/constants/UseCarsBron";
 
 export default function Bronlar() {
   return (
-    <div>
-      <div>
-        <h2>Bronlar</h2>
-      </div>
+    <div className="space-y-6">
       <UseCarsBron>
         <BronlarTable />
       </UseCarsBron>

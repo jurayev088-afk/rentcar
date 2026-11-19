@@ -1,11 +1,15 @@
 import UseCarsBron from "@/src/constants/UseCarsBron";
+import BookingAccess from "@/src/features/mashinalar/components/BookingAccess";
 import BookingCar from "@/src/features/mashinalar/page/BookingCar";
-import React from "react";
 
-export default function page() {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+
   return (
-    <UseCarsBron>
-      <BookingCar />
-    </UseCarsBron>
+    <BookingAccess carId={id}>
+      <UseCarsBron>
+        <BookingCar />
+      </UseCarsBron>
+    </BookingAccess>
   );
 }

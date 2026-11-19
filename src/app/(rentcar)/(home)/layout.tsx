@@ -1,18 +1,15 @@
+import type { ReactNode } from "react";
 import Navbar from "@/src/components/Navbar";
 import Header from "@/src/components/Header";
 import Footer from "@/src/components/Footer";
 
-export default function MainLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function MainLayout({ children }: { children: ReactNode }) {
   return (
-    <>
-      <Navbar />
+    <div className="min-w-0 bg-[#eff0f2] font-[family-name:var(--font-geist-sans)] text-[#121516]">
+      <Navbar home />
       <Header />
-      <main className="flex-1 bg-[#f3f4f5]">{children}</main>
-      <Footer />
-    </>
+      <main>{children}</main>
+      <Footer home />
+    </div>
   );
 }

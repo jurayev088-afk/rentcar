@@ -2,53 +2,88 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
+
 import NavbarSearch from "./NavbarSearch";
+import RentoLogo from "./RentoLogo";
+
 import {
   CarOutlined,
-  HeartFilled,
-  PlusOutlined,
-  MenuOutlined,
   CloseOutlined,
-  UserOutlined,
+  HomeOutlined,
+  InfoCircleOutlined,
+  MenuOutlined,
+  PlusOutlined,
   RightOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
-import { Button } from "antd";
-import { useUser } from "../constants/UseMeContext";
 
-export default function Navbar() {
+import { ArrowRight, Heart } from "lucide-react";
+
+import { useUser } from "../constants/UseMeContext";
+import BookingAuthDialog from "../features/mashinalar/components/BookingAuthDialog";
+
+const navLinks = [
+  { href: "/", label: "Bosh sahifa", icon: HomeOutlined },
+  { href: "/cars", label: "Mashinalar", icon: CarOutlined },
+  { href: "/about", label: "Biz haqimizda", icon: InfoCircleOutlined },
+];
+
+export default function Navbar({ home = false }: { home?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user } = useUser();
+  const [bookingPrompt, setBookingPrompt] = useState(false);
+
+  const { user, loading } = useUser();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16);
+    const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const pagesLink = [
-    {
-      id: 1,
-      page: "/",
-      label: "Bosh sahifa",
-      icon: <CarOutlined />,
-    },
-    {
-      id: 2,
-      page: "/cars",
-      label: "Mashinalar",
-      icon: <CarOutlined />,
-    },
-   
-  ];
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
+
+    const onPointerDown = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setMobileOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onPointerDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onPointerDown);
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   const isActive = (page: string) =>
-    pathname === page || pathname.startsWith(`${page}/`);
+    page === "/"
+      ? pathname === "/"
+      : pathname === page || pathname.startsWith(`${page}/`);
 
   const profilePath =
     user?.role === "RENTER"
@@ -57,196 +92,291 @@ export default function Navbar() {
 
   const closeMobile = () => setMobileOpen(false);
 
+  const fullName = user?.fullName?.trim();
+  const initial = fullName
+    ? Array.from(fullName)[0].toLocaleUpperCase()
+    : null;
+
+  const onBookingClick = (event: ReactMouseEvent<HTMLAnchorElement>) => {
+    if (user) return;
+    event.preventDefault();
+    if (!loading) setBookingPrompt(true);
+  };
+
   return (
-    <nav
-      className={`fixed left-0 top-0 z-50 w-full transition-[background-color,box-shadow,border-color] duration-300 ${
-        scrolled
-          ? "border-b border-[#d9dde0] bg-white/95 shadow-[0_8px_32px_rgba(24,31,35,0.08)] backdrop-blur-xl"
-          : "border-b border-transparent bg-transparent shadow-none"
-      }`}
-    >
-      <div className="mx-auto flex h-[78px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        {/* Logo */}
-        <Link href="/" className="group flex shrink-0 items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#008b50] text-white shadow-lg shadow-[#008b50]/25 transition duration-300 group-hover:scale-105">
-            <CarOutlined className="text-xl" />
-          </div>
-
-          <div className="leading-tight">
-            <h1
-              className="text-[21px] font-extrabold tracking-tight text-[#141718]"
-            >
-              Avto<span className="text-[#008b50]">Bozor</span>
-            </h1>
-            <p className="mt-1 text-[9px] font-semibold uppercase tracking-[2.5px] text-[#6d7276]">
-              Premium marketplace
-            </p>
-          </div>
-        </Link>
-
-        {/* Desktop navigation */}
-        <div className="hidden items-center gap-2 xl:flex">
-          {pagesLink.map((item) => (
-            <Link
-              key={item.id}
-              href={item.page}
-              className={`relative flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition-all ${
-                isActive(item.page)
-                  ? "bg-[#008b50] text-white shadow-md shadow-[#008b50]/20"
-                  : "text-[#141718] hover:bg-[#008b50]/10 hover:text-[#008b50]"
-              }`}
-            >
-              <span className="text-base">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* Search */}
-        <div className="hidden min-w-[180px] max-w-[340px] flex-1 lg:block">
-          <NavbarSearch />
-        </div>
-
-        {/* Actions */}
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          {/* Wishlist icon only */}
+    <>
+      <nav
+        ref={menuRef}
+        className={`sticky top-0 z-50 w-full transition-all duration-300 ${
+          scrolled || !home
+            ? "border-b border-[#e6ebe8] bg-white/95 shadow-[0_8px_28px_rgba(16,37,26,0.07)] backdrop-blur-xl"
+            : "border-b border-transparent bg-white/70 backdrop-blur-md"
+        }`}
+        aria-label="Asosiy navigatsiya"
+      >
+        <div className="mx-auto flex min-h-[68px] w-full max-w-[1440px] items-center gap-3 px-3 sm:px-5 lg:min-h-[80px] lg:gap-5 lg:px-8">
           <Link
-            href="/sevimlilar"
-            aria-label="Sevimlilar"
-            className={`relative flex h-11 w-11 items-center justify-center rounded-xl border transition-all duration-200 ${
-              isActive("/sevimlilar")
-                ? "border-red-100 bg-red-50 text-red-500"
-                : "border-[#d9dde0] bg-white text-[#141718] hover:border-[#008b50]/30 hover:text-[#008b50]"
-            }`}
+            href="/"
+            onClick={closeMobile}
+            className="flex shrink-0 items-center transition-opacity hover:opacity-90"
           >
-            <HeartFilled className="text-[19px]" />
-
-            {/* {wishlist.length > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-[19px] min-w-[19px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold text-white">
-                {wishlist.length > 99 ? "99+" : wishlist.length}
-              </span>
-            )} */}
+            <RentoLogo className="w-[108px] sm:w-[128px] lg:w-[148px]" />
           </Link>
 
-          {/* Login / Profile */}
-          {user?.fullName ? (
-            <button
-              onClick={() => router.push(profilePath)}
-              className="hidden items-center gap-3 rounded-xl border border-slate-200 bg-white py-2 pl-2 pr-3 transition hover:border-slate-300 hover:bg-slate-50 sm:flex"
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#008b50] text-white">
-                <UserOutlined />
-              </div>
+          <div className="hidden items-center gap-1 xl:flex">
+            {navLinks.map(({ href, label }) => {
+              const active = isActive(href);
 
-              <div className="text-left">
-                <p className="max-w-[110px] truncate text-sm font-bold text-[#141718]">
-                  {user.fullName}
-                </p>
-                <p className="text-[10px] text-slate-400">Shaxsiy kabinet</p>
-              </div>
+              return (
+                <Link
+                  href={href}
+                  key={href}
+                  className={`relative rounded-full px-4 py-2 text-[13px] font-semibold transition-all ${
+                    active
+                      ? "bg-[#eaf6ef] text-[#00863e]"
+                      : "text-[#3a463f] hover:bg-[#f3f6f4] hover:text-[#00863e]"
+                  }`}
+                >
+                  {label}
+                  {active && (
+                    <span className="absolute inset-x-4 -bottom-[1px] hidden h-0.5 rounded-full bg-[#00863e] xl:block" />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
 
-              <RightOutlined className="ml-1 text-[10px] text-slate-400" />
-            </button>
-          ) : (
-            <Button
-              type="primary"
-              onClick={() => router.push("/login")}
-              className="!hidden !h-11 !rounded-full !border-none !bg-[#008b50] !px-6 !font-semibold sm:!inline-flex hover:!bg-[#006f40]"
-            >
-              Kirish
-            </Button>
-          )}
-
-          {/* Mobile menu */}
-          <button
-            type="button"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d9dde0] bg-white text-[#141718] transition hover:bg-[#f5f6f7] xl:hidden"
-            aria-label="Menyuni ochish"
-          >
-            {mobileOpen ? (
-              <CloseOutlined className="text-lg" />
-            ) : (
-              <MenuOutlined className="text-lg" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="border-t border-slate-100 bg-white px-4 py-5 shadow-xl xl:hidden">
-          <div className="mb-5">
+          <div className="mx-auto hidden min-w-0 max-w-[280px] flex-1 lg:block">
             <NavbarSearch />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Link
-              href="/cars"
-              onClick={closeMobile}
-              className={`flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-semibold ${
-                isActive("/cars")
-                  ? "bg-[#008b50] text-white"
-                  : "bg-slate-50 text-slate-700"
-              }`}
-            >
-              <CarOutlined className="text-lg" />
-              Mashinalar
-            </Link>
-
+          <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-2.5">
             <Link
               href="/sevimlilar"
-              onClick={closeMobile}
-              className={`flex items-center justify-between rounded-xl px-4 py-3.5 text-sm font-semibold ${
+              aria-label="Sevimlilar"
+              title="Sevimlilar"
+              className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all duration-200 sm:inline-flex ${
                 isActive("/sevimlilar")
-                  ? "bg-red-50 text-red-500"
-                  : "bg-slate-50 text-slate-700"
+                  ? "border-red-200 bg-red-50 text-red-500 shadow-[0_4px_12px_rgba(239,68,68,0.12)]"
+                  : "border-[#e5e9e7] bg-white text-[#4a5650] hover:border-red-200 hover:bg-red-50 hover:text-red-500"
               }`}
             >
-              <span className="flex items-center gap-3">
-                <HeartFilled className="text-lg" />
-                Sevimlilar
-              </span>
-              <span className="rounded-full bg-red-100 px-2 py-1 text-xs text-red-500">
-                {/* {wishlist.length} */}
-              </span>
+              <Heart
+                className={`h-[18px] w-[18px] ${
+                  isActive("/sevimlilar") ? "fill-current" : ""
+                }`}
+              />
             </Link>
 
             <Link
-              href="/ijara"
-              onClick={closeMobile}
-              className="mt-2 flex items-center justify-center gap-2 rounded-full bg-[#008b50] px-4 py-4 font-semibold text-white transition hover:bg-[#006f40]"
+              href="/cars"
+              onClick={onBookingClick}
+              className="group inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[#00863e] px-3.5 text-[12px] font-bold text-white shadow-[0_6px_16px_rgba(0,134,62,0.22)] transition-all hover:bg-[#006f35] hover:shadow-[0_8px_20px_rgba(0,134,62,0.28)] active:scale-[0.98] sm:px-5 sm:text-[13px]"
             >
-              <PlusOutlined />
-              Moshina joylash
+              <span className="sm:hidden">Bron qilish</span>
+              <span className="hidden sm:inline">Mashina bron qilish</span>
+              <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
             </Link>
 
-            {user?.fullName ? (
-              <button
-                onClick={() => {
-                  closeMobile();
-                  router.push(profilePath);
-                }}
-                className="mt-1 flex items-center gap-3 rounded-xl border border-[#d9dde0] px-4 py-3.5 text-left font-semibold text-[#141718]"
-              >
-                <UserOutlined />
-                Shaxsiy kabinet
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  closeMobile();
-                  router.push("/login");
-                }}
-                className="mt-1 flex items-center justify-center gap-2 rounded-xl border border-[#d9dde0] px-4 py-3.5 font-semibold text-[#141718]"
-              >
-                <UserOutlined />
-                Tizimga kirish
-              </button>
-            )}
+            <Link
+              href={user ? profilePath : "/login"}
+              aria-label={
+                fullName ? `Shaxsiy kabinet: ${fullName}` : "Tizimga kirish"
+              }
+              className="group flex h-11 max-w-[180px] items-center gap-2 rounded-full border border-[#e5e9e7] bg-white py-1 pl-1 pr-2.5 transition-all hover:border-[#b9dfc6] hover:bg-[#f6faf7] sm:pr-3.5"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#00863e] text-[13px] font-bold text-white shadow-[0_3px_8px_rgba(0,134,62,0.25)]">
+                {initial ?? <UserOutlined />}
+              </span>
+              <span className="hidden min-w-0 sm:block">
+                <span className="block truncate text-[12px] font-bold leading-tight text-[#1f2d25]">
+                  {fullName || "Kirish"}
+                </span>
+                <span className="block text-[10px] font-medium leading-tight text-[#7a8780]">
+                  {user ? "Kabinet" : "Hisob"}
+                </span>
+              </span>
+            </Link>
+
+            <button
+              type="button"
+              onClick={() => setMobileOpen((open) => !open)}
+              className={`inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-all xl:hidden ${
+                mobileOpen
+                  ? "border-[#00863e] bg-[#eaf6ef] text-[#00863e]"
+                  : "border-[#e5e9e7] bg-white text-[#26352d] hover:border-[#b9dfc6] hover:bg-[#f6faf7]"
+              }`}
+              aria-label={mobileOpen ? "Menyuni yopish" : "Menyuni ochish"}
+              aria-expanded={mobileOpen}
+              aria-controls="rent-mobile-menu"
+            >
+              {mobileOpen ? (
+                <CloseOutlined className="text-[16px]" />
+              ) : (
+                <MenuOutlined className="text-[16px]" />
+              )}
+            </button>
           </div>
         </div>
+
+        {mobileOpen && (
+          <div
+            id="rent-mobile-menu"
+            className="absolute inset-x-0 top-full z-50 border-t border-[#e9eeeb] bg-white/98 px-3 pb-5 pt-3 shadow-[0_18px_40px_rgba(16,37,26,0.14)] backdrop-blur-xl sm:inset-x-auto sm:right-5 sm:mt-2 sm:w-[360px] sm:rounded-3xl sm:border sm:border-[#e6ebe8] sm:p-4"
+          >
+            <div className="mb-3 lg:hidden">
+              <NavbarSearch />
+            </div>
+
+            <div className="grid gap-1">
+              {navLinks.map(({ href, label, icon: Icon }) => {
+                const active = isActive(href);
+
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={closeMobile}
+                    className={`flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[14px] font-semibold transition ${
+                      active
+                        ? "bg-[#eaf6ef] text-[#00863e]"
+                        : "text-[#29362f] hover:bg-[#f3f6f4] hover:text-[#00863e]"
+                    }`}
+                  >
+                    <span
+                      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${
+                        active
+                          ? "bg-[#00863e] text-white"
+                          : "bg-[#f0f3f1] text-[#4f5c55]"
+                      }`}
+                    >
+                      <Icon className="text-[16px]" />
+                    </span>
+                    {label}
+                  </Link>
+                );
+              })}
+
+              <Link
+                href="/sevimlilar"
+                onClick={closeMobile}
+                className={`flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[14px] font-semibold transition ${
+                  isActive("/sevimlilar")
+                    ? "bg-red-50 text-red-500"
+                    : "text-[#29362f] hover:bg-red-50 hover:text-red-500"
+                }`}
+              >
+                <span
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${
+                    isActive("/sevimlilar")
+                      ? "bg-red-500 text-white"
+                      : "bg-[#f0f3f1] text-[#4f5c55]"
+                  }`}
+                >
+                  <Heart
+                    className={`h-4 w-4 ${
+                      isActive("/sevimlilar") ? "fill-current" : ""
+                    }`}
+                  />
+                </span>
+                Sevimlilar
+              </Link>
+            </div>
+
+            <div className="my-3.5 h-px bg-[#edf0ee]" />
+
+            <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[1.4px] text-[#87938b]">
+              Avtomobil ijarasi
+            </p>
+
+            <Link
+              href={
+                user?.role === "OWNER"
+                  ? "/profile/owner/moshinalarim/qoshish"
+                  : "/cars"
+              }
+              onClick={(event) => {
+                if (!user) {
+                  event.preventDefault();
+                  closeMobile();
+                  router.push("/login");
+                  return;
+                }
+                closeMobile();
+              }}
+              className="group flex items-center gap-3 rounded-2xl border border-[#c6e5d1] bg-[#eff8f2] p-3 transition-all hover:border-[#00863e] hover:bg-[#e4f4e9]"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#00863e] text-white shadow-[0_6px_14px_rgba(0,134,62,0.25)]">
+                {user?.role === "OWNER" ? (
+                  <PlusOutlined className="text-[18px]" />
+                ) : (
+                  <CarOutlined className="text-[18px]" />
+                )}
+              </span>
+
+              <span className="min-w-0 flex-1">
+                <span className="block text-[14px] font-extrabold text-[#173c27]">
+                  {user?.role === "OWNER"
+                    ? "Mashinamni ijaraga berish"
+                    : "Ijaraga mashina topish"}
+                </span>
+                <span className="mt-0.5 block text-[11px] leading-4 text-[#668071]">
+                  {user?.role === "OWNER"
+                    ? "Avtomobilingizni ijaraga joylashtiring"
+                    : "O‘zingizga mos avtomobilni ijaraga oling"}
+                </span>
+              </span>
+
+              <RightOutlined className="text-xs text-[#00863e] transition-transform group-hover:translate-x-0.5" />
+            </Link>
+
+            <div className="my-3.5 h-px bg-[#edf0ee]" />
+
+            <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[1.4px] text-[#87938b]">
+              Shaxsiy kabinet
+            </p>
+
+            <Link
+              href={user ? profilePath : "/login"}
+              onClick={closeMobile}
+              className="group flex items-center gap-3 rounded-2xl border border-[#e5e9e7] bg-white p-3 transition-all hover:border-[#b9dfc6] hover:bg-[#f6faf7]"
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#10251a] text-[15px] font-bold text-white">
+                {initial ?? <UserOutlined />}
+              </span>
+
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[14px] font-bold text-[#26352d]">
+                  {fullName || "Tizimga kirish"}
+                </span>
+                <span className="mt-0.5 block text-[11px] text-[#00863e]">
+                  {user?.role === "OWNER"
+                    ? "Avtomobil egasi kabineti"
+                    : user?.role === "RENTER"
+                      ? "Shaxsiy kabinetingizga kiring"
+                      : "Tizimga kiring"}
+                </span>
+              </span>
+
+              <RightOutlined className="text-xs text-[#8a9690] transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+        )}
+      </nav>
+
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="Menyuni yopish"
+          className="fixed inset-0 z-40 bg-[#10251a]/25 backdrop-blur-[2px] xl:hidden"
+          onClick={closeMobile}
+        />
       )}
-    </nav>
+
+      <BookingAuthDialog
+        open={bookingPrompt}
+        onCancel={() => setBookingPrompt(false)}
+      />
+    </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { UseBookings } from "@/src/constants/UseCarsBron";
-import { Table, Tag, Button, Image, Space, Tooltip, Empty } from "antd";
+import { Table, Button, Image, Space, Tooltip, Empty } from "antd";
 import {
   PhoneOutlined,
   CalendarOutlined,
@@ -40,129 +40,123 @@ export default function BronlarTable() {
 
   const formatDate = (date: string) => {
     if (!date) return "-";
-
     const d = new Date(date);
-
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   };
 
-  const statusInfo = {
-    PENDING: {
-      label: "Kutilmoqda",
-      color: "warning",
-    },
-    CONFIRMED: {
-      label: "Tasdiqlangan",
-      color: "success",
-    },
-    REJECTED: {
-      label: "Rad etilgan",
-      color: "error",
-    },
+  const statusStyles = {
+    PENDING: "bg-[#fff4e5] text-[#c47a10] ring-[#f0d4a8]",
+    CONFIRMED: "bg-[#eaf6ef] text-[#00863e] ring-[#b9dfc6]",
+    REJECTED: "bg-red-50 text-red-600 ring-red-200",
+  } as const;
+
+  const statusLabels = {
+    PENDING: "Kutilmoqda",
+    CONFIRMED: "Tasdiqlangan",
+    REJECTED: "Rad etilgan",
   } as const;
 
   const columns: ColumnsType<Booking> = [
     {
-      title: "MIJOZ",
+      title: "Mijoz",
       key: "customer",
       width: 190,
       fixed: "left",
       render: (_, record) => (
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-lg text-[#0B1F33]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eaf6ef] text-lg text-[#00863e]">
             <UserOutlined />
           </div>
-
           <div>
-            <p className="font-semibold text-[#0B1F33]">
+            <p className="font-semibold text-[#1f2d25]">
               {record.firstName} {record.lastName}
             </p>
-            <p className="mt-1 text-xs text-slate-400">ID: {record.id}</p>
+            <p className="mt-1 text-xs text-[#8d9892]">ID: {record.id}</p>
           </div>
         </div>
       ),
     },
     {
-      title: "TELEFON",
+      title: "Telefon",
       dataIndex: "phone",
       key: "phone",
       width: 155,
       render: (phone: string) => (
         <a
           href={`tel:${phone}`}
-          className="flex items-center gap-2 font-medium text-slate-600"
+          className="flex items-center gap-2 font-medium text-[#3f4b44] transition hover:text-[#00863e]"
         >
-          <PhoneOutlined className="text-green-600" />
+          <PhoneOutlined className="text-[#00863e]" />
           {phone}
         </a>
       ),
     },
     {
-      title: "PASPORT",
+      title: "Pasport",
       dataIndex: "passportNumber",
       key: "passportNumber",
       width: 140,
       render: (value: string) => (
-        <span className="rounded-lg bg-slate-100 px-3 py-2 font-mono text-xs font-semibold text-slate-700">
+        <span className="rounded-lg bg-[#f3f6f4] px-3 py-2 font-mono text-xs font-semibold text-[#3f4b44]">
           {value || "-"}
         </span>
       ),
     },
     {
-      title: "TUG'ILGAN SANA",
+      title: "Tug‘ilgan sana",
       dataIndex: "birthDate",
       key: "birthDate",
       width: 145,
       render: (date: string) => (
-        <span className="text-sm text-slate-600">{formatDate(date)}</span>
+        <span className="text-sm text-[#6d7a73]">{formatDate(date)}</span>
       ),
     },
     {
-      title: "BRON BOSHLANISHI",
+      title: "Boshlanishi",
       dataIndex: "startDate",
       key: "startDate",
-      width: 165,
+      width: 155,
       render: (date: string) => (
         <div className="flex items-center gap-2">
-          <CalendarOutlined className="text-green-600" />
-          <span className="text-sm font-medium text-slate-700">
+          <CalendarOutlined className="text-[#00863e]" />
+          <span className="text-sm font-medium text-[#3f4b44]">
             {formatDate(date)}
           </span>
         </div>
       ),
     },
     {
-      title: "BRON TUGASHI",
+      title: "Tugashi",
       dataIndex: "endDate",
       key: "endDate",
-      width: 165,
+      width: 145,
       render: (date: string) => (
         <div className="flex items-center gap-2">
           <CalendarOutlined className="text-red-500" />
-          <span className="text-sm font-medium text-slate-700">
+          <span className="text-sm font-medium text-[#3f4b44]">
             {formatDate(date)}
           </span>
         </div>
       ),
     },
     {
-      title: "IZOH",
+      title: "Izoh",
       dataIndex: "comment",
       key: "comment",
       width: 180,
       render: (comment: string) => (
         <Tooltip title={comment}>
-          <p className="max-w-[160px] truncate text-sm text-slate-500">
+          <p className="max-w-[160px] truncate text-sm text-[#6d7a73]">
             {comment || "Izoh yo'q"}
           </p>
         </Tooltip>
       ),
     },
     {
-      title: "HAYDOVCHILIK GUVOHNOMASI",
+      title: "Guvohnoma",
       dataIndex: "pravaImg",
       key: "pravaImg",
-      width: 190,
+      width: 160,
       render: (images) => (
         <Space>
           {images?.length > 0 ? (
@@ -178,29 +172,32 @@ export default function BronlarTable() {
               />
             ))
           ) : (
-            <span className="text-xs text-slate-400">Rasm mavjud emas</span>
+            <span className="text-xs text-[#8d9892]">Rasm yo‘q</span>
           )}
         </Space>
       ),
     },
     {
-      title: "HOLATI",
+      title: "Holati",
       dataIndex: "status",
       key: "status",
-      width: 135,
+      width: 140,
       fixed: "right",
-      render: (status: Booking["status"]) => {
-        const info = statusInfo[status];
-
-        return (
-          <Tag color={info?.color || "default"}>{info?.label || status}</Tag>
-        );
-      },
+      render: (status: Booking["status"]) => (
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${
+            statusStyles[status] || "bg-[#eef2f0] text-[#5a675f] ring-[#d7ddd9]"
+          }`}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-current" />
+          {statusLabels[status] || status}
+        </span>
+      ),
     },
     {
-      title: "AMALLAR",
+      title: "Amallar",
       key: "actions",
-      width: 190,
+      width: 200,
       fixed: "right",
       render: (_, record) => (
         <Space>
@@ -210,7 +207,7 @@ export default function BronlarTable() {
                 <Button
                   type="primary"
                   size="small"
-                  className="!bg-green-600"
+                  className="!rounded-full !border-0 !bg-[#00863e] hover:!bg-[#006f35]"
                   onClick={() => updateStatus(record.id, "CONFIRMED")}
                 >
                   Tasdiqlash
@@ -221,6 +218,7 @@ export default function BronlarTable() {
                 <Button
                   danger
                   size="small"
+                  className="!rounded-full"
                   onClick={() => updateStatus(record.id, "REJECTED")}
                 >
                   Rad etish
@@ -230,10 +228,16 @@ export default function BronlarTable() {
           )}
 
           {record.status === "CONFIRMED" && (
-            <Tag color="success">Tasdiqlangan</Tag>
+            <span className="inline-flex rounded-full bg-[#eaf6ef] px-3 py-1.5 text-xs font-semibold text-[#00863e]">
+              Tasdiqlangan
+            </span>
           )}
 
-          {record.status === "REJECTED" && <Tag color="error">Rad etilgan</Tag>}
+          {record.status === "REJECTED" && (
+            <span className="inline-flex rounded-full bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600">
+              Rad etilgan
+            </span>
+          )}
         </Space>
       ),
     },
@@ -241,49 +245,50 @@ export default function BronlarTable() {
 
   if (!isLoaded) {
     return (
-      <div className="flex justify-center py-20">
-        Ma'lumotlar yuklanmoqda...
+      <div className="flex justify-center rounded-3xl border border-[#e5e9e7] bg-white py-20 text-[#00863e]">
+        Ma&apos;lumotlar yuklanmoqda...
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* HEADER */}
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+      <div className="flex flex-col justify-between gap-4 rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.04)] md:flex-row md:items-center md:p-6">
         <div>
-          <h1 className="text-2xl font-bold text-[#0B1F33]">Bronlar</h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="text-[11px] font-bold uppercase tracking-[1.4px] text-[#00863e]">
+            Egasi kabineti
+          </p>
+          <h1 className="mt-1 text-2xl font-bold text-[#1f2d25]">Bronlar</h1>
+          <p className="mt-1 text-sm text-[#6d7a73]">
             Mijozlar tomonidan yuborilgan barcha bronlarni boshqaring.
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <div className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-            <p className="text-xs text-slate-400">Jami bronlar</p>
-            <p className="mt-1 text-xl font-bold text-[#0B1F33]">
+          <div className="rounded-2xl border border-[#e5e9e7] bg-[#f6faf7] px-4 py-3">
+            <p className="text-xs text-[#8d9892]">Jami bronlar</p>
+            <p className="mt-1 text-xl font-bold text-[#1f2d25]">
               {carBron.length}
             </p>
           </div>
 
-          <div className="rounded-xl border border-orange-100 bg-orange-50 px-4 py-3">
-            <p className="text-xs text-orange-600">Kutilmoqda</p>
-            <p className="mt-1 text-xl font-bold text-orange-700">
+          <div className="rounded-2xl border border-[#f0d4a8] bg-[#fff4e5] px-4 py-3">
+            <p className="text-xs text-[#c47a10]">Kutilmoqda</p>
+            <p className="mt-1 text-xl font-bold text-[#c47a10]">
               {carBron.filter((x: Booking) => x.status === "PENDING").length}
             </p>
           </div>
 
-          <div className="rounded-xl border border-green-100 bg-green-50 px-4 py-3">
-            <p className="text-xs text-green-600">Tasdiqlangan</p>
-            <p className="mt-1 text-xl font-bold text-green-700">
+          <div className="rounded-2xl border border-[#b9dfc6] bg-[#eaf6ef] px-4 py-3">
+            <p className="text-xs text-[#00863e]">Tasdiqlangan</p>
+            <p className="mt-1 text-xl font-bold text-[#00863e]">
               {carBron.filter((x: Booking) => x.status === "CONFIRMED").length}
             </p>
           </div>
         </div>
       </div>
 
-      {/* TABLE */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-3xl border border-[#e5e9e7] bg-white shadow-[0_8px_24px_rgba(16,37,26,0.03)]">
         <Table<Booking>
           columns={columns}
           dataSource={carBron}
@@ -294,6 +299,8 @@ export default function BronlarTable() {
             showSizeChanger: true,
             showTotal: (total) => `Jami ${total} ta bron`,
           }}
+          className="[&_.ant-table-thead>tr>th]:!bg-[#f6faf7] [&_.ant-table-thead>tr>th]:!text-[#6d7a73] [&_.ant-table-thead>tr>th]:!font-semibold [&_.ant-pagination]:!px-4 [&_.ant-pagination]:!py-3"
+          rowClassName="hover:!bg-[#f8fbf9]"
           locale={{
             emptyText: (
               <Empty

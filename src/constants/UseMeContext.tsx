@@ -9,9 +9,19 @@ import {
 
 export const UserContext = createContext<any>(null);
 
+export type Account = {
+  fullName: string;
+  phone: string;
+  email?: string;
+  password: string;
+  role: "RENTER" | "OWNER";
+  companyName?: string;
+  stir?: string;
+};
+
 export default function UseMeContext({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState(null);
-  const [users, setUsers] = useState([]);
+  const [user, setUser] = useState<Account | null>(null);
+  const [users, setUsers] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const savedUser = localStorage.getItem("currentUser");
@@ -33,7 +43,7 @@ export default function UseMeContext({ children }: { children: ReactNode }) {
     }
   }, [user, loading]);
 
-  const registerUser = (newUser) =>{
+  const registerUser = (newUser: Account) =>{
     const updateUsers = [...users, newUser]
 
     setUsers(updateUsers)
@@ -45,8 +55,13 @@ export default function UseMeContext({ children }: { children: ReactNode }) {
 
   const logOut = () => setUser(null)
 
+  const logIn = (registeredUser: Account) => {
+    localStorage.setItem("currentUser", JSON.stringify(registeredUser));
+    setUser(registeredUser);
+  };
+
   return (
-    <UserContext.Provider value={{ user, users, setUser, logOut, registerUser, }}>
+    <UserContext.Provider value={{ user, users, loading, setUser, logIn, logOut, registerUser }}>
       {children}
     </UserContext.Provider>
   );

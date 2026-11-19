@@ -1,10 +1,8 @@
-
 "use client";
 
 import { useMemo, useState } from "react";
 import {
   Button,
-  Card,
   Collapse,
   Empty,
   Form,
@@ -98,24 +96,18 @@ const contactItems = [
     title: "Telegram orqali",
     description: "@Nomoz1vicc",
     icon: MessageCircle,
-    color: "text-sky-600",
-    bg: "bg-sky-50",
     link: "https://t.me/Nomoz1vicc",
   },
   {
     title: "Telefon orqali",
     description: "+998 93 105 54 75",
     icon: Phone,
-    color: "text-green-600",
-    bg: "bg-green-50",
     link: "tel:+998931055475",
   },
   {
     title: "Email orqali",
     description: "jurayev088@icloud.com",
     icon: Mail,
-    color: "text-orange-600",
-    bg: "bg-orange-50",
     link: "mailto:jurayev088@icloud.com",
   },
 ];
@@ -139,26 +131,27 @@ export default function YordamMarkazi() {
 
   const handleSubmit = () => {
     message.info(
-      "Murojaat formasi tayyor. Xabar yuborilishi uchun backend API ulash kerak."
+      "Murojaat formasi tayyor. Xabar yuborilishi uchun backend API ulash kerak.",
     );
   };
 
   return (
-    <div className="min-h-screen space-y-6 pb-10">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-[#0B1F33]">
+    <div className="space-y-6">
+      <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.04)] sm:p-6">
+        <p className="text-[11px] font-bold uppercase tracking-[1.4px] text-[#00863e]">
+          Ijarachi kabineti
+        </p>
+        <h1 className="mt-1 text-2xl font-bold text-[#1f2d25]">
           Yordam markazi
         </h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-[#6d7a73]">
           Savollaringizga javob toping yoki biz bilan bog‘laning.
         </p>
       </div>
 
-      {/* Search banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-[#0B1F33] px-6 py-10 text-white md:px-10">
+      <div className="relative overflow-hidden rounded-3xl bg-[linear-gradient(145deg,#0f2a1c,#165a36_52%,#00863e)] px-6 py-10 text-white shadow-[0_14px_32px_rgba(0,134,62,0.18)] md:px-10">
         <div className="relative z-10 max-w-xl">
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/15">
             <Headphones size={25} />
           </div>
 
@@ -166,28 +159,27 @@ export default function YordamMarkazi() {
             Sizga qanday yordam bera olamiz?
           </h2>
 
-          <p className="mt-2 text-sm text-white/70">
+          <p className="mt-2 text-sm text-white/75">
             Kerakli savolingizni qidiring yoki quyidagi mavzulardan birini
             tanlang.
           </p>
 
-          <div className="mt-6 flex items-center rounded-xl bg-white p-1.5">
-            <Search className="ml-3 text-gray-400" size={20} />
+          <div className="mt-6 flex items-center rounded-full bg-white p-1.5 shadow-[0_8px_20px_rgba(16,37,26,0.12)]">
+            <Search className="ml-3 text-[#8d9892]" size={20} />
             <Input
               variant="borderless"
               placeholder="Savolingizni yozing..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-10"
+              className="!h-10"
             />
           </div>
         </div>
 
-        <div className="absolute -right-10 -top-16 h-64 w-64 rounded-full border-[35px] border-white/5" />
-        <div className="absolute -bottom-24 right-32 h-56 w-56 rounded-full border-[30px] border-white/5" />
+        <div className="absolute -right-10 -top-16 h-64 w-64 rounded-full border-[35px] border-white/10" />
+        <div className="absolute -bottom-24 right-32 h-56 w-56 rounded-full border-[30px] border-white/10" />
       </div>
 
-      {/* Quick categories */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
           { title: "Bron qilish", icon: CalendarCheck, category: "bron" },
@@ -196,36 +188,41 @@ export default function YordamMarkazi() {
           { title: "Akkaunt", icon: ShieldCheck, category: "account" },
         ].map((item) => {
           const Icon = item.icon;
+          const active = activeCategory === item.category;
 
           return (
             <button
               key={item.category}
+              type="button"
               onClick={() => setActiveCategory(item.category)}
-              className={`flex items-center gap-3 rounded-xl border p-4 text-left transition hover:border-[#0B1F33] ${
-                activeCategory === item.category
-                  ? "border-[#0B1F33] bg-slate-50"
-                  : "border-gray-200 bg-white"
+              className={`flex items-center gap-3 rounded-2xl border p-4 text-left transition ${
+                active
+                  ? "border-[#00863e] bg-[#00863e] text-white shadow-[0_8px_18px_rgba(0,134,62,0.22)]"
+                  : "border-[#e5e9e7] bg-white text-[#1f2d25] hover:border-[#b9dfc6] hover:bg-[#f6faf7]"
               }`}
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#0B1F33]/5 text-[#0B1F33]">
-                <Icon size={21} />
+              <div
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                  active
+                    ? "bg-white/15 text-white"
+                    : "bg-[#eaf6ef] text-[#00863e]"
+                }`}
+              >
+                <Icon size={20} />
               </div>
-              <span className="text-sm font-semibold text-[#0B1F33]">
-                {item.title}
-              </span>
+              <span className="text-sm font-semibold">{item.title}</span>
             </button>
           );
         })}
       </div>
 
-      {/* FAQ */}
-      <Card className="rounded-2xl!" styles={{ body: { padding: 20 } }}>
+      <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] sm:p-6">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-[#0B1F33]">
+            <h2 className="text-lg font-bold text-[#1f2d25]">
               Ko‘p beriladigan savollar
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-[#6d7a73]">
               Siz uchun eng kerakli javoblar
             </p>
           </div>
@@ -244,14 +241,12 @@ export default function YordamMarkazi() {
             items={filteredFaq.map((item, index) => ({
               key: `${item.category}-${index}`,
               label: (
-                <span className="font-medium text-[#0B1F33]">
+                <span className="font-semibold text-[#1f2d25]">
                   {item.question}
                 </span>
               ),
               children: (
-                <p className="text-sm leading-7 text-gray-500">
-                  {item.answer}
-                </p>
+                <p className="text-sm leading-7 text-[#6d7a73]">{item.answer}</p>
               ),
             }))}
           />
@@ -261,58 +256,50 @@ export default function YordamMarkazi() {
             className="py-8"
           />
         )}
-      </Card>
+      </div>
 
-      {/* Contact */}
       <div>
-        <h2 className="mb-1 text-lg font-bold text-[#0B1F33]">
+        <h2 className="mb-1 text-lg font-bold text-[#1f2d25]">
           Biz bilan bog‘laning
         </h2>
-        <p className="mb-4 text-sm text-gray-500">
+        <p className="mb-4 text-sm text-[#6d7a73]">
           Savolingizga javob topa olmadingizmi? Bizga murojaat qiling.
         </p>
 
         <div className="grid gap-3 md:grid-cols-3">
-         {contactItems.map((item) => {
-  const Icon = item.icon;
+          {contactItems.map((item) => {
+            const Icon = item.icon;
 
-  return (
-    <Card
-      key={item.title}
-      hoverable
-      onClick={() => window.open(item.link, "_blank")}
-      className="cursor-pointer rounded-xl! transition hover:-translate-y-1 hover:shadow-md"
-    >
-      <div className="flex items-center justify-between">
-        <div
-          className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.bg} ${item.color}`}
-        >
-          <Icon size={22} />
-        </div>
+            return (
+              <button
+                key={item.title}
+                type="button"
+                onClick={() => window.open(item.link, "_blank")}
+                className="rounded-3xl border border-[#e5e9e7] bg-white p-5 text-left shadow-[0_8px_24px_rgba(16,37,26,0.03)] transition hover:-translate-y-0.5 hover:border-[#b9dfc6] hover:bg-[#f8fbf9]"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#eaf6ef] text-[#00863e]">
+                    <Icon size={22} />
+                  </div>
+                  <ChevronRight size={18} className="text-[#9aa59e]" />
+                </div>
 
-        <ChevronRight size={18} className="text-gray-400" />
-      </div>
-
-      <h3 className="mt-4 font-semibold text-[#0B1F33]">
-        {item.title}
-      </h3>
-
-      <p className="mt-1 text-sm text-gray-500">
-        {item.description}
-      </p>
-    </Card>
-  );
-})}
+                <h3 className="mt-4 font-semibold text-[#1f2d25]">
+                  {item.title}
+                </h3>
+                <p className="mt-1 text-sm text-[#6d7a73]">{item.description}</p>
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Contact form */}
-      <Card className="rounded-2xl!" styles={{ body: { padding: 24 } }}>
+      <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] sm:p-6">
         <div className="mb-5">
-          <h2 className="text-lg font-bold text-[#0B1F33]">
+          <h2 className="text-lg font-bold text-[#1f2d25]">
             Bizga murojaat yuboring
           </h2>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-[#6d7a73]">
             Muammo yoki taklifingizni yozib qoldiring.
           </p>
         </div>
@@ -324,7 +311,11 @@ export default function YordamMarkazi() {
               name="name"
               rules={[{ required: true, message: "Ismingizni kiriting" }]}
             >
-              <Input size="large" placeholder="Ismingizni kiriting" />
+              <Input
+                size="large"
+                placeholder="Ismingizni kiriting"
+                className="!rounded-xl"
+              />
             </Form.Item>
 
             <Form.Item
@@ -334,7 +325,11 @@ export default function YordamMarkazi() {
                 { required: true, message: "Aloqa ma'lumotini kiriting" },
               ]}
             >
-              <Input size="large" placeholder="Email yoki telefon raqam" />
+              <Input
+                size="large"
+                placeholder="Email yoki telefon raqam"
+                className="!rounded-xl"
+              />
             </Form.Item>
           </div>
 
@@ -366,6 +361,7 @@ export default function YordamMarkazi() {
               placeholder="Muammo yoki savolingizni batafsil yozing..."
               maxLength={1000}
               showCount
+              className="!rounded-xl"
             />
           </Form.Item>
 
@@ -374,12 +370,12 @@ export default function YordamMarkazi() {
             htmlType="submit"
             size="large"
             icon={<Send size={16} />}
-            className="!h-11 !rounded-lg !bg-[#0B1F33] !px-6"
+            className="!h-11 !rounded-full !border-0 !bg-[#00863e] !px-6 !font-bold hover:!bg-[#006f35]"
           >
             Murojaat yuborish
           </Button>
         </Form>
-      </Card>
+      </div>
     </div>
   );
 }

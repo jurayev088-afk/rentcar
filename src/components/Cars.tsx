@@ -80,7 +80,7 @@ export default function Cars({ cars, filteredCars }: CarsProps) {
               <article
                 key={car.id}
                 onClick={() => router.push(`/cars/${car.id}`)}
-                className="group flex cursor-pointer flex-col overflow-hidden rounded-[26px] border border-slate-200/80 bg-white shadow-[0_4px_20px_rgba(15,23,42,0.04)] transition-all duration-300 hover:border-slate-300 hover:shadow-[0_18px_45px_rgba(15,23,42,0.11)]"
+                className="group flex cursor-pointer flex-col overflow-hidden rounded-[26px] border border-[#e5e9e7] bg-white shadow-[0_8px_24px_rgba(16,37,26,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#b9dfc6] hover:shadow-[0_16px_36px_rgba(0,134,62,0.12)]"
               >
                 {/* Car image */}
                 <div className="relative h-56 w-full overflow-hidden bg-slate-100">
@@ -143,7 +143,7 @@ export default function Cars({ cars, filteredCars }: CarsProps) {
                         {car.category}
                       </p>
 
-                      <h2 className="mt-1 truncate text-xl font-extrabold tracking-tight text-[#0B1F33]">
+                      <h2 className="mt-1 truncate text-xl font-extrabold tracking-tight text-[#1f2d25]">
                         {carName}
                       </h2>
                     </div>
@@ -156,17 +156,17 @@ export default function Cars({ cars, filteredCars }: CarsProps) {
 
                         const statusStyles: Record<string, string> = {
                           MAVJUD:
-                            "bg-emerald-50 text-emerald-700 ring-emerald-200",
-                          IJARADA: "bg-blue-50 text-blue-700 ring-blue-200",
+                            "bg-[#eaf6ef] text-[#00863e] ring-[#b9dfc6]",
+                          IJARADA: "bg-[#e7f3ff] text-[#1d6fb8] ring-[#b7d7f0]",
                           BRON_QILINGAN:
-                            "bg-orange-50 text-orange-700 ring-orange-200",
+                            "bg-[#fff4e5] text-[#c47a10] ring-[#f0d4a8]",
                         };
 
                         return (
                           <span
                             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold ring-1 ring-inset ${
                               statusStyles[car.status] ||
-                              "bg-slate-100 text-slate-600 ring-slate-200"
+                              "bg-[#eef2f0] text-[#5a675f] ring-[#d7ddd9]"
                             }`}
                           >
                             <span className="h-1.5 w-1.5 rounded-full bg-current" />
@@ -207,17 +207,17 @@ export default function Cars({ cars, filteredCars }: CarsProps) {
                   </div>
 
                   {/* Full address */}
-                  <div className="mt-4 flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-[#0B1F33] shadow-sm">
+                  <div className="mt-4 flex items-start gap-3 rounded-2xl border border-[#eef2f0] bg-[#f6faf7] p-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-[#00863e] shadow-sm">
                       <MapPin size={17} />
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#8d9892]">
                         Avtomobil manzili
                       </p>
 
-                      <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[#0B1F33]">
+                      <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-[#1f2d25]">
                         {[car.region, car.district, car.address]
                           .filter(Boolean)
                           .join(", ") || "Manzil ko‘rsatilmagan"}
@@ -274,11 +274,11 @@ export default function Cars({ cars, filteredCars }: CarsProps) {
                       )}
 
                       <div className="flex flex-wrap items-baseline gap-1.5">
-                        <span className="text-xl font-extrabold tracking-tight text-[#0B1F33]">
+                        <span className="text-xl font-extrabold tracking-tight text-[#00863e]">
                           {formatPrice(car.price)}
                         </span>
 
-                        <span className="text-[11px] font-medium text-slate-400">
+                        <span className="text-[11px] font-medium text-[#8d9892]">
                           so‘m / kun
                         </span>
                       </div>
@@ -289,7 +289,7 @@ export default function Cars({ cars, filteredCars }: CarsProps) {
                         type="button"
                         href={`tel:${car?.phone}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-[#0B1F33] px-4 py-3 text-xs font-bold text-white shadow-md shadow-[#0B1F33]/10 transition-all hover:bg-[#173b5c] hover:shadow-lg active:scale-95"
+                        className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#00863e] px-4 py-3 text-xs font-bold text-white shadow-[0_6px_14px_rgba(0,134,62,0.22)] transition-all hover:bg-[#006f35] hover:shadow-lg active:scale-95"
                       >
                         <Phone size={16} />
                         <span>Qo'ngiroq qilish</span>
@@ -302,16 +302,16 @@ export default function Cars({ cars, filteredCars }: CarsProps) {
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white px-6 py-20 text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50">
-            <CarFront size={30} className="text-slate-400" />
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-[#d7e8dd] bg-white px-6 py-20 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eaf6ef]">
+            <CarFront size={30} className="text-[#00863e]" />
           </div>
 
-          <h3 className="text-lg font-bold text-slate-900">
+          <h3 className="text-lg font-bold text-[#1f2d25]">
             Avtomobillar topilmadi
           </h3>
 
-          <p className="mt-2 max-w-sm text-sm text-slate-500">
+          <p className="mt-2 max-w-sm text-sm text-[#6d7a73]">
             Hozircha ushbu parametrlar bo‘yicha avtomobillar mavjud emas.
           </p>
         </div>

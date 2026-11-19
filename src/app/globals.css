@@ -11,6 +11,146 @@
   --muted: #6d7276;
   --line: #d9dde0;
   --paper: #f1f2f3;
+  --hero: url("/images/rent-home/hero.webp");
+  --hero-mobile: url("/images/rent-home/hero-mobile.webp");
+  --charge: url("/images/rent-home/charge.webp");
+  --sustain: url("/images/rent-home/sustain.webp");
+  --tail: url("/images/rent-home/tail.webp");
+  --nvx: url("/images/rent-home/nvx.webp");
+  --nvc: url("/images/rent-home/nvc.webp");
+  --nvs: url("/images/rent-home/nvs.webp");
+  --arjun: url("/images/rent-home/arjun.webp");
+  --priya: url("/images/rent-home/priya.webp");
+  --rohan: url("/images/rent-home/rohan.webp");
+}
+
+.rent-charger-art {
+  background: var(--charge) center / cover no-repeat;
+  mask-image: linear-gradient(90deg, transparent, #000 34%);
+}
+
+.rent-tail-art {
+  background: var(--tail) center / cover no-repeat;
+  mask-image: linear-gradient(90deg, transparent, #000 20%);
+}
+
+.rent-sustain-bg {
+  background: #142423 var(--sustain) center / cover no-repeat;
+}
+
+.rent-car-photo {
+  background: var(--vehicle-photo) center bottom 7px / min(100%, 264px) auto no-repeat;
+}
+
+.rent-car-nvx {
+  --vehicle-photo: var(--nvx);
+}
+
+.rent-car-nvc {
+  --vehicle-photo: var(--nvc);
+}
+
+.rent-car-nvs {
+  --vehicle-photo: var(--nvs);
+}
+
+.rent-avatar-arjun {
+  background: var(--arjun) center / cover no-repeat;
+}
+
+.rent-avatar-priya {
+  background: var(--priya) center / cover no-repeat;
+}
+
+.rent-avatar-rohan {
+  background: var(--rohan) center / cover no-repeat;
+}
+
+@media (min-width: 1025px) {
+  .rent-charger-art {
+    width: clamp(324px, 31.64vw, 490px);
+    height: auto;
+    aspect-ratio: 324 / 166;
+  }
+
+  .rent-tail-art {
+    width: clamp(245px, 24vw, 357px);
+  }
+
+  .rent-car-photo {
+    background-size: min(100%, clamp(264px, 25.7vw, 380px)) auto;
+  }
+}
+
+@media (min-width: 1521px) {
+  .rent-charger-art,
+  .rent-tail-art {
+    right: max(0px, calc((100% - 1520px) / 2));
+  }
+}
+
+@media (max-width: 860px) {
+  .rent-charger-art {
+    opacity: 0.23;
+  }
+
+  .rent-tail-art {
+    opacity: 0.2;
+  }
+
+  .rent-sustain-bg {
+    background-image: linear-gradient(#071a12a0, #071a128c), var(--sustain);
+  }
+}
+
+@media (max-width: 600px) {
+  .rent-tail-art {
+    opacity: 0.13;
+  }
+
+  .rent-car-photo {
+    background-position: center bottom 8px;
+  }
+}
+
+.rent-hero-art {
+  background: var(--hero) center top / max(100%, 1024px) 378px no-repeat;
+}
+
+@media (min-width: 1025px) {
+  .rent-hero-art {
+    height: clamp(378px, 36.9vw, 561px);
+    background-size: min(100%, 1520px) 100%;
+  }
+}
+
+@media (min-width: 1521px) {
+  .rent-hero-art {
+    mask: linear-gradient(
+        90deg,
+        transparent,
+        #000 90px,
+        #000 calc(100% - 90px),
+        transparent
+      )
+      center / 1520px 100% no-repeat;
+  }
+}
+
+@media (max-width: 860px) {
+  .rent-hero-art {
+    top: -64px;
+    background-size: auto 350px;
+  }
+}
+
+@media (max-width: 600px) {
+  .rent-hero-art {
+    top: 212px;
+    height: clamp(151px, 42vw, 250px);
+    background: var(--hero-mobile) center / 100% auto no-repeat;
+    mask-image: linear-gradient(transparent, #000 21%, #000 83%, transparent);
+  }
 }
 
 @theme inline {

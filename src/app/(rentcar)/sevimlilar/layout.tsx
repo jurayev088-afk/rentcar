@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: {children:ReactNode}) {
   return (
     <div>
-        <Navbar/>
-        <main className="mt-15">{children}</main>
-        <Footer/>
+        <Navbar home/>
+        <main className="">{children}</main>
+        <Footer home/>
     </div>
   )
 }

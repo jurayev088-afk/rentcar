@@ -1,9 +1,7 @@
 "use client";
 
-import api from "@/src/services/api";
 import {
   Button,
-  Card,
   DatePicker,
   Form,
   Input,
@@ -25,33 +23,27 @@ import {
 } from "@ant-design/icons";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import dayjs, { type Dayjs } from "dayjs";
+import { useState, type ReactNode } from "react";
+import dayjs from "dayjs";
 import { UseBookings } from "@/src/constants/UseCarsBron";
 import { BookingType } from "@/src/types";
-
-
 
 export default function BookingCar() {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const {isLoaded, addBron} = UseBookings()
-
-  const params = useParams<{ id: string }>();
+  const { isLoaded, addBron } = UseBookings();
   const router = useRouter();
-
   const startDate = Form.useWatch("startDate", form);
 
   const onFinish = async (values: BookingType) => {
     try {
-      addBron({...values, id:Date.now(), status:'PENDING'})
-
+      setLoading(true);
+      addBron({ ...values, id: Date.now(), status: "PENDING" });
       message.success("Bron so'rovingiz tayyor!");
-      form.resetFields()
-      setFileList([])
-
+      form.resetFields();
+      setFileList([]);
       router.push("/profile/renter/bronlarim");
     } catch (error: any) {
       console.error(error);
@@ -63,33 +55,44 @@ export default function BookingCar() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#F5F7FA] px-4 pb-16 pt-28">
-      <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="mb-3 flex items-center gap-2 text-sm text-slate-500">
-            <CarOutlined />
-            <span>Avto Bozor</span>
-            <span>/</span>
-            <span className="text-[#0B1F33]">Mashina bron qilish</span>
-          </div>
+  const sectionTitle = (
+    icon: ReactNode,
+    title: string,
+    description: string,
+  ): ReactNode => (
+    <div className="mb-6 flex items-center gap-3">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#eaf6ef] text-[#00863e]">
+        {icon}
+      </div>
+      <div>
+        <h2 className="font-semibold text-[#1f2d25]">{title}</h2>
+        <p className="text-xs text-[#8d9892]">{description}</p>
+      </div>
+    </div>
+  );
 
-          <h1 className="text-3xl font-bold text-[#0B1F33]">
+  return (
+    <div className="bg-[#f4f6f5] px-3 pb-16 pt-8 sm:px-5 sm:pt-10 lg:px-8">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.04)] sm:p-6">
+          <div className="mb-2 flex items-center gap-2 text-sm text-[#6d7a73]">
+            <CarOutlined className="text-[#00863e]" />
+            <span>RENTO</span>
+            <span>/</span>
+            <span className="font-medium text-[#1f2d25]">
+              Mashina bron qilish
+            </span>
+          </div>
+          <h1 className="text-3xl font-bold text-[#1f2d25]">
             Mashinani bron qilish
           </h1>
-
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-[#6d7a73]">
             Ma’lumotlaringizni kiriting va ijara muddatini belgilang.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-7 lg:grid-cols-[1fr_350px]">
-          {/* Form */}
-          <Card
-            className="!rounded-2xl !shadow-sm"
-            styles={{ body: { padding: 28 } }}
-          >
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_340px]">
+          <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] sm:p-7">
             <Form
               form={form}
               layout="vertical"
@@ -97,37 +100,22 @@ export default function BookingCar() {
               requiredMark={false}
               size="large"
             >
-              {/* Personal information */}
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#0B1F33]">
-                  <UserOutlined className="text-xl" />
-                </div>
-
-                <div>
-                  <h2 className="font-semibold text-[#0B1F33]">
-                    Shaxsiy ma’lumotlar
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    Siz bilan bog‘lanish uchun
-                  </p>
-                </div>
-              </div>
+              {sectionTitle(
+                <UserOutlined className="text-xl" />,
+                "Shaxsiy ma’lumotlar",
+                "Siz bilan bog‘lanish uchun",
+              )}
 
               <div className="grid grid-cols-1 gap-x-5 md:grid-cols-2">
                 <Form.Item
                   name="firstName"
                   label="Ismingiz"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Ismingizni kiriting",
-                    },
-                  ]}
+                  rules={[{ required: true, message: "Ismingizni kiriting" }]}
                 >
                   <Input
-                    prefix={<UserOutlined className="text-slate-400" />}
+                    prefix={<UserOutlined className="text-[#8d9892]" />}
                     placeholder="Abdulloh"
-                    className="!h-12"
+                    className="!h-12 !rounded-xl"
                   />
                 </Form.Item>
 
@@ -135,13 +123,10 @@ export default function BookingCar() {
                   name="lastName"
                   label="Familiyangiz"
                   rules={[
-                    {
-                      required: true,
-                      message: "Familiyangizni kiriting",
-                    },
+                    { required: true, message: "Familiyangizni kiriting" },
                   ]}
                 >
-                  <Input placeholder="Jo'rayev" className="!h-12" />
+                  <Input placeholder="Jo'rayev" className="!h-12 !rounded-xl" />
                 </Form.Item>
               </div>
 
@@ -160,27 +145,17 @@ export default function BookingCar() {
                 ]}
               >
                 <Input
-                  prefix={<PhoneOutlined className="text-slate-400" />}
+                  prefix={<PhoneOutlined className="text-[#8d9892]" />}
                   placeholder="+998901234567"
-                  className="!h-12"
+                  className="!h-12 !rounded-xl"
                 />
               </Form.Item>
 
-              {/* Passport information */}
-              <div className="mb-5 mt-2 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#0B1F33]">
-                  <IdcardOutlined className="text-xl" />
-                </div>
-
-                <div>
-                  <h2 className="font-semibold text-[#0B1F33]">
-                    Pasport ma’lumotlari
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    Shaxsingizni tasdiqlash uchun
-                  </p>
-                </div>
-              </div>
+              {sectionTitle(
+                <IdcardOutlined className="text-xl" />,
+                "Pasport ma’lumotlari",
+                "Shaxsingizni tasdiqlash uchun",
+              )}
 
               <div className="grid grid-cols-1 gap-x-5 md:grid-cols-2">
                 <Form.Item
@@ -201,7 +176,7 @@ export default function BookingCar() {
                   <Input
                     placeholder="AA1234567"
                     maxLength={9}
-                    className="!h-12"
+                    className="!h-12 !rounded-xl"
                   />
                 </Form.Item>
 
@@ -216,7 +191,7 @@ export default function BookingCar() {
                   ]}
                 >
                   <DatePicker
-                    className="!h-12 !w-full"
+                    className="!h-12 !w-full !rounded-xl"
                     format="DD.MM.YYYY"
                     placeholder="Kun / Oy / Yil"
                     disabledDate={(date) => date.isAfter(dayjs(), "day")}
@@ -224,38 +199,25 @@ export default function BookingCar() {
                 </Form.Item>
               </div>
 
-              <div className="my-5 border-t border-slate-100" />
+              <div className="my-5 border-t border-[#eef2f0]" />
 
-              {/* Rental dates */}
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#0B1F33]">
-                  <CalendarOutlined className="text-xl" />
-                </div>
-
-                <div>
-                  <h2 className="font-semibold text-[#0B1F33]">
-                    Ijara muddati
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    Olish va qaytarish sanasini tanlang
-                  </p>
-                </div>
-              </div>
+              {sectionTitle(
+                <CalendarOutlined className="text-xl" />,
+                "Ijara muddati",
+                "Olish va qaytarish sanasini tanlang",
+              )}
 
               <div className="grid grid-cols-1 gap-x-5 md:grid-cols-2">
                 <Form.Item
                   name="startDate"
                   label="Olish sanasi"
                   rules={[
-                    {
-                      required: true,
-                      message: "Olish sanasini tanlang",
-                    },
+                    { required: true, message: "Olish sanasini tanlang" },
                   ]}
                 >
                   <DatePicker
                     showTime
-                    className="!h-12 !w-full"
+                    className="!h-12 !w-full !rounded-xl"
                     format="DD.MM.YYYY HH:mm"
                     placeholder="Boshlanish sanasi"
                     disabledDate={(date) =>
@@ -275,14 +237,8 @@ export default function BookingCar() {
                     },
                     {
                       validator: (_, value) => {
-                        if (!value || !startDate) {
-                          return Promise.resolve();
-                        }
-
-                        if (value.isAfter(startDate)) {
-                          return Promise.resolve();
-                        }
-
+                        if (!value || !startDate) return Promise.resolve();
+                        if (value.isAfter(startDate)) return Promise.resolve();
                         return Promise.reject(
                           new Error(
                             "Qaytarish sanasi olish sanasidan keyin bo‘lishi kerak",
@@ -294,7 +250,7 @@ export default function BookingCar() {
                 >
                   <DatePicker
                     showTime
-                    className="!h-12 !w-full"
+                    className="!h-12 !w-full !rounded-xl"
                     format="DD.MM.YYYY HH:mm"
                     placeholder="Tugash sanasi"
                     disabled={!startDate}
@@ -305,22 +261,11 @@ export default function BookingCar() {
                 </Form.Item>
               </div>
 
-              {/* Driving license */}
-
-              <div className="mb-6 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#0B1F33]">
-                  <SolutionOutlined className="text-xl" />
-                </div>
-
-                <div>
-                  <h2 className="font-semibold text-[#0B1F33]">
-                    Haydovchilik guvohnomasi
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    Guvohnomangiz rasmini yuklang
-                  </p>
-                </div>
-              </div>
+              {sectionTitle(
+                <SolutionOutlined className="text-xl" />,
+                "Haydovchilik guvohnomasi",
+                "Guvohnomangiz rasmini yuklang",
+              )}
 
               <Form.Item
                 name="pravaImg"
@@ -333,7 +278,6 @@ export default function BookingCar() {
                           new Error("Guvohnoma rasmini yuklang"),
                         );
                       }
-
                       return Promise.resolve();
                     },
                   },
@@ -345,37 +289,35 @@ export default function BookingCar() {
                   maxCount={1}
                   fileList={fileList}
                   beforeUpload={() => false}
-                  onChange={({ fileList }) => {
-                    const newFileList = fileList.slice(-1);
+                  onChange={({ fileList: next }) => {
+                    const newFileList = next.slice(-1);
                     setFileList(newFileList);
                     form.setFieldValue("pravaImg", newFileList);
                   }}
                 >
                   {fileList.length < 1 && (
                     <div className="flex flex-col items-center gap-2">
-                      <CloudUploadOutlined className="text-2xl text-[#0B1F33]" />
+                      <CloudUploadOutlined className="text-2xl text-[#00863e]" />
                       <span className="text-xs font-medium">Rasm yuklash</span>
                     </div>
                   )}
                 </Upload>
               </Form.Item>
 
-              {/* Comment */}
               <Form.Item name="comment" label="Qo‘shimcha izoh (ixtiyoriy)">
                 <Input.TextArea
                   rows={3}
                   placeholder="Qo‘shimcha talablaringiz bo‘lsa yozing..."
                   maxLength={500}
                   showCount
+                  className="!rounded-xl"
                 />
               </Form.Item>
 
-              {/* Information */}
-              <div className="mt-4 rounded-xl bg-blue-50 p-4">
+              <div className="mt-4 rounded-2xl border border-[#c6e5d1] bg-[#eff8f2] p-4">
                 <div className="flex gap-3">
-                  <CheckCircleOutlined className="mt-1 text-[#0B1F33]" />
-
-                  <p className="text-sm leading-6 text-slate-600">
+                  <CheckCircleOutlined className="mt-1 text-[#00863e]" />
+                  <p className="text-sm leading-6 text-[#2f6b49]">
                     Bron so‘rovingiz mashina egasiga yuboriladi. Egasi
                     tasdiqlaganidan keyin bron holatini profilingizda
                     ko‘rishingiz mumkin.
@@ -383,73 +325,58 @@ export default function BookingCar() {
                 </div>
               </div>
 
-              {/* Submit */}
               <Button
                 htmlType="submit"
                 type="primary"
                 block
-                className="!mt-6 !h-13 !rounded-xl !bg-[#0B1F33] !font-semibold hover:!bg-[#173957]"
+                loading={loading}
+                className="!mt-6 !h-12 !rounded-full !border-0 !bg-[#00863e] !font-bold !shadow-[0_8px_18px_rgba(0,134,62,0.22)] hover:!bg-[#006f35]"
               >
-                {
-                  !isLoaded ? <Spin/> : "Bron qilish"
-                }
+                {!isLoaded ? <Spin /> : "Bron qilish"}
               </Button>
             </Form>
-          </Card>
+          </div>
 
-          {/* Right sidebar */}
-          <div className="space-y-5">
-            <Card
-              className="!rounded-2xl !shadow-sm"
-              styles={{ body: { padding: 24 } }}
-            >
+          <div className="space-y-5 lg:sticky lg:top-24">
+            <div className="rounded-3xl border border-[#e5e9e7] bg-white p-6 shadow-[0_8px_24px_rgba(16,37,26,0.03)]">
               <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0B1F33] text-white">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#00863e] text-white">
                   <CarOutlined className="text-xl" />
                 </div>
-
                 <div>
-                  <h3 className="font-semibold text-[#0B1F33]">Bron haqida</h3>
-                  <p className="text-xs text-slate-400">Muhim ma’lumotlar</p>
+                  <h3 className="font-semibold text-[#1f2d25]">Bron haqida</h3>
+                  <p className="text-xs text-[#8d9892]">Muhim ma’lumotlar</p>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <div>
-                  <p className="text-sm font-medium text-slate-700">
-                    1. Bron so‘rovi
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-slate-400">
-                    Ma’lumotlaringiz mashina egasiga yuboriladi.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-slate-700">
-                    2. Egasi tasdiqlaydi
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-slate-400">
-                    Mashina egasi malumotlaringnizni tasdiqlaganda sizga telefon qiladi
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-slate-700">
-                    3. Bron holatini kuzating
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-slate-400">
-                    Barcha bronlaringiz profilingizda saqlanadi.
-                  </p>
-                </div>
+                {[
+                  [
+                    "1. Bron so‘rovi",
+                    "Ma’lumotlaringiz mashina egasiga yuboriladi.",
+                  ],
+                  [
+                    "2. Egasi tasdiqlaydi",
+                    "Mashina egasi ma’lumotlaringizni tasdiqlaganda sizga telefon qiladi.",
+                  ],
+                  [
+                    "3. Bron holatini kuzating",
+                    "Barcha bronlaringiz profilingizda saqlanadi.",
+                  ],
+                ].map(([title, desc]) => (
+                  <div key={title}>
+                    <p className="text-sm font-medium text-[#1f2d25]">{title}</p>
+                    <p className="mt-1 text-xs leading-5 text-[#6d7a73]">
+                      {desc}
+                    </p>
+                  </div>
+                ))}
               </div>
-            </Card>
+            </div>
 
-            <div className="rounded-2xl bg-[#0B1F33] p-6 mt-3 text-white">
-              <h3 className="text-lg font-semibold">
-                Ishonchli va qulay ijara
-              </h3>
-
-              <p className="mt-2 text-sm leading-6 text-slate-300">
+            <div className="rounded-3xl bg-[linear-gradient(145deg,#0f2a1c,#165a36_55%,#00863e)] p-6 text-white shadow-[0_14px_32px_rgba(0,134,62,0.18)]">
+              <h3 className="text-lg font-semibold">Ishonchli va qulay ijara</h3>
+              <p className="mt-2 text-sm leading-6 text-white/75">
                 Bron qilishdan oldin sanalarni va shaxsiy ma’lumotlaringizni
                 tekshirib chiqing.
               </p>

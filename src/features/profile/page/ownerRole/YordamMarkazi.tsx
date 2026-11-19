@@ -1,14 +1,7 @@
-
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Input,
-  Collapse,
-  Empty,
-  Button,
-  Tag,
-} from "antd";
+import { Input, Collapse, Empty, Button, Tag } from "antd";
 import {
   SearchOutlined,
   CarOutlined,
@@ -20,8 +13,6 @@ import {
   CustomerServiceOutlined,
   MessageOutlined,
   FileTextOutlined,
-  RightOutlined,
-  PhoneOutlined,
   MailOutlined,
   ClockCircleOutlined,
 } from "@ant-design/icons";
@@ -118,7 +109,8 @@ const faqs = [
   },
   {
     category: "payments",
-    question: "To‘lov amalga oshirilgan, lekin kabinetda ko‘rinmayapti. Nima qilaman?",
+    question:
+      "To‘lov amalga oshirilgan, lekin kabinetda ko‘rinmayapti. Nima qilaman?",
     answer:
       "Tranzaksiya holatini va to‘lov chekini tekshiring. To‘lov vaqti, summa va tranzaksiya identifikatorini saqlab qo‘ying. Muammo davom etsa, ushbu ma’lumotlar bilan qo‘llab-quvvatlash xizmatiga murojaat qiling.",
   },
@@ -187,196 +179,188 @@ export default function YordamMarkazi() {
   }, [activeCategory, search]);
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] px-4 py-8 md:px-8">
-      <div className="mx-auto max-w-[1250px]">
-        {/* Header */}
-        <div className="mb-8">
+    <div className="space-y-6">
+      <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.04)] sm:p-6">
+        <p className="text-[11px] font-bold uppercase tracking-[1.4px] text-[#00863e]">
+          Egasi kabineti
+        </p>
+        <h1 className="mt-1 text-2xl font-bold text-[#1f2d25] md:text-3xl">
+          Yordam markazi
+        </h1>
+        <p className="mt-2 text-sm text-[#6d7a73] md:text-base">
+          Kompaniyangiz avtomobillarini boshqarish va ijara faoliyatingiz
+          bo‘yicha savollaringizga javob toping.
+        </p>
+      </div>
 
-          <h1 className="text-2xl font-bold text-[#0B1F33] md:text-3xl">
-            Yordam markazi
-          </h1>
+      <div className="relative overflow-hidden rounded-3xl bg-[linear-gradient(145deg,#0f2a1c,#165a36_52%,#00863e)] px-6 py-9 text-white shadow-[0_14px_32px_rgba(0,134,62,0.18)] md:px-10 md:py-12">
+        <div className="relative z-10 max-w-[650px]">
+          <span className="mb-4 inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-[#b7f0c8]">
+            Kompaniyalar uchun yordam
+          </span>
 
-          <p className="mt-2 text-sm text-gray-500 md:text-base">
-            Kompaniyangiz avtomobillarini boshqarish va ijara faoliyatingiz
-            bo‘yicha savollaringizga javob toping.
-          </p>
-        </div>
-
-        {/* Hero */}
-        <div className="relative mb-8 overflow-hidden rounded-[24px] bg-[#0B1F33] px-6 py-9 text-white md:px-10 md:py-12">
-          <div className="relative z-10 max-w-[650px]">
-            <Tag color="blue" className="mb-4 border-0">
-              Kompaniyalar uchun yordam
-            </Tag>
-
-            <h2 className="text-2xl font-bold leading-tight md:text-4xl">
-              Biznesingizni boshqarish yanada oson!
-            </h2>
-
-            <p className="mt-4 max-w-[550px] text-sm leading-6 text-white/70 md:text-base">
-              Avtomobil e’lonlari, bronlar, mijozlar va to‘lovlar bilan bog‘liq
-              savollarga javoblarni shu yerdan topishingiz mumkin.
-            </p>
-
-            <div className="mt-7 max-w-[500px]">
-              <Input
-                size="large"
-                prefix={<SearchOutlined className="text-gray-400" />}
-                placeholder="Savolingizni yozing..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="h-12 rounded-xl"
-              />
-            </div>
-          </div>
-
-          <div className="pointer-events-none absolute -right-10 -top-20 hidden h-80 w-80 rounded-full border-[45px] border-white/[0.04] md:block" />
-          <div className="pointer-events-none absolute -bottom-32 right-24 hidden h-72 w-72 rounded-full border-[35px] border-white/[0.04] md:block" />
-          <CarOutlined className="pointer-events-none absolute bottom-8 right-12 hidden text-[150px] text-white/[0.06] md:block" />
-        </div>
-
-        {/* Categories */}
-        <div className="mb-8">
-          <h2 className="mb-4 text-lg font-bold text-[#0B1F33]">
-            Yordam mavzulari
+          <h2 className="text-2xl font-bold leading-tight md:text-4xl">
+            Biznesingizni boshqarish yanada oson!
           </h2>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {categories.map((category) => {
-              const active = activeCategory === category.key;
-
-              return (
-                <button
-                  key={category.key}
-                  onClick={() => setActiveCategory(category.key)}
-                  className={`flex min-h-[75px] cursor-pointer items-center gap-3 rounded-2xl border p-4 text-left transition-all ${
-                    active
-                      ? "border-[#0B1F33] bg-[#0B1F33] text-white shadow-md"
-                      : "border-gray-100 bg-white text-[#0B1F33] hover:border-gray-300 hover:shadow-sm"
-                  }`}
-                >
-                  <span className="text-xl">{category.icon}</span>
-                  <span className="text-sm font-semibold">
-                    {category.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* FAQ */}
-        <div className="mb-8 rounded-[22px] border border-gray-100 bg-white p-5 shadow-sm md:p-7">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-bold text-[#0B1F33]">
-                Ko‘p beriladigan savollar
-              </h2>
-              <p className="mt-1 text-sm text-gray-400">
-                Kerakli savolni tanlab, batafsil javobni o‘qing.
-              </p>
-            </div>
-
-            <Tag color="blue">{filteredFaqs.length} ta savol</Tag>
-          </div>
-
-          {filteredFaqs.length > 0 ? (
-            <Collapse
-              ghost
-              expandIconPlacement="end"
-              items={filteredFaqs.map((item, index) => ({
-                key: `${item.category}-${index}`,
-                label: (
-                  <span className="pr-3 text-sm font-semibold text-[#0B1F33] md:text-base">
-                    {item.question}
-                  </span>
-                ),
-                children: (
-                  <p className="text-sm leading-7 text-gray-500">
-                    {item.answer}
-                  </p>
-                ),
-              }))}
-            />
-          ) : (
-            <Empty
-              description="Savol topilmadi. Boshqa so‘z bilan qidirib ko‘ring."
-              className="py-8"
-            />
-          )}
-        </div>
-
-        {/* Support */}
-        <div className="grid gap-5 lg:grid-cols-2">
-          <div className="rounded-[22px] bg-white p-6 shadow-sm">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-xl text-[#0B1F33]">
-              <CustomerServiceOutlined />
-            </div>
-
-            <h3 className="text-lg font-bold text-[#0B1F33]">
-              Savolingizga javob topmadingizmi?
-            </h3>
-
-            <p className="mt-2 text-sm leading-6 text-gray-500">
-              Qo‘llab-quvvatlash jamoamizga murojaat qiling. Muammo yoki
-              savolingizni batafsil tushuntiring.
-            </p>
-
-            <div className="mt-5 flex flex-wrap gap-3">
-              <Button
-                type="primary"
-                icon={<MessageOutlined />}
-                className="h-11 rounded-xl bg-[#0B1F33] px-5"
-                onClick={() => {
-                  window.location.href = "mailto:jurayev088@icloud.com";
-                }}
-              >
-                Xabar yuborish
-              </Button>
-            </div>
-          </div>
-
-          <div className="rounded-[22px] bg-white p-6 shadow-sm">
-            <h3 className="mb-5 text-lg font-bold text-[#0B1F33]">
-              Aloqa ma’lumotlari
-            </h3>
-
-            <div className="space-y-5">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#0B1F33]">
-                  <MailOutlined />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400">Elektron pochta</p>
-                  <p className="text-sm font-semibold text-[#0B1F33]">
-                    jurayev088@icloud.com
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#0B1F33]">
-                  <ClockCircleOutlined />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400">Ish vaqti</p>
-                  <p className="text-sm font-semibold text-[#0B1F33]">
-                    Dushanba – Shanba, 09:00 – 18:00
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Bottom note */}
-        <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4">
-          <p className="text-sm leading-6 text-blue-900">
-            <strong>Eslatma:</strong> Avtomobilni mijozga topshirishdan oldin
-            uning hujjatlarini tekshiring, avtomobil holatini qayd eting va
-            ijara shartlarini kelishib oling.
+          <p className="mt-4 max-w-[550px] text-sm leading-6 text-white/75 md:text-base">
+            Avtomobil e’lonlari, bronlar, mijozlar va to‘lovlar bilan bog‘liq
+            savollarga javoblarni shu yerdan topishingiz mumkin.
           </p>
+
+          <div className="mt-7 max-w-[500px]">
+            <Input
+              size="large"
+              prefix={<SearchOutlined className="text-[#8d9892]" />}
+              placeholder="Savolingizni yozing..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="!h-12 !rounded-full !border-0 !shadow-[0_8px_20px_rgba(16,37,26,0.12)]"
+            />
+          </div>
         </div>
+
+        <div className="pointer-events-none absolute -right-10 -top-20 hidden h-80 w-80 rounded-full border-[45px] border-white/[0.06] md:block" />
+        <div className="pointer-events-none absolute -bottom-32 right-24 hidden h-72 w-72 rounded-full border-[35px] border-white/[0.06] md:block" />
+        <CarOutlined className="pointer-events-none absolute bottom-8 right-12 hidden text-[150px] text-white/[0.08] md:block" />
+      </div>
+
+      <div>
+        <h2 className="mb-4 text-lg font-bold text-[#1f2d25]">
+          Yordam mavzulari
+        </h2>
+
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {categories.map((category) => {
+            const active = activeCategory === category.key;
+
+            return (
+              <button
+                key={category.key}
+                type="button"
+                onClick={() => setActiveCategory(category.key)}
+                className={`flex min-h-[75px] cursor-pointer items-center gap-3 rounded-2xl border p-4 text-left transition-all ${
+                  active
+                    ? "border-[#00863e] bg-[#00863e] text-white shadow-[0_8px_18px_rgba(0,134,62,0.22)]"
+                    : "border-[#e5e9e7] bg-white text-[#1f2d25] hover:border-[#b9dfc6] hover:bg-[#f6faf7]"
+                }`}
+              >
+                <span className="text-xl">{category.icon}</span>
+                <span className="text-sm font-semibold">{category.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] md:p-7">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold text-[#1f2d25]">
+              Ko‘p beriladigan savollar
+            </h2>
+            <p className="mt-1 text-sm text-[#8d9892]">
+              Kerakli savolni tanlab, batafsil javobni o‘qing.
+            </p>
+          </div>
+
+          <Tag className="!m-0 !rounded-full !border-0 !bg-[#eaf6ef] !px-3 !py-1 !text-[#00863e]">
+            {filteredFaqs.length} ta savol
+          </Tag>
+        </div>
+
+        {filteredFaqs.length > 0 ? (
+          <Collapse
+            ghost
+            expandIconPlacement="end"
+            items={filteredFaqs.map((item, index) => ({
+              key: `${item.category}-${index}`,
+              label: (
+                <span className="pr-3 text-sm font-semibold text-[#1f2d25] md:text-base">
+                  {item.question}
+                </span>
+              ),
+              children: (
+                <p className="text-sm leading-7 text-[#6d7a73]">{item.answer}</p>
+              ),
+            }))}
+          />
+        ) : (
+          <Empty
+            description="Savol topilmadi. Boshqa so‘z bilan qidirib ko‘ring."
+            className="py-8"
+          />
+        )}
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="rounded-3xl border border-[#e5e9e7] bg-white p-6 shadow-[0_8px_24px_rgba(16,37,26,0.03)]">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[#eaf6ef] text-xl text-[#00863e]">
+            <CustomerServiceOutlined />
+          </div>
+
+          <h3 className="text-lg font-bold text-[#1f2d25]">
+            Savolingizga javob topmadingizmi?
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-[#6d7a73]">
+            Qo‘llab-quvvatlash jamoamizga murojaat qiling. Muammo yoki
+            savolingizni batafsil tushuntiring.
+          </p>
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Button
+              type="primary"
+              icon={<MessageOutlined />}
+              className="!h-11 !rounded-full !border-0 !bg-[#00863e] !px-5 hover:!bg-[#006f35]"
+              onClick={() => {
+                window.location.href = "mailto:jurayev088@icloud.com";
+              }}
+            >
+              Xabar yuborish
+            </Button>
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-[#e5e9e7] bg-white p-6 shadow-[0_8px_24px_rgba(16,37,26,0.03)]">
+          <h3 className="mb-5 text-lg font-bold text-[#1f2d25]">
+            Aloqa ma’lumotlari
+          </h3>
+
+          <div className="space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf6ef] text-[#00863e]">
+                <MailOutlined />
+              </div>
+              <div>
+                <p className="text-xs text-[#8d9892]">Elektron pochta</p>
+                <p className="text-sm font-semibold text-[#1f2d25]">
+                  jurayev088@icloud.com
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf6ef] text-[#00863e]">
+                <ClockCircleOutlined />
+              </div>
+              <div>
+                <p className="text-xs text-[#8d9892]">Ish vaqti</p>
+                <p className="text-sm font-semibold text-[#1f2d25]">
+                  Dushanba – Shanba, 09:00 – 18:00
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-[#c6e5d1] bg-[#eff8f2] p-4">
+        <p className="text-sm leading-6 text-[#2f6b49]">
+          <strong>Eslatma:</strong> Avtomobilni mijozga topshirishdan oldin uning
+          hujjatlarini tekshiring, avtomobil holatini qayd eting va ijara
+          shartlarini kelishib oling.
+        </p>
       </div>
     </div>
   );

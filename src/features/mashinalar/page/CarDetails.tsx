@@ -5,6 +5,9 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { UseAllCars } from "@/src/constants/UseAllCars";
+import { useUser } from "@/src/constants/UseMeContext";
+import { bookingPath } from "@/src/features/login/authDestination";
+import BookingAuthDialog from "../components/BookingAuthDialog";
 import {
   ArrowLeft,
   ArrowRight,
@@ -32,6 +35,7 @@ import { Button, Tag } from "antd";
 export default function CarDetails() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { user, loading: authLoading } = useUser();
 
   const { allCars } = UseAllCars();
 
@@ -41,6 +45,12 @@ export default function CarDetails() {
 
   const [activeImage, setActiveImage] = useState(0);
   const [lightbox, setLightbox] = useState(false);
+  const [bookingPrompt, setBookingPrompt] = useState(false);
+
+  function openBooking() {
+    if (user) router.push(bookingPath(id));
+    else setBookingPrompt(true);
+  }
 
   // Images
   const images = (
@@ -151,7 +161,7 @@ export default function CarDetails() {
       <div className="flex min-h-[70vh] flex-col items-center justify-center gap-4">
         <CarFront size={65} className="text-gray-300" />
 
-        <h2 className="text-2xl font-bold text-[#0B1F33]">
+        <h2 className="text-2xl font-bold text-[#1f2d25]">
           Avtomobil topilmadi
         </h2>
 
@@ -162,7 +172,7 @@ export default function CarDetails() {
         <Button
           type="primary"
           onClick={() => router.back()}
-          className="!bg-[#0B1F33]"
+          className="!bg-[#00863e]"
         >
           Orqaga qaytish
         </Button>
@@ -225,7 +235,7 @@ export default function CarDetails() {
     categoryLabels[car.category] || car.category;
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] px-4 py-8 md:px-7">
+    <div className="min-h-screen bg-[#f4f6f5] px-4 py-8 md:px-7">
 
       <div className="mx-auto max-w-[1250px] mt-10">
 
@@ -242,7 +252,7 @@ export default function CarDetails() {
                 <Tag color="success">Ijara e'loni</Tag>
               </div>
 
-              <h1 className="text-2xl font-bold text-[#0B1F33] md:text-3xl">
+              <h1 className="text-2xl font-bold text-[#1f2d25] md:text-3xl">
                 {brand} {car.model}
               </h1>
 
@@ -263,7 +273,7 @@ export default function CarDetails() {
           <div className="space-y-6 lg:col-span-2">
 
             {/* IMAGE GALLERY */}
-            <div className="overflow-hidden rounded-2xl bg-white p-3 shadow-sm sm:p-4">
+            <div className="overflow-hidden rounded-3xl border border-[#e5e9e7] bg-white p-3 shadow-[0_8px_24px_rgba(16,37,26,0.03)] sm:p-4">
 
               <div className="group relative h-[260px] overflow-hidden rounded-xl bg-[#F0F2F5] sm:h-[400px] lg:h-[450px]">
 
@@ -297,7 +307,7 @@ export default function CarDetails() {
                       <>
                         <button
                           onClick={prevImage}
-                          className="absolute cursor-pointer left-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#0B1F33] shadow-lg transition hover:bg-[#0B1F33] hover:text-white"
+                          className="absolute cursor-pointer left-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#00863e] shadow-lg transition hover:bg-[#00863e] hover:text-white"
                         >
                           <ArrowLeft size={20} />
                         </button>
@@ -305,7 +315,7 @@ export default function CarDetails() {
                         {/* Next */}
                         <button
                           onClick={nextImage}
-                          className="absolute cursor-pointer right-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#0B1F33] shadow-lg transition hover:bg-[#0B1F33] hover:text-white"
+                          className="absolute cursor-pointer right-4 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#00863e] shadow-lg transition hover:bg-[#00863e] hover:text-white"
                         >
                           <ArrowRight size={20} />
                         </button>
@@ -331,7 +341,7 @@ export default function CarDetails() {
                       onClick={() => setActiveImage(index)}
                       className={`relative h-[75px] w-[110px] shrink-0 overflow-hidden rounded-lg border-2 transition sm:h-[90px] sm:w-[130px] ${
                         activeImage === index
-                          ? "border-[#0B1F33]"
+                          ? "border-[#00863e] shadow-[0_0_0_2px_rgba(0,134,62,0.15)]"
                           : "border-transparent opacity-60 hover:opacity-100"
                       }`}
                     >
@@ -354,10 +364,10 @@ export default function CarDetails() {
             </div>
 
             {/* TECHNICAL FEATURES */}
-            <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+            <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] sm:p-6">
 
               <div className="mb-6">
-                <h2 className="text-xl font-bold text-[#0B1F33]">
+                <h2 className="text-xl font-bold text-[#1f2d25]">
                   Texnik xususiyatlari
                 </h2>
                 <p className="mt-1 text-sm text-gray-400">
@@ -372,17 +382,17 @@ export default function CarDetails() {
                   return (
                     <div
                       key={item.title}
-                      className="rounded-xl border border-gray-100 bg-[#FAFBFC] p-4 transition hover:border-gray-300 hover:bg-white"
+                      className="rounded-xl border border-[#eef2f0] bg-[#f8fbf9] p-4 transition hover:border-[#b9dfc6] hover:bg-white"
                     >
-                      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#EAF0F5] text-[#0B1F33]">
+                      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-[#eaf6ef] text-[#00863e]">
                         <Icon size={20} />
                       </div>
 
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-[#8d9892]">
                         {item.title}
                       </p>
 
-                      <p className="mt-1 break-words text-sm font-bold text-[#0B1F33]">
+                      <p className="mt-1 break-words text-sm font-bold text-[#1f2d25]">
                         {item.value || "Ko'rsatilmagan"}
                       </p>
                     </div>
@@ -392,8 +402,8 @@ export default function CarDetails() {
             </div>
 
             {/* DESCRIPTION */}
-            <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
-              <h2 className="text-xl font-bold text-[#0B1F33]">
+            <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] sm:p-6">
+              <h2 className="text-xl font-bold text-[#1f2d25]">
                 Avtomobil haqida
               </h2>
 
@@ -403,24 +413,24 @@ export default function CarDetails() {
             </div>
 
             {/* RENTAL RULES */}
-            <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+            <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] sm:p-6">
 
               <div className="mb-5 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EAF0F5] text-[#0B1F33]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf6ef] text-[#00863e]">
                   <ShieldCheck size={22} />
                 </div>
 
                 <div>
-                  <h2 className="font-bold text-[#0B1F33]">
+                  <h2 className="font-bold text-[#1f2d25]">
                     Ijara qoidalari
                   </h2>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-[#8d9892]">
                     Avtomobildan foydalanish shartlari
                   </p>
                 </div>
               </div>
 
-              <p className="whitespace-pre-wrap rounded-xl bg-[#F7F8FA] p-4 text-sm leading-7 text-gray-600">
+              <p className="whitespace-pre-wrap rounded-xl bg-[#f6faf7] p-4 text-sm leading-7 text-[#6d7a73]">
                 {car.rules || "Maxsus qoidalar kiritilmagan"}
               </p>
 
@@ -448,15 +458,17 @@ export default function CarDetails() {
           {/* RIGHT SIDE */}
           <div className="lg:sticky lg:top-6">
 
-            <div className="rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+            <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] sm:p-6">
 
-              <Tag color="success">Ijara e'loni</Tag>
+              <span className="inline-flex rounded-full bg-[#eaf6ef] px-3 py-1 text-xs font-semibold text-[#00863e]">
+                Ijara e&apos;loni
+              </span>
 
-              <p className="mt-5 text-sm text-gray-400">
+              <p className="mt-5 text-sm text-[#6d7a73]">
                 Bir kunlik ijara narxi
               </p>
 
-              <h2 className="mt-1 text-3xl font-bold text-[#0B1F33]">
+              <h2 className="mt-1 text-3xl font-bold text-[#00863e]">
                 {formatPrice(car.price)}
               </h2>
 
@@ -479,8 +491,8 @@ export default function CarDetails() {
               <div className="my-6 border-t border-gray-100" />
 
               {/* RENTAL INFO */}
-              <h3 className="mb-5 font-bold text-[#0B1F33]">
-                Ijara ma'lumotlari
+              <h3 className="mb-5 font-bold text-[#1f2d25]">
+                Ijara ma&apos;lumotlari
               </h3>
 
               <div className="space-y-5">
@@ -493,59 +505,59 @@ export default function CarDetails() {
                     </span>
                   </div>
 
-                  <b className="text-sm text-[#0B1F33]">
+                  <b className="text-sm text-[#1f2d25]">
                     {car.minDays} kun
                   </b>
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <Wallet size={19} className="text-gray-400" />
-                    <span className="text-sm text-gray-500">
+                    <Wallet size={19} className="text-[#00863e]" />
+                    <span className="text-sm text-[#6d7a73]">
                       Depozit
                     </span>
                   </div>
 
-                  <b className="text-sm text-[#0B1F33]">
+                  <b className="text-sm text-[#1f2d25]">
                     {formatPrice(car.deposit)}
                   </b>
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <Hash size={19} className="text-gray-400" />
-                    <span className="text-sm text-gray-500">
+                    <Hash size={19} className="text-[#00863e]" />
+                    <span className="text-sm text-[#6d7a73]">
                       Davlat raqami
                     </span>
                   </div>
 
-                  <b className="text-sm text-[#0B1F33]">
+                  <b className="text-sm text-[#1f2d25]">
                     {car.number}
                   </b>
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <MapPin size={19} className="text-gray-400" />
-                    <span className="text-sm text-gray-500">
+                    <MapPin size={19} className="text-[#00863e]" />
+                    <span className="text-sm text-[#6d7a73]">
                       Hudud
                     </span>
                   </div>
 
-                  <b className="max-w-[150px] text-right text-sm text-[#0B1F33]">
+                  <b className="max-w-[150px] text-right text-sm text-[#1f2d25]">
                     {car.district}
                   </b>
                 </div>
 
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <FileText size={19} className="text-gray-400" />
-                    <span className="text-sm text-gray-500">
+                    <FileText size={19} className="text-[#00863e]" />
+                    <span className="text-sm text-[#6d7a73]">
                       Manzil
                     </span>
                   </div>
 
-                  <b className="max-w-[150px] text-right text-sm text-[#0B1F33]">
+                  <b className="max-w-[150px] text-right text-sm text-[#1f2d25]">
                     {car.address}
                   </b>
                 </div>
@@ -555,17 +567,17 @@ export default function CarDetails() {
               <div className="my-6 border-t border-gray-100" />
 
               {/* CAR OWNER / BRAND */}
-              <h3 className="mb-4 font-bold text-[#0B1F33]">
-                Avtomobil ma'lumotlari
+              <h3 className="mb-4 font-bold text-[#1f2d25]">
+                Avtomobil ma&apos;lumotlari
               </h3>
 
-              <div className="flex items-center gap-3 rounded-xl bg-[#F6F8FA] p-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E5ECF2] text-[#0B1F33]">
+              <div className="flex items-center gap-3 rounded-xl bg-[#f6faf7] p-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#eaf6ef] text-[#00863e]">
                   <CarFront size={25} />
                 </div>
 
                 <div>
-                  <p className="font-bold text-[#0B1F33]">
+                  <p className="font-bold text-[#1f2d25]">
                     {brand} {car.model}
                   </p>
                   <p className="mt-1 text-xs text-gray-400">
@@ -579,8 +591,9 @@ export default function CarDetails() {
                 type="primary"
                 size="large"
                 block
-                onClick={() => router.push(`/cars/${id}/bron`)}
-                className="!mt-6 !h-12 !rounded-xl !bg-[#0B1F33] !font-semibold hover:!bg-[#183C5C]"
+                onClick={openBooking}
+                disabled={authLoading}
+                className="!mt-6 !h-12 !rounded-full !bg-[#00863e] !font-semibold !shadow-[0_8px_18px_rgba(0,134,62,0.22)] hover:!bg-[#006f35]"
               >
                 Mashinani bron qilish
               </Button>
@@ -595,6 +608,8 @@ export default function CarDetails() {
           </div>
         </div>
       </div>
+
+      <BookingAuthDialog carId={id} open={bookingPrompt} onCancel={() => setBookingPrompt(false)} />
 
       {/* FULLSCREEN LIGHTBOX */}
       {lightbox && images.length > 0 && (

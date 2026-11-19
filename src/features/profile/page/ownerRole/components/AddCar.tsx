@@ -66,18 +66,18 @@ function SectionTitle({
 }) {
   return (
     <div className="mb-7 flex items-center gap-4">
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0B1F33] text-xl text-white shadow-lg shadow-blue-950/10">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#00863e] text-xl text-white shadow-[0_8px_18px_rgba(0,134,62,0.22)]">
         {icon}
       </div>
 
       <div>
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-bold text-[#0B1F33]">{title}</h2>
-          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500">
+          <h2 className="text-lg font-bold text-[#1f2d25]">{title}</h2>
+          <span className="rounded-md bg-[#eaf6ef] px-2 py-0.5 text-xs font-semibold text-[#00863e]">
             {number}
           </span>
         </div>
-        <p className="mt-1 text-sm text-slate-500">{description}</p>
+        <p className="mt-1 text-sm text-[#6d7a73]">{description}</p>
       </div>
     </div>
   );
@@ -85,7 +85,7 @@ function SectionTitle({
 
 function FormCard({ children }: { children: ReactNode }) {
   return (
-    <div className="mb-5 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition hover:shadow-md md:p-7">
+    <div className="mb-5 rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] transition hover:shadow-[0_12px_28px_rgba(16,37,26,0.07)] md:p-7">
       {children}
     </div>
   );
@@ -184,9 +184,9 @@ export default function AddCar() {
   // Edit ma'lumotlari yuklanayotgan payt
   if (isEdit && !isLoaded) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F4F6F9]">
-        <p className="text-lg font-semibold text-[#0B1F33]">
-          Ma'lumotlar yuklanmoqda...
+      <div className="flex min-h-[40vh] items-center justify-center">
+        <p className="text-lg font-semibold text-[#00863e]">
+          Ma&apos;lumotlar yuklanmoqda...
         </p>
       </div>
     );
@@ -194,8 +194,8 @@ export default function AddCar() {
 
   if (isEdit && !editingCar) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#F4F6F9]">
-        <p className="text-lg font-semibold text-slate-500">
+      <div className="flex min-h-[40vh] items-center justify-center">
+        <p className="text-lg font-semibold text-[#6d7a73]">
           Mashina topilmadi
         </p>
       </div>
@@ -203,29 +203,27 @@ export default function AddCar() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4F6F9] pb-20">
-      {/* HERO */}
-      <div className="relative overflow-hidden bg-[#0B1F33] px-5 py-14 md:py-16">
-        <div className="absolute -right-20 -top-32 h-96 w-96 rounded-full bg-blue-500/10 blur-3xl" />
-        <div className="absolute -bottom-40 left-1/3 h-80 w-80 rounded-full bg-cyan-500/10 blur-3xl" />
+    <div className="space-y-6 pb-10">
+      <div className="relative overflow-hidden rounded-3xl bg-[linear-gradient(145deg,#0f2a1c,#165a36_52%,#00863e)] px-5 py-10 text-white shadow-[0_14px_32px_rgba(0,134,62,0.18)] md:px-8 md:py-12">
+        <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+        <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-[#7dff9d]/10 blur-3xl" />
 
-        <div className="relative mx-auto max-w-[1200px]">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-blue-200">
+        <div className="relative">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-[#b7f0c8]">
             <CarOutlined />
-            Avto Bozor / {isEdit ? "E'lonni tahrirlash" : "Ijara"}
+            RENTO / {isEdit ? "E'lonni tahrirlash" : "Ijara"}
           </div>
 
-          <div className="mt-7 max-w-2xl">
-            <h1 className="text-3xl font-bold leading-tight text-white md:text-5xl">
+          <div className="mt-6 max-w-2xl">
+            <h1 className="text-3xl font-bold leading-tight md:text-4xl">
               {pageTitle}
             </h1>
-
-            <p className="mt-5 text-sm leading-7 text-slate-300 md:text-base">
+            <p className="mt-4 text-sm leading-7 text-white/75 md:text-base">
               {pageDescription}
             </p>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-7 flex flex-wrap gap-3">
             {(isEdit
               ? [
                   "Ma'lumotlarni yangilash",
@@ -236,9 +234,9 @@ export default function AddCar() {
             ).map((item) => (
               <span
                 key={item}
-                className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-slate-200"
+                className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs text-white/90"
               >
-                <CheckCircleOutlined className="text-green-400" />
+                <CheckCircleOutlined className="text-[#7dff9d]" />
                 {item}
               </span>
             ))}
@@ -246,15 +244,16 @@ export default function AddCar() {
         </div>
       </div>
 
-      {/* MAIN */}
-      <div className="mx-auto mt-6 max-w-[1200px] px-4">
-        {/* FORM HEADER */}
-        <div className="mb-6 rounded-2xl border border-slate-100 bg-white p-5 shadow-md md:p-7">
-          <h2 className="text-xl font-bold text-[#0B1F33]">
+      <div>
+        <div className="mb-6 rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.04)] md:p-7">
+          <p className="text-[11px] font-bold uppercase tracking-[1.4px] text-[#00863e]">
+            Egasi kabineti
+          </p>
+          <h2 className="mt-1 text-xl font-bold text-[#1f2d25]">
             {isEdit ? "E'lon ma'lumotlarini tahrirlash" : "Yangi ijara e'loni"}
           </h2>
 
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-[#6d7a73]">
             {isEdit
               ? "Kerakli maydonlarni o'zgartiring va o'zgarishlarni saqlang."
               : "E'loningiz qanchalik batafsil bo'lsa, mijozlar uni shunchalik oson topishadi."}
@@ -269,12 +268,12 @@ export default function AddCar() {
             ].map(([num, title]) => (
               <div
                 key={num}
-                className="flex items-center gap-3 rounded-xl bg-slate-50 p-3"
+                className="flex items-center gap-3 rounded-2xl bg-[#f6faf7] p-3"
               >
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0B1F33] text-xs font-bold text-white">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#00863e] text-xs font-bold text-white">
                   {num}
                 </span>
-                <span className="text-xs font-semibold text-slate-700 md:text-sm">
+                <span className="text-xs font-semibold text-[#3f4b44] md:text-sm">
                   {title}
                 </span>
               </div>
@@ -600,12 +599,12 @@ export default function AddCar() {
                   </Form.Item>
                 </div>
 
-                <div className="mb-6 flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-4">
+                <div className="mb-6 flex items-center justify-between rounded-2xl border border-[#e5e9e7] bg-[#f6faf7] p-4">
                   <div>
-                    <p className="font-semibold text-[#0B1F33]">
+                    <p className="font-semibold text-[#1f2d25]">
                       Garov talab qilinadi
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-[#6d7a73]">
                       Ijaraga oluvchidan qaytariladigan kafolat puli.
                     </p>
                   </div>
@@ -641,16 +640,16 @@ export default function AddCar() {
                   description="Mashinangizni turli tomondan suratga olib yuklang."
                 />
 
-                <div className="mb-5 rounded-xl border border-blue-100 bg-blue-50 p-4">
+                <div className="mb-5 rounded-2xl border border-[#c6e5d1] bg-[#eff8f2] p-4">
                   <div className="flex gap-3">
-                    <InfoCircleOutlined className="mt-0.5 text-blue-600" />
+                    <InfoCircleOutlined className="mt-0.5 text-[#00863e]" />
 
                     <div>
-                      <p className="text-sm font-semibold text-blue-900">
-                        Sifatli rasmlar ko'proq mijoz jalb qiladi
+                      <p className="text-sm font-semibold text-[#1f2d25]">
+                        Sifatli rasmlar ko&apos;proq mijoz jalb qiladi
                       </p>
 
-                      <p className="mt-1 text-xs leading-5 text-blue-700">
+                      <p className="mt-1 text-xs leading-5 text-[#2f6b49]">
                         Oldi, orqasi, yon tomoni va salon rasmlarini yuklashni
                         tavsiya qilamiz. Maksimal 10 ta rasm.
                       </p>
@@ -681,7 +680,7 @@ export default function AddCar() {
                   >
                     {fileList.length < 10 && (
                       <div className="flex flex-col items-center gap-2">
-                        <CloudUploadOutlined className="text-2xl text-[#0B1F33]" />
+                        <CloudUploadOutlined className="text-2xl text-[#00863e]" />
                         <span className="text-xs font-medium">
                           Rasm yuklash
                         </span>
@@ -711,7 +710,7 @@ export default function AddCar() {
               </FormCard>
 
               {/* AGREEMENT */}
-              <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 md:p-7">
+              <div className="mb-5 rounded-3xl border border-[#e5e9e7] bg-white p-5 md:p-7">
                 <Form.Item
                   name="agreement"
                   valuePropName="checked"
@@ -728,35 +727,33 @@ export default function AddCar() {
                   ]}
                 >
                   <Checkbox>
-                    Kiritilgan ma'lumotlar to'g'riligini tasdiqlayman va ijara
-                    shartlariga roziman.
+                    Kiritilgan ma&apos;lumotlar to&apos;g&apos;riligini
+                    tasdiqlayman va ijara shartlariga roziman.
                   </Checkbox>
                 </Form.Item>
               </div>
 
-              {/* SUBMIT */}
               <Button
                 htmlType="submit"
                 type="primary"
                 size="large"
                 block
-                className="!h-14 !rounded-xl !bg-[#0B1F33] !text-base !font-semibold shadow-lg shadow-blue-950/10 hover:!bg-[#173b5d]"
+                className="!h-14 !rounded-full !border-0 !bg-[#00863e] !text-base !font-semibold !shadow-[0_8px_18px_rgba(0,134,62,0.22)] hover:!bg-[#006f35]"
               >
                 <CarOutlined />
                 {isEdit ? "O'zgarishlarni saqlash" : "E'lonni joylashtirish"}
               </Button>
 
-              <p className="mt-4 text-center text-xs text-slate-400">
+              <p className="mt-4 text-center text-xs text-[#8d9892]">
                 {isEdit
                   ? "O'zgarishlar saqlangandan so'ng e'loningiz yangilangan ma'lumotlar bilan ko'rinadi."
                   : "E'lon joylashtirilgandan so'ng uni profilingizdan boshqarishingiz mumkin."}
               </p>
             </div>
 
-            {/* RIGHT SIDEBAR */}
             <div className="lg:sticky lg:top-24">
-              <div className="rounded-2xl bg-[#0B1F33] p-6 text-white shadow-xl">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-2xl">
+              <div className="rounded-3xl bg-[linear-gradient(145deg,#0f2a1c,#165a36_55%,#00863e)] p-6 text-white shadow-[0_14px_32px_rgba(0,134,62,0.18)]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/15 text-2xl">
                   <SafetyCertificateOutlined />
                 </div>
 
@@ -766,7 +763,7 @@ export default function AddCar() {
                     : "Ishonchli e'lon yarating"}
                 </h3>
 
-                <p className="mt-2 text-sm leading-6 text-slate-300">
+                <p className="mt-2 text-sm leading-6 text-white/75">
                   {isEdit
                     ? "Ma'lumotlarni to'g'ri va dolzarb saqlang. Bu mijozlarning sizga bo'lgan ishonchini oshiradi."
                     : "Barcha ma'lumotlarni to'g'ri kiriting. Bu mijozlarning sizga ishonchini oshiradi."}
@@ -790,32 +787,31 @@ export default function AddCar() {
                     ["04", "To'g'ri manzil", "Hudud va tumanni ko'rsating"],
                   ].map(([num, title, desc]) => (
                     <div key={num} className="flex gap-3">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/10 text-xs font-bold text-blue-300">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/15 text-xs font-bold text-[#b7f0c8]">
                         {num}
                       </span>
 
                       <div>
                         <p className="text-sm font-semibold">{title}</p>
-                        <p className="mt-1 text-xs text-slate-400">{desc}</p>
+                        <p className="mt-1 text-xs text-white/65">{desc}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* PROFILE INFO */}
-              <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="mt-5 rounded-3xl border border-[#e5e9e7] bg-white p-5">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 text-lg text-green-600">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf6ef] text-lg text-[#00863e]">
                     <CheckCircleOutlined />
                   </div>
 
                   <div>
-                    <p className="font-bold text-[#0B1F33]">
+                    <p className="font-bold text-[#1f2d25]">
                       {isEdit ? "E'lonni boshqarish" : "Profilingiz orqali"}
                     </p>
 
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-[#6d7a73]">
                       {isEdit
                         ? "Ma'lumotlarni yangilash"
                         : "E'lonlarni boshqarish"}
@@ -823,7 +819,7 @@ export default function AddCar() {
                   </div>
                 </div>
 
-                <p className="mt-4 text-sm leading-6 text-slate-500">
+                <p className="mt-4 text-sm leading-6 text-[#6d7a73]">
                   {isEdit
                     ? "E'loningizni tahrirlashingiz, rasmlarini yangilashingiz va ijara shartlarini o'zgartirishingiz mumkin."
                     : "E'lon joylashtirilgach, bronlar, ijaraga oluvchilar, sanalar va daromadlaringiz Profile bo'limida ko'rinadi."}
