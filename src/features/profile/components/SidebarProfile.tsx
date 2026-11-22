@@ -82,7 +82,7 @@ export default function SidebarProfile() {
                   setOpen(false);
                   logOut();
                 }}
-                className="mt-2 flex items-center gap-3 rounded-2xl border border-transparent px-3.5 py-3 text-[13px] font-semibold text-[#8b4b4b] transition hover:border-red-100 hover:bg-red-50 hover:text-red-600"
+                className="mt-2 flex items-center gap-3 rounded-2xl border border-transparent px-2! py-1.5! text-[15px] font-medium text-[#8b4b4b] transition hover:border-red-100 hover:bg-red-50 hover:text-red-600"
               >
                 <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-red-500">
                   <Icon size={18} />
@@ -97,7 +97,7 @@ export default function SidebarProfile() {
               key={item.href}
               href={item.href}
               onClick={() => setOpen(false)}
-              className={`flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[13px] font-semibold transition ${
+              className={`flex items-center gap-3 rounded-2xl px-2 py-1.5 text-[15px] font-medium transition ${
                 active
                   ? "bg-[#eaf6ef] text-[#00863e] shadow-[inset_0_0_0_1px_rgba(0,134,62,0.12)]"
                   : "text-[#3f4b44] hover:bg-[#f3f6f4] hover:text-[#00863e]"

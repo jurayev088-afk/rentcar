@@ -143,9 +143,6 @@ export default function Cars({ cars, filteredCars }: CarsProps) {
                         {car.category}
                       </p>
 
-                      <h2 className="mt-1 truncate text-xl font-extrabold tracking-tight text-[#1f2d25]">
-                        {carName}
-                      </h2>
                     </div>
 
                     <div className="flex shrink-0 items-end gap-2">
@@ -205,6 +202,11 @@ export default function Cars({ cars, filteredCars }: CarsProps) {
                       </div>
                     </div>
                   </div>
+
+                  
+                      <h2 className="mt-1  text-lg font-extrabold tracking-tight text-[#1f2d25]">
+                        {carName}
+                      </h2>
 
                   {/* Full address */}
                   <div className="mt-4 flex items-start gap-3 rounded-2xl border border-[#eef2f0] bg-[#f6faf7] p-3">
