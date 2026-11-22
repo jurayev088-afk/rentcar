@@ -1,4 +1,5 @@
-'use client'
+"use client";
+
 import {
   createContext,
   ReactNode,
@@ -9,9 +10,10 @@ import {
 import { BookingType } from "../types";
 
 interface BookingContextType {
-  bookings: BookingType[];
-  setBookings: React.Dispatch<React.SetStateAction<BookingType[]>>;
-  addBooking: (booking: BookingType) => void;
+  carBron: BookingType[];
+  setCarBron: React.Dispatch<React.SetStateAction<BookingType[]>>;
+  addBron: (booking: BookingType) => void;
+  isLoaded: boolean;
 }
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
@@ -19,6 +21,7 @@ const BookingContext = createContext<BookingContextType | undefined>(undefined);
 export default function UseCarsBron({ children }: { children: ReactNode }) {
   const [carBron, setCarBron] = useState<BookingType[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+
   useEffect(() => {
     try {
       const saved = localStorage.getItem("carBron");
@@ -41,6 +44,7 @@ export default function UseCarsBron({ children }: { children: ReactNode }) {
   const addBron = (values: BookingType) => {
     setCarBron((prev) => [...prev, values]);
   };
+
   return (
     <BookingContext.Provider value={{ carBron, setCarBron, addBron, isLoaded }}>
       {children}

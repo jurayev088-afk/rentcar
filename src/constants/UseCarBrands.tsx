@@ -7,13 +7,16 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Car } from "../types";
-import { useUser } from "./UseMeContext";
-import { useRouter } from "next/navigation";
 
 export interface CarBrandType {
   label: string;
   value: string;
+}
+
+interface CarBrandsContextType {
+  carBrands: CarBrandType[];
+  setCarBrands?: React.Dispatch<React.SetStateAction<CarBrandType[]>>;
+  isLoaded?: boolean;
 }
 
 const carBrand: CarBrandType[] = [
@@ -63,7 +66,9 @@ const carBrand: CarBrandType[] = [
   { label: "Ravon", value: "RAVON" },
 ];
 
-export const CarBrandsContext = createContext<null | CarBrandType[]>(carBrand);
+export const CarBrandsContext = createContext<CarBrandsContextType>({
+  carBrands: carBrand,
+});
 
 export default function UseCarBrands({ children }: { children: ReactNode }) {
   const [carBrands, setCarBrands] = useState<CarBrandType[]>(carBrand);
@@ -90,7 +95,7 @@ export default function UseCarBrands({ children }: { children: ReactNode }) {
   }, [carBrands, isLoaded]);
 
   return (
-    <CarBrandsContext.Provider value={{ carBrands }}>
+    <CarBrandsContext.Provider value={{ carBrands, setCarBrands, isLoaded }}>
       {children}
     </CarBrandsContext.Provider>
   );
@@ -100,7 +105,7 @@ export const UseCarBrand = () => {
   const context = useContext(CarBrandsContext);
 
   if (!context) {
-    throw new Error("UseWishlistContext Provider ichida ishlatilishi kerak");
+    throw new Error("UseCarBrand Provider ichida ishlatilishi kerak");
   }
 
   return context;

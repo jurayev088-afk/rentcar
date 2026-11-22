@@ -46,7 +46,8 @@ export default function Malumotlar() {
   };
 
   // Asosiy ma'lumotlarni saqlash
-  const handleSubmit = (values: any) => {
+  const handleSubmit = (values: Record<string, string>) => {
+    if (!user) return;
     setUser({
       ...user,
       ...values,
@@ -65,15 +66,17 @@ export default function Malumotlar() {
   };
 
   // Parolni o'zgartirish
-  const handlePasswordSubmit = (values: any) => {
-    const { newPassword, confirmPassword } = values;
+  const handlePasswordSubmit = (values: {
+    newPassword: string;
+    confirmPassword: string;
+  }) => {
+    if (!user) return;
+    const { newPassword } = values;
 
     setUser({
       ...user,
       password: newPassword,
     });
-
-    console.log("Yangi parol:", newPassword);
 
     message.success("Parol muvaffaqiyatli o'zgartirildi!");
 

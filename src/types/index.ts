@@ -110,7 +110,7 @@ import type { Dayjs } from "dayjs";
 import type { UploadFile } from "antd";
 
 export type BookingType = {
-  id:string,
+  id: string | number;
   birthDate: Dayjs;
   comment: string;
   endDate: Dayjs;
@@ -123,7 +123,6 @@ export type BookingType = {
   status: "PENDING" | "CONFIRMED" | "REJECTED";
 };
 
-
 export enum CarRenterStatus {
   Kutilmoqda = "Kutilmoqda",
   Tasdiqlangan = "Tasdiqlangan",
@@ -131,4 +130,16 @@ export enum CarRenterStatus {
   Yakunlangan = "Yakunlangan",
   BekorQilingan = "Bekor qilingan",
   RadEtilgan = "Rad etilgan",
+}
+
+/** Ijarachi kabinetidagi bronlar ro‘yxati (jadval mock/API) */
+export interface Booking {
+  id: string;
+  car: string;
+  startDate: string;
+  endDate: string;
+  price: string;
+  status: CarRenterStatus;
+  phone: string;
+  image: string;
 }

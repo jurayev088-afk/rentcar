@@ -12,10 +12,12 @@ import { Car } from "../types";
 interface AllCarsContextType {
   allCars: Car[];
   setAllCars: React.Dispatch<React.SetStateAction<Car[]>>;
+  removeCar: (id: string) => void;
+  isLoaded: boolean;
 }
 
 export const AllCarsContext = createContext<AllCarsContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export default function UseAllCarsContext({
@@ -25,7 +27,6 @@ export default function UseAllCarsContext({
 }) {
   const [allCars, setAllCars] = useState<Car[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
-  console.log(allCars);
 
   useEffect(() => {
     try {
@@ -47,18 +48,17 @@ export default function UseAllCarsContext({
     localStorage.setItem("allCars", JSON.stringify(allCars));
   }, [allCars, isLoaded]);
 
-  const removeCar = (id:string) => {
-    const cars = JSON.parse(localStorage.getItem("allCars") || "[]")
-
-    const updatedCars = cars.filter((car:Car) => car?.id !== id)
-
-    setAllCars(updatedCars)
-
-    localStorage.setItem("allCars", JSON.stringify(updatedCars))
-  }
+  const removeCar = (id: string) => {
+    const cars = JSON.parse(localStorage.getItem("allCars") || "[]") as Car[];
+    const updatedCars = cars.filter((car) => car?.id !== id);
+    setAllCars(updatedCars);
+    localStorage.setItem("allCars", JSON.stringify(updatedCars));
+  };
 
   return (
-    <AllCarsContext.Provider value={{ allCars, setAllCars, removeCar, isLoaded }}>
+    <AllCarsContext.Provider
+      value={{ allCars, setAllCars, removeCar, isLoaded }}
+    >
       {children}
     </AllCarsContext.Provider>
   );
@@ -68,9 +68,7 @@ export const UseAllCars = () => {
   const context = useContext(AllCarsContext);
 
   if (!context) {
-    throw new Error(
-      "UseAllCarsContext Provider ichida ishlatilishi kerak"
-    );
+    throw new Error("UseAllCarsContext Provider ichida ishlatilishi kerak");
   }
 
   return context;

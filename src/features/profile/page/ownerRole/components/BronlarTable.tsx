@@ -8,39 +8,23 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-
-interface Booking {
-  id: number;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  passportNumber: string;
-  birthDate: string;
-  startDate: string;
-  endDate: string;
-  comment: string;
-  status: "PENDING" | "CONFIRMED" | "REJECTED";
-  pravaImg: {
-    uid: string;
-    name: string;
-    thumbUrl?: string;
-    url?: string;
-    type?: string;
-  }[];
-}
+import type { BookingType } from "@/src/types";
 
 export default function BronlarTable() {
   const { carBron, setCarBron, isLoaded } = UseBookings();
 
-  const updateStatus = (id: number, status: Booking["status"]) => {
-    setCarBron((prev: Booking[]) =>
+  const updateStatus = (
+    id: string | number,
+    status: BookingType["status"],
+  ) => {
+    setCarBron((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status } : item)),
     );
   };
 
-  const formatDate = (date: string) => {
+  const formatDate = (date: string | Date | { toString(): string }) => {
     if (!date) return "-";
-    const d = new Date(date);
+    const d = new Date(date as string);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   };
 
@@ -56,7 +40,7 @@ export default function BronlarTable() {
     REJECTED: "Rad etilgan",
   } as const;
 
-  const columns: ColumnsType<Booking> = [
+  const columns: ColumnsType<BookingType> = [
     {
       title: "Mijoz",
       key: "customer",
@@ -160,7 +144,7 @@ export default function BronlarTable() {
       render: (images) => (
         <Space>
           {images?.length > 0 ? (
-            images.map((file: Booking["pravaImg"][number]) => (
+            images.map((file: BookingType["pravaImg"][number]) => (
               <Image
                 key={file.uid}
                 src={file.thumbUrl || file.url}
@@ -183,7 +167,7 @@ export default function BronlarTable() {
       key: "status",
       width: 140,
       fixed: "right",
-      render: (status: Booking["status"]) => (
+      render: (status: BookingType["status"]) => (
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${
             statusStyles[status] || "bg-[#eef2f0] text-[#5a675f] ring-[#d7ddd9]"
@@ -275,21 +259,21 @@ export default function BronlarTable() {
           <div className="rounded-2xl border border-[#f0d4a8] bg-[#fff4e5] px-4 py-3">
             <p className="text-xs text-[#c47a10]">Kutilmoqda</p>
             <p className="mt-1 text-xl font-bold text-[#c47a10]">
-              {carBron.filter((x: Booking) => x.status === "PENDING").length}
+              {carBron.filter((x) => x.status === "PENDING").length}
             </p>
           </div>
 
           <div className="rounded-2xl border border-[#b9dfc6] bg-[#eaf6ef] px-4 py-3">
             <p className="text-xs text-[#00863e]">Tasdiqlangan</p>
             <p className="mt-1 text-xl font-bold text-[#00863e]">
-              {carBron.filter((x: Booking) => x.status === "CONFIRMED").length}
+              {carBron.filter((x) => x.status === "CONFIRMED").length}
             </p>
           </div>
         </div>
       </div>
 
       <div className="overflow-hidden rounded-3xl border border-[#e5e9e7] bg-white shadow-[0_8px_24px_rgba(16,37,26,0.03)]">
-        <Table<Booking>
+        <Table<BookingType>
           columns={columns}
           dataSource={carBron}
           rowKey="id"

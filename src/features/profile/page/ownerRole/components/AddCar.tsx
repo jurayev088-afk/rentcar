@@ -554,7 +554,9 @@ export default function AddCar() {
                           ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, " ")
                           : ""
                       }
-                      parser={(value) => Number(value?.replace(/\s/g, "") || 0)}
+                      parser={(value) =>
+                        Number(value?.replace(/\s/g, "") || 0) as unknown as 1000
+                      }
                     />
                   </Form.Item>
 
@@ -569,7 +571,9 @@ export default function AddCar() {
                           ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, " ")
                           : ""
                       }
-                      parser={(value) => Number(value?.replace(/\s/g, "") || 0)}
+                      parser={(value) =>
+                        Number(value?.replace(/\s/g, "") || 0) as unknown as 1000
+                      }
                     />
                   </Form.Item>
 
@@ -585,7 +589,9 @@ export default function AddCar() {
                           ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, " ")
                           : ""
                       }
-                      parser={(value) => Number(value?.replace(/\s/g, "") || 0)}
+                      parser={(value) =>
+                        Number(value?.replace(/\s/g, "") || 0) as unknown as 0
+                      }
                     />
                   </Form.Item>
 

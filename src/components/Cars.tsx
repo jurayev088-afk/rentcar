@@ -42,19 +42,16 @@ export default function Cars({ cars, filteredCars }: CarsProps) {
 
     if (!location) return sourceCars;
 
-    return sourceCars.filter(
-      (car) => {
-        const searchLocation = location?.toLowerCase().trim();
+    const searchLocation = location.toLowerCase().trim();
 
-        return (
-          car?.region?.toLowerCase()?.includes(searchLocation) ||
-          car?.district?.toLowerCase()?.includes(searchLocation) ||
-          car?.address?.toLowerCase()?.includes(searchLocation)
-        );
-      },
-      [filteredCars, cars, location],
-    );
-  });
+    return sourceCars.filter((car) => {
+      return (
+        car?.region?.toLowerCase()?.includes(searchLocation) ||
+        car?.district?.toLowerCase()?.includes(searchLocation) ||
+        car?.address?.toLowerCase()?.includes(searchLocation)
+      );
+    });
+  }, [filteredCars, cars, location]);
 
   const formatPrice = (price: Car["price"]) => {
     const number = Number(String(price).replace(/\D/g, ""));

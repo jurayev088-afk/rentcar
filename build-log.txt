@@ -1,0 +1,60 @@
+﻿node.exe : npm warn Unknown env config "devdir". This will stop working in the next major version of npm.
+строка:1 знак:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\User\AppData\Roaming\n ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (npm warn Unknow...version of npm.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+> rentcar-sayt@0.1.0 build
+> next build
+
+тЦ▓ Next.js 16.4.6 (Turbopack)
+тЬУ Running next.config.ts took 28ms
+- Experiments (use with caution):
+  тЬУ agentFeedback
+
+  Creating an optimized production build ...
+тЬУ Compiled successfully in 1579ms
+  Running TypeScript ...
+  Finished TypeScript in 2.7s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/23) ...
+  Generating static pages using 11 workers (5/23) 
+null
+  Generating static pages using 11 workers (11/23) 
+  Generating static pages using 11 workers (17/23) 
+тЬУ Generating static pages using 11 workers (23/23) in 1381ms
+  Finalizing page optimization ...
+
+Route (app)
+тФМ тЧЛ /
+тФЬ тЧЛ /_not-found
+тФЬ тЧЛ /about
+тФЬ тЧЛ /cars
+тФЬ ╞Т /cars/[id]
+тФЬ ╞Т /cars/[id]/bron
+тФЬ ╞Т /login
+тФЬ тЧЛ /profile/owner/bronlar
+тФЬ тЧЛ /profile/owner/malumotlar
+тФЬ тЧЛ /profile/owner/moshinalarim
+тФЬ ╞Т /profile/owner/moshinalarim/[id]
+тФЬ тЧЛ /profile/owner/moshinalarim/qoshish
+тФЬ ╞Т /profile/owner/moshinalarim/qoshish/[id]
+тФЬ тЧЛ /profile/owner/profile
+тФЬ тЧЛ /profile/owner/sozlamalar
+тФЬ тЧЛ /profile/owner/xabarlar
+тФЬ тЧЛ /profile/owner/yordam-markazi
+тФЬ тЧЛ /profile/renter/bronlarim
+тФЬ тЧЛ /profile/renter/malumotlar
+тФЬ тЧЛ /profile/renter/profile
+тФЬ тЧЛ /profile/renter/sozlamalar
+тФЬ тЧЛ /profile/renter/xabarlar
+тФЬ тЧЛ /profile/renter/yordam-markazi
+тФЬ ╞Т /register
+тФФ тЧЛ /sevimlilar
+
+
+тЧЛ  (Static)   prerendered as static content
+╞Т  (Dynamic)  server-rendered on demand
+
