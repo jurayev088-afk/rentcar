@@ -1,13 +1,19 @@
 "use client";
 
-import { UseAllCars } from "@/src/constants/UseAllCars";
-import { Car, carStatus } from "@/src/types";
-import { ColumnsType } from "antd/es/table";
+import { useMemo } from "react";
 import { Table, Image } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import { useMyCars } from "@/src/hooks/use-my-cars";
+import { mapApiCarToUi } from "@/src/lib/map-car";
+import { Car, carStatus } from "@/src/types";
 import CarActions from "./CarActions";
 
 export default function CarsTable() {
-  const { allCars } = UseAllCars();
+  const { data, isLoading, isError } = useMyCars({ limit: 50 });
+  const cars = useMemo(
+    () => (data?.items ?? []).map(mapApiCarToUi),
+    [data?.items],
+  );
 
   const columns: ColumnsType<Car> = [
     {
@@ -18,7 +24,7 @@ export default function CarsTable() {
       render: (images) =>
         images?.[0] ? (
           <Image
-            src={images[0].thumbUrl}
+            src={images[0].thumbUrl || images[0].url}
             alt="Car"
             width={75}
             height={55}
@@ -84,8 +90,10 @@ export default function CarsTable() {
       render: (status: string) => {
         const statusStyles: Record<string, string> = {
           MAVJUD: "bg-[#eaf6ef] text-[#00863e] ring-[#b9dfc6]",
+          PENDING: "bg-[#fff8e8] text-[#b8860b] ring-[#f0d9a0]",
           IJARADA: "bg-[#e7f3ff] text-[#1d6fb8] ring-[#b7d7f0]",
           BRON_QILINGAN: "bg-[#fff4e5] text-[#c47a10] ring-[#f0d4a8]",
+          INACTIVE: "bg-[#eef2f0] text-[#5a675f] ring-[#d7ddd9]",
         };
 
         const statusLabel =
@@ -115,9 +123,15 @@ export default function CarsTable() {
 
   return (
     <div className="overflow-hidden rounded-3xl border border-[#e5e9e7] bg-white shadow-[0_8px_24px_rgba(16,37,26,0.03)]">
+      {isError && (
+        <p className="px-4 pt-4 text-sm text-red-600">
+          Mashinalarni yuklashda xatolik. COMPANY akkaunt bilan kiring.
+        </p>
+      )}
       <Table<Car>
         columns={columns}
-        dataSource={allCars || []}
+        dataSource={cars}
+        loading={isLoading}
         rowKey="id"
         pagination={{
           pageSize: 10,

@@ -1,20 +1,30 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   CarFront,
   CalendarCheck,
   Wallet,
   Clock,
   TrendingUp,
-  TrendingDown,
   ArrowUpRight,
   ChevronRight,
   CheckCircle2,
   Users,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@/src/constants/UseMeContext";
-
+import { useMyCars } from "@/src/hooks/use-my-cars";
+import { useCompanyBookings } from "@/src/hooks/use-bookings";
+import { useMyCompany } from "@/src/hooks/use-my-company";
+import { carPrimaryImage } from "@/src/lib/media";
+import {
+  bookingStatusLabel,
+  formatDateShort,
+  formatMoney,
+  monthBucketsFromBookings,
+} from "@/src/lib/format";
 import {
   Area,
   AreaChart,
@@ -24,125 +34,79 @@ import {
   XAxis,
 } from "recharts";
 
-const statistics = [
-  {
-    title: "Jami mashinalar",
-    value: "24",
-    change: "+12.5%",
-    description: "O'tgan oyga nisbatan",
-    icon: CarFront,
-    positive: true,
-    tone: "bg-[#eaf6ef] text-[#00863e]",
-  },
-  {
-    title: "Faol bronlar",
-    value: "12",
-    change: "+8.2%",
-    description: "O'tgan oyga nisbatan",
-    icon: CalendarCheck,
-    positive: true,
-    tone: "bg-[#e7f3ff] text-[#1d6fb8]",
-  },
-  {
-    title: "Jami daromad",
-    value: "45.8 mln",
-    change: "+18.4%",
-    description: "O'tgan oyga nisbatan",
-    icon: Wallet,
-    positive: true,
-    tone: "bg-[#f1eefc] text-[#6b4fd3]",
-  },
-  {
-    title: "Kutilayotgan bronlar",
-    value: "5",
-    change: "-2.4%",
-    description: "O'tgan oyga nisbatan",
-    icon: Clock,
-    positive: false,
-    tone: "bg-[#fff4e5] text-[#c47a10]",
-  },
-];
-
-const chartData = [
-  { month: "Yan", income: 12 },
-  { month: "Fev", income: 18 },
-  { month: "Mar", income: 15 },
-  { month: "Apr", income: 25 },
-  { month: "May", income: 21 },
-  { month: "Iyun", income: 22 },
-  { month: "Iyul", income: 8 },
-  { month: "Avg", income: 38 },
-  { month: "Sen", income: 33 },
-  { month: "Okt", income: 45 },
-  { month: "Noy", income: 41 },
-  { month: "Dek", income: 10 },
-];
-
-const bookings = [
-  {
-    id: "#BR-1024",
-    name: "Abdulloh Jo'rayev",
-    car: "BYD Song Plus",
-    date: "15.11.2026",
-    amount: "850 000 so'm",
-    status: "Tasdiqlangan",
-  },
-  {
-    id: "#BR-1023",
-    name: "Azizbek Karimov",
-    car: "Chevrolet Malibu 2",
-    date: "14.11.2026",
-    amount: "650 000 so'm",
-    status: "Kutilmoqda",
-  },
-  {
-    id: "#BR-1022",
-    name: "Javohir Aliyev",
-    car: "Kia K5",
-    date: "13.11.2026",
-    amount: "750 000 so'm",
-    status: "Tasdiqlangan",
-  },
-  {
-    id: "#BR-1021",
-    name: "Sardor Rahimov",
-    car: "Hyundai Sonata",
-    date: "12.11.2026",
-    amount: "900 000 so'm",
-    status: "Bekor qilingan",
-  },
-];
-
-const popularCars = [
-  {
-    name: "BYD Song Plus",
-    category: "Hybrid · 2024",
-    bookings: 18,
-    income: "12.5 mln",
-    image:
-      "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?w=200",
-  },
-  {
-    name: "Chevrolet Malibu 2",
-    category: "Sedan · 2023",
-    bookings: 14,
-    income: "9.2 mln",
-    image:
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=200",
-  },
-  {
-    name: "Kia K5",
-    category: "Sedan · 2024",
-    bookings: 11,
-    income: "7.8 mln",
-    image:
-      "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=200",
-  },
-];
-
 export default function ProfileOwner() {
   const { user } = useUser();
   const firstName = user?.fullName?.trim()?.split(" ")[0] || "egasi";
+  const carsQuery = useMyCars({ limit: 50 });
+  const bookingsQuery = useCompanyBookings();
+  const companyQuery = useMyCompany();
+
+  const cars = carsQuery.data?.items ?? [];
+  const bookings = bookingsQuery.data?.items ?? [];
+  const company = companyQuery.data;
+
+  const stats = useMemo(() => {
+    const active = bookings.filter((b) =>
+      ["CONFIRMED", "ACTIVE"].includes(b.status),
+    ).length;
+    const pending = bookings.filter(
+      (b) => b.status === "PENDING_COMPANY",
+    ).length;
+    const income = bookings
+      .filter((b) =>
+        ["CONFIRMED", "ACTIVE", "COMPLETED"].includes(b.status),
+      )
+      .reduce((sum, b) => sum + Number(b.totalAmount ?? 0), 0);
+
+    return [
+      {
+        title: "Jami mashinalar",
+        value: String(cars.length),
+        description: company?.status
+          ? `Kompaniya: ${company.status}`
+          : "Avtoparkdagi e’lonlar",
+        icon: CarFront,
+        tone: "bg-[#eaf6ef] text-[#00863e]",
+      },
+      {
+        title: "Faol bronlar",
+        value: String(active),
+        description: "Tasdiqlangan / faol",
+        icon: CalendarCheck,
+        tone: "bg-[#e7f3ff] text-[#1d6fb8]",
+      },
+      {
+        title: "Jami daromad",
+        value: formatMoney(income),
+        description: "Tasdiqlangan bronlar bo‘yicha",
+        icon: Wallet,
+        tone: "bg-[#f1eefc] text-[#6b4fd3]",
+      },
+      {
+        title: "Kutilayotgan bronlar",
+        value: String(pending),
+        description: "Tasdiq kutayotganlar",
+        icon: Clock,
+        tone: "bg-[#fff4e5] text-[#c47a10]",
+      },
+    ];
+  }, [bookings, cars.length, company?.status]);
+
+  const chartData = useMemo(
+    () => monthBucketsFromBookings(bookings),
+    [bookings],
+  );
+  const yearIncome = chartData.reduce((s, m) => s + m.raw, 0);
+
+  const recentBookings = bookings.slice(0, 5);
+  const popularCars = [...cars]
+    .sort((a, b) => Number(b.bookingsCount ?? 0) - Number(a.bookingsCount ?? 0))
+    .slice(0, 3);
+
+  const ratingAvg = Number(company?.ratingAvg ?? 0);
+  const ratingCount = Number(company?.ratingCount ?? 0);
+  const loading =
+    carsQuery.isLoading || bookingsQuery.isLoading || companyQuery.isLoading;
 
   return (
     <div className="space-y-6">
@@ -155,8 +119,16 @@ export default function ProfileOwner() {
             Xush kelibsiz, {firstName}!
           </h1>
           <p className="mt-2 text-sm text-[#6d7a73]">
-            Kompaniyangiz faoliyatining umumiy ko&apos;rsatkichlari.
+            {company?.name
+              ? `${company.name} — real ko‘rsatkichlar`
+              : "Kompaniyangiz faoliyatining umumiy ko‘rsatkichlari."}
           </p>
+          {company && (
+            <p className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-[#00863e]">
+              <Star className="h-4 w-4 fill-[#f5b301] text-[#f5b301]" />
+              {ratingAvg.toFixed(1)} · {ratingCount} baho
+            </p>
+          )}
         </div>
 
         <Link
@@ -168,45 +140,29 @@ export default function ProfileOwner() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {statistics.map((item) => {
-          const Icon = item.icon;
+      {loading && (
+        <p className="text-sm text-[#6d7a73]">Dashboard yuklanmoqda...</p>
+      )}
 
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {stats.map((item) => {
+          const Icon = item.icon;
           return (
             <div
               key={item.title}
-              className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(16,37,26,0.07)]"
+              className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)]"
             >
               <div
                 className={`flex h-12 w-12 items-center justify-center rounded-2xl ${item.tone}`}
               >
                 <Icon size={22} />
               </div>
-
               <p className="mt-5 text-sm font-medium text-[#6d7a73]">
                 {item.title}
               </p>
-
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <h2 className="text-2xl font-bold text-[#1f2d25]">
-                  {item.value}
-                </h2>
-                <span
-                  className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${
-                    item.positive
-                      ? "bg-[#eaf6ef] text-[#00863e]"
-                      : "bg-red-50 text-red-500"
-                  }`}
-                >
-                  {item.positive ? (
-                    <TrendingUp size={13} />
-                  ) : (
-                    <TrendingDown size={13} />
-                  )}
-                  {item.change}
-                </span>
-              </div>
-
+              <h2 className="mt-2 text-2xl font-bold text-[#1f2d25]">
+                {item.value}
+              </h2>
               <p className="mt-2 text-xs text-[#8d9892]">{item.description}</p>
             </div>
           );
@@ -221,21 +177,18 @@ export default function ProfileOwner() {
                 Daromadlar statistikasi
               </h2>
               <p className="mt-1 text-sm text-[#6d7a73]">
-                Kompaniyangizning oylik daromadi
+                Joriy yil bronlari bo‘yicha
               </p>
             </div>
-
-            <select className="rounded-full border border-[#e5e9e7] bg-[#f6faf7] px-3 py-2 text-sm text-[#4a5650] outline-none focus:border-[#00863e]">
-              <option>2026-yil</option>
-              <option>2025-yil</option>
-            </select>
           </div>
 
           <div className="mt-5 flex items-end gap-2">
-            <h2 className="text-3xl font-bold text-[#1f2d25]">52 mln</h2>
+            <h2 className="text-3xl font-bold text-[#1f2d25]">
+              {formatMoney(yearIncome)}
+            </h2>
             <span className="mb-1 flex items-center gap-1 text-sm font-medium text-[#00863e]">
               <TrendingUp size={15} />
-              +18.4%
+              {new Date().getFullYear()}
             </span>
           </div>
 
@@ -248,13 +201,11 @@ export default function ProfileOwner() {
                     <stop offset="95%" stopColor="#00863e" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-
                 <CartesianGrid
                   stroke="#E8EEEA"
                   vertical={false}
                   strokeDasharray="4 4"
                 />
-
                 <XAxis
                   dataKey="month"
                   axisLine={false}
@@ -262,7 +213,6 @@ export default function ProfileOwner() {
                   tick={{ fill: "#8d9892", fontSize: 12 }}
                   dy={10}
                 />
-
                 <Tooltip
                   formatter={(value) => [`${value} mln so'm`, "Daromad"]}
                   contentStyle={{
@@ -270,7 +220,6 @@ export default function ProfileOwner() {
                     border: "1px solid #E5E9E7",
                   }}
                 />
-
                 <Area
                   type="monotone"
                   dataKey="income"
@@ -312,7 +261,6 @@ export default function ProfileOwner() {
               },
             ].map((item) => {
               const Icon = item.icon;
-
               return (
                 <Link
                   key={item.title}
@@ -341,12 +289,14 @@ export default function ProfileOwner() {
             <div className="flex items-center gap-2">
               <Users size={18} />
               <span className="text-sm font-semibold">
-                Mijozlaringiz ko&apos;paymoqda!
+                {ratingCount > 0
+                  ? `${ratingCount} ta mijoz bahosi`
+                  : "Hali baho yo‘q"}
               </span>
             </div>
             <p className="mt-2 text-xs leading-5 text-white/75">
-              Avtomobillaringizni faol joylashtiring va ko&apos;proq mijozlarga
-              yetib boring.
+              Reyting: {ratingAvg.toFixed(1)} / 5. Yakunlangan bronlardan keyin
+              oshadi.
             </p>
           </div>
         </div>
@@ -363,7 +313,6 @@ export default function ProfileOwner() {
                 Mijozlarning oxirgi buyurtmalari
               </p>
             </div>
-
             <Link
               href="/profile/owner/bronlar"
               className="inline-flex items-center gap-1 text-sm font-semibold text-[#00863e] hover:text-[#006f35]"
@@ -385,39 +334,56 @@ export default function ProfileOwner() {
                   <th className="px-5 py-4 font-medium">Holat</th>
                 </tr>
               </thead>
-
               <tbody className="divide-y divide-[#eef2f0]">
-                {bookings.map((booking) => (
-                  <tr
-                    key={booking.id}
-                    className="text-sm transition hover:bg-[#f8fbf9]"
-                  >
-                    <td className="px-5 py-4 font-semibold text-[#1f2d25]">
-                      {booking.id}
-                    </td>
-                    <td className="px-5 py-4 font-medium text-[#3f4b44]">
-                      {booking.name}
-                    </td>
-                    <td className="px-5 py-4 text-[#6d7a73]">{booking.car}</td>
-                    <td className="px-5 py-4 text-[#6d7a73]">{booking.date}</td>
-                    <td className="px-5 py-4 font-semibold text-[#1f2d25]">
-                      {booking.amount}
-                    </td>
-                    <td className="px-5 py-4">
-                      <span
-                        className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1.5 text-xs font-semibold ${
-                          booking.status === "Tasdiqlangan"
-                            ? "bg-[#eaf6ef] text-[#00863e]"
-                            : booking.status === "Kutilmoqda"
-                              ? "bg-[#fff4e5] text-[#c47a10]"
-                              : "bg-red-50 text-red-600"
-                        }`}
-                      >
-                        {booking.status}
-                      </span>
+                {recentBookings.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="px-5 py-10 text-center text-sm text-[#8d9892]"
+                    >
+                      Hozircha bronlar yo‘q
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  recentBookings.map((booking) => (
+                    <tr
+                      key={booking.id}
+                      className="text-sm transition hover:bg-[#f8fbf9]"
+                    >
+                      <td className="px-5 py-4 font-semibold text-[#1f2d25]">
+                        {booking.code || booking.id.slice(0, 8)}
+                      </td>
+                      <td className="px-5 py-4 font-medium text-[#3f4b44]">
+                        {booking.firstName} {booking.lastName}
+                      </td>
+                      <td className="px-5 py-4 text-[#6d7a73]">
+                        {booking.car
+                          ? `${booking.car.brand} ${booking.car.model}`
+                          : "-"}
+                      </td>
+                      <td className="px-5 py-4 text-[#6d7a73]">
+                        {formatDateShort(booking.startAt)}
+                      </td>
+                      <td className="px-5 py-4 font-semibold text-[#1f2d25]">
+                        {formatMoney(booking.totalAmount)}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span
+                          className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1.5 text-xs font-semibold ${
+                            booking.status === "CONFIRMED" ||
+                            booking.status === "ACTIVE"
+                              ? "bg-[#eaf6ef] text-[#00863e]"
+                              : booking.status === "PENDING_COMPANY"
+                                ? "bg-[#fff4e5] text-[#c47a10]"
+                                : "bg-[#eef2f0] text-[#5a675f]"
+                          }`}
+                        >
+                          {bookingStatusLabel(booking.status)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -445,32 +411,37 @@ export default function ProfileOwner() {
           </div>
 
           <div className="mt-5 space-y-4">
-            {popularCars.map((car) => (
-              <div key={car.name} className="flex gap-3">
-                <div className="relative h-[65px] w-[85px] shrink-0 overflow-hidden rounded-xl bg-[#eef2f0]">
-                  <img
-                    src={car.image}
-                    alt={car.name}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold text-[#1f2d25]">
-                    {car.name}
-                  </p>
-                  <p className="mt-1 text-xs text-[#8d9892]">{car.category}</p>
-                  <div className="mt-2 flex items-center justify-between gap-2">
-                    <span className="text-xs text-[#6d7a73]">
-                      {car.bookings} ta bron
-                    </span>
-                    <span className="whitespace-nowrap text-xs font-bold text-[#00863e]">
-                      {car.income}
-                    </span>
+            {popularCars.length === 0 ? (
+              <p className="text-sm text-[#8d9892]">Hali mashina yo‘q</p>
+            ) : (
+              popularCars.map((car) => (
+                <div key={car.id} className="flex gap-3">
+                  <div className="relative h-[65px] w-[85px] shrink-0 overflow-hidden rounded-xl bg-[#eef2f0]">
+                    <img
+                      src={carPrimaryImage(car.images)}
+                      alt={`${car.brand} ${car.model}`}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-[#1f2d25]">
+                      {car.brand} {car.model}
+                    </p>
+                    <p className="mt-1 text-xs text-[#8d9892]">
+                      {car.year} · {car.status}
+                    </p>
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      <span className="text-xs text-[#6d7a73]">
+                        {car.bookingsCount ?? 0} ta bron
+                      </span>
+                      <span className="whitespace-nowrap text-xs font-bold text-[#00863e]">
+                        {formatMoney(car.dailyPrice)}/kun
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           <Link
@@ -487,7 +458,7 @@ export default function ProfileOwner() {
         <p>© 2026 RENTO. Barcha huquqlar himoyalangan.</p>
         <p className="flex items-center gap-1">
           <CheckCircle2 size={14} className="text-[#00863e]" />
-          Tizim faol ishlamoqda
+          Ma’lumotlar API dan
         </p>
       </div>
     </div>

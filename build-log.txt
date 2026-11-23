@@ -10,21 +10,22 @@
 > next build
 
 тЦ▓ Next.js 16.4.6 (Turbopack)
-тЬУ Running next.config.ts took 28ms
+- Environments: .env.local
+тЬУ Running next.config.ts took 369ms
 - Experiments (use with caution):
   тЬУ agentFeedback
 
   Creating an optimized production build ...
-тЬУ Compiled successfully in 1579ms
+тЬУ Compiled successfully in 23.2s
   Running TypeScript ...
-  Finished TypeScript in 2.7s ...
+  Finished TypeScript in 28.0s ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/23) ...
-  Generating static pages using 11 workers (5/23) 
+  Generating static pages using 11 workers (0/24) ...
+  Generating static pages using 11 workers (6/24) 
 null
-  Generating static pages using 11 workers (11/23) 
-  Generating static pages using 11 workers (17/23) 
-тЬУ Generating static pages using 11 workers (23/23) in 1381ms
+  Generating static pages using 11 workers (12/24) 
+  Generating static pages using 11 workers (18/24) 
+тЬУ Generating static pages using 11 workers (24/24) in 4.9s
   Finalizing page optimization ...
 
 Route (app)
@@ -34,6 +35,8 @@ Route (app)
 тФЬ тЧЛ /cars
 тФЬ ╞Т /cars/[id]
 тФЬ ╞Т /cars/[id]/bron
+тФЬ тЧЛ /kompaniyalar
+тФЬ ╞Т /kompaniyalar/[id]
 тФЬ ╞Т /login
 тФЬ тЧЛ /profile/owner/bronlar
 тФЬ тЧЛ /profile/owner/malumotlar

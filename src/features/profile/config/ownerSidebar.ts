@@ -1,12 +1,12 @@
 import {
   LayoutDashboard,
   CarFront,
-  Settings,
   CalendarCheck,
   MessageCircle,
   UserRound,
   Headset,
   LogOut,
+  AlertTriangle,
 } from "lucide-react";
 
 export const ownerSidebar = [
@@ -39,6 +39,11 @@ export const ownerSidebar = [
     title: "Yordam markazi",
     href: "/profile/owner/yordam-markazi",
     icon: Headset,
+  },
+  {
+    title: "Shikoyatlar",
+    href: "/profile/owner/shikoyatlar",
+    icon: AlertTriangle,
   },
   {
     title: "Chiqish",

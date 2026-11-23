@@ -2,6 +2,9 @@ export type CarStatus =
   | "MAVJUD"
   | "IJARADA"
   | "BRON_QILINGAN"
+  | "PENDING"
+  | "REJECTED"
+  | "INACTIVE"
 
 export const statusConfig = {
   MAVJUD: {
@@ -15,6 +18,18 @@ export const statusConfig = {
   BRON_QILINGAN: {
     color: "processing",
     label: "Bron qilingan",
+  },
+  PENDING: {
+    color: "warning",
+    label: "Tekshiruvda",
+  },
+  REJECTED: {
+    color: "error",
+    label: "Rad etilgan",
+  },
+  INACTIVE: {
+    color: "default",
+    label: "Faol emas",
   },
   MAVJUD_EMAS: {
     color: "default",
@@ -57,7 +72,9 @@ export const carStatus = [
 
 
 export interface Car {
-  id:string
+  id: string;
+  companyId?: string;
+  companyName?: string;
   address: string;
   agreement: boolean;
   airCondition: boolean;
@@ -81,8 +98,9 @@ export interface Car {
   seats: number;
   transmission: string;
   year: number;
-  status:CarStatus
-  phone:string
+  status: CarStatus;
+  phone: string;
+  bookingsCount?: number;
 }
 
 
@@ -142,4 +160,7 @@ export interface Booking {
   status: CarRenterStatus;
   phone: string;
   image: string;
+  companyId?: string;
+  companyName?: string;
+  rating?: number;
 }

@@ -1,7 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Input, Collapse, Empty, Button, Tag } from "antd";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Input,
+  Collapse,
+  Empty,
+  Button,
+  Tag,
+  Form,
+  Select,
+  message,
+} from "antd";
 import {
   SearchOutlined,
   CarOutlined,
@@ -16,6 +25,18 @@ import {
   MailOutlined,
   ClockCircleOutlined,
 } from "@ant-design/icons";
+import { useUser } from "@/src/constants/UseMeContext";
+import { useCreateMurojaat } from "@/src/hooks/use-murojaatlar";
+
+const { TextArea } = Input;
+
+const SUBJECT_OPTIONS = [
+  { label: "Kompaniya profili", value: "company", subject: "Kompaniya profili" },
+  { label: "Avtomobillar", value: "cars", subject: "Avtomobillar" },
+  { label: "Bronlar", value: "bookings", subject: "Bronlar" },
+  { label: "To‘lovlar", value: "payments", subject: "To‘lovlar" },
+  { label: "Boshqa savol", value: "other", subject: "Boshqa savol" },
+];
 
 const categories = [
   { key: "all", label: "Barchasi", icon: <FileTextOutlined /> },
@@ -161,6 +182,17 @@ const faqs = [
 export default function YordamMarkazi() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [search, setSearch] = useState("");
+  const [form] = Form.useForm();
+  const { user } = useUser();
+  const createMurojaat = useCreateMurojaat();
+
+  useEffect(() => {
+    if (!user) return;
+    form.setFieldsValue({
+      name: user.fullName || user.companyName,
+      contact: user.email || user.phone,
+    });
+  }, [user, form]);
 
   const filteredFaqs = useMemo(() => {
     const query = search.toLowerCase().trim();
@@ -177,6 +209,43 @@ export default function YordamMarkazi() {
       return categoryMatch && searchMatch;
     });
   }, [activeCategory, search]);
+
+  const handleSubmit = async (values: {
+    name: string;
+    contact: string;
+    subject: string;
+    message: string;
+  }) => {
+    const option = SUBJECT_OPTIONS.find((o) => o.value === values.subject);
+    const contact = values.contact.trim();
+    const isEmail = contact.includes("@");
+
+    try {
+      await createMurojaat.mutateAsync({
+        name: values.name.trim(),
+        email: isEmail ? contact : user?.email,
+        phone: isEmail ? user?.phone : contact,
+        type: values.subject,
+        subject: option?.subject ?? values.subject,
+        message: values.message.trim(),
+      });
+      message.success(
+        "Murojaat yuborildi. Javob Xabarlar bo‘limiga keladi.",
+      );
+      form.setFieldsValue({ subject: undefined, message: "" });
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string | string[] } } })
+          ?.response?.data?.message;
+      message.error(
+        Array.isArray(msg)
+          ? msg[0]
+          : typeof msg === "string"
+            ? msg
+            : "Murojaat yuborilmadi",
+      );
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -304,30 +373,11 @@ export default function YordamMarkazi() {
           </h3>
 
           <p className="mt-2 text-sm leading-6 text-[#6d7a73]">
-            Qo‘llab-quvvatlash jamoamizga murojaat qiling. Muammo yoki
-            savolingizni batafsil tushuntiring.
+            Qo‘llab-quvvatlash jamoamizga murojaat qiling. Javob Xabarlar
+            bo‘limiga keladi.
           </p>
 
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Button
-              type="primary"
-              icon={<MessageOutlined />}
-              className="!h-11 !rounded-full !border-0 !bg-[#00863e] !px-5 hover:!bg-[#006f35]"
-              onClick={() => {
-                window.location.href = "mailto:jurayev088@icloud.com";
-              }}
-            >
-              Xabar yuborish
-            </Button>
-          </div>
-        </div>
-
-        <div className="rounded-3xl border border-[#e5e9e7] bg-white p-6 shadow-[0_8px_24px_rgba(16,37,26,0.03)]">
-          <h3 className="mb-5 text-lg font-bold text-[#1f2d25]">
-            Aloqa ma’lumotlari
-          </h3>
-
-          <div className="space-y-5">
+          <div className="mt-5 space-y-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf6ef] text-[#00863e]">
                 <MailOutlined />
@@ -352,6 +402,72 @@ export default function YordamMarkazi() {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="rounded-3xl border border-[#e5e9e7] bg-white p-6 shadow-[0_8px_24px_rgba(16,37,26,0.03)]">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#eaf6ef] text-[#00863e]">
+              <MessageOutlined />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-[#1f2d25]">
+                Murojaat yuborish
+              </h3>
+              <p className="text-sm text-[#6d7a73]">
+                CRM Murojaatlar bo‘limiga boradi
+              </p>
+            </div>
+          </div>
+
+          <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form.Item
+              label="Ismingiz"
+              name="name"
+              rules={[{ required: true, message: "Ismingizni kiriting" }]}
+            >
+              <Input size="large" className="!rounded-xl" />
+            </Form.Item>
+            <Form.Item
+              label="Email yoki telefon"
+              name="contact"
+              rules={[{ required: true, message: "Aloqa ma'lumotini kiriting" }]}
+            >
+              <Input size="large" className="!rounded-xl" />
+            </Form.Item>
+            <Form.Item
+              label="Mavzu"
+              name="subject"
+              rules={[{ required: true, message: "Mavzuni tanlang" }]}
+            >
+              <Select
+                size="large"
+                options={SUBJECT_OPTIONS.map(({ label, value }) => ({
+                  label,
+                  value,
+                }))}
+              />
+            </Form.Item>
+            <Form.Item
+              label="Xabar"
+              name="message"
+              rules={[
+                { required: true, message: "Xabarni yozing" },
+                { min: 3, message: "Kamida 3 belgi" },
+              ]}
+            >
+              <TextArea rows={3} maxLength={1000} showCount className="!rounded-xl" />
+            </Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              size="large"
+              loading={createMurojaat.isPending}
+              icon={<MessageOutlined />}
+              className="!h-11 !rounded-full !border-0 !bg-[#00863e] !px-5 hover:!bg-[#006f35]"
+            >
+              Murojaat yuborish
+            </Button>
+          </Form>
         </div>
       </div>
 

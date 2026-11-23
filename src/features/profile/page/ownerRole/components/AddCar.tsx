@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { UploadFile } from "antd";
 import {
@@ -29,29 +29,58 @@ import {
 } from "@ant-design/icons";
 import { useParams, useRouter } from "next/navigation";
 
-import { CarBrandType, UseCarBrand } from "@/src/constants/UseCarBrands";
-import { carCategory } from "@/src/features/mashinalar/components/Filter";
-import { UseAllCars } from "@/src/constants/UseAllCars";
 import { Car, carStatus } from "@/src/types";
+import { useBrandModels, useBrands } from "@/src/hooks/use-brands";
+import { useCategories } from "@/src/hooks/use-categories";
+import { useRegions } from "@/src/hooks/use-regions";
+import { useDistricts } from "@/src/hooks/use-districts";
+import {
+  useCreateCar,
+  useMyCar,
+  useUpdateCar,
+} from "@/src/hooks/use-my-cars";
+import { brandLabel } from "@/src/lib/media";
+import { mapApiCarToUi } from "@/src/lib/map-car";
+import { uploadImageFile } from "@/src/lib/upload-media";
+import { getApiErrorMessage } from "@/src/lib/api-error";
+
+const FUEL_MAP: Record<string, string> = {
+  Benzin: "BENZIN",
+  Metan: "METAN",
+  Propan: "PROPAN",
+  Dizel: "DIZEL",
+  Gibrid: "GIBRID",
+  Elektro: "ELEKTRO",
+  BENZIN: "BENZIN",
+  METAN: "METAN",
+  PROPAN: "PROPAN",
+  DIZEL: "DIZEL",
+  GIBRID: "GIBRID",
+  ELEKTRO: "ELEKTRO",
+};
+
+const TRANSMISSION_MAP: Record<string, string> = {
+  Avtomat: "AVTOMAT",
+  Mexanika: "MEXANIKA",
+  AVTOMAT: "AVTOMAT",
+  MEXANIKA: "MEXANIKA",
+};
+
+const FUEL_LABEL: Record<string, string> = {
+  BENZIN: "Benzin",
+  METAN: "Metan",
+  PROPAN: "Propan",
+  DIZEL: "Dizel",
+  GIBRID: "Gibrid",
+  ELEKTRO: "Elektro",
+};
+
+const TRANSMISSION_LABEL: Record<string, string> = {
+  AVTOMAT: "Avtomat",
+  MEXANIKA: "Mexanika",
+};
 
 const { TextArea } = Input;
-
-export const regions = [
-  "Toshkent shahri",
-  "Toshkent viloyati",
-  "Samarqand",
-  "Buxoro",
-  "Andijon",
-  "Farg'ona",
-  "Namangan",
-  "Xorazm",
-  "Navoiy",
-  "Qashqadaryo",
-  "Surxondaryo",
-  "Jizzax",
-  "Sirdaryo",
-  "Qoraqalpog'iston",
-];
 
 function SectionTitle({
   icon,
@@ -97,19 +126,42 @@ export default function AddCar() {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [depositEnabled, setDepositEnabled] = useState(false);
 
-  const { carBrands } = UseCarBrand();
-  const { allCars, setAllCars, isLoaded } = UseAllCars();
+  const { data: brandsData, isLoading: brandsLoading } = useBrands({
+    limit: 200,
+  });
+  const brands = useMemo(() => brandsData?.items ?? [], [brandsData?.items]);
+  const [selectedBrandId, setSelectedBrandId] = useState<string | undefined>();
+  const { data: modelsData, isLoading: modelsLoading } = useBrandModels(
+    selectedBrandId,
+    { limit: 200 },
+  );
+  const models = useMemo(() => modelsData?.items ?? [], [modelsData?.items]);
+  const { data: categoriesData = [] } = useCategories();
+  const { data: regionsData = [], isLoading: regionsLoading } = useRegions();
+  const [selectedRegionId, setSelectedRegionId] = useState<string | undefined>();
+  const { data: districtsData = [], isLoading: districtsLoading } =
+    useDistricts(selectedRegionId);
+  const createCar = useCreateCar();
+  const updateCar = useUpdateCar();
+  const [saving, setSaving] = useState(false);
 
   const params = useParams();
   const router = useRouter();
 
   const id = params.id as string | undefined;
   const isEdit = Boolean(id);
+  const {
+    data: apiEditingCar,
+    isLoading: editLoading,
+    isError: editError,
+    isFetched: editFetched,
+  } = useMyCar(isEdit ? id : undefined);
+  const editingCar = useMemo(
+    () => (apiEditingCar ? mapApiCarToUi(apiEditingCar) : undefined),
+    [apiEditingCar],
+  );
+  const hydratedCarIdRef = useRef<string | null>(null);
 
-  // Mashinani ID orqali topamiz
-  const editingCar = allCars.find((car) => String(car.id) === String(id));
-
-  // Dinamik matnlar
   const pageTitle = isEdit
     ? "Mashinangiz e'lonini tahrirlang"
     : "Mashinangizni ijaraga bering";
@@ -118,71 +170,162 @@ export default function AddCar() {
     ? "Avtomobil ma'lumotlarini yangilang va o'zgarishlarni saqlang."
     : "Avtomobilingiz haqida ma'lumotlarni kiriting, rasmlarini yuklang va e'loningizni joylashtiring.";
 
-  // Edit paytida formani to'ldirish
   useEffect(() => {
-    if (!isEdit || !isLoaded) return;
+    if (!isEdit || !id) {
+      hydratedCarIdRef.current = null;
+      return;
+    }
+    if (hydratedCarIdRef.current && hydratedCarIdRef.current !== id) {
+      hydratedCarIdRef.current = null;
+    }
+    if (editLoading || brandsLoading) return;
 
-    if (!editingCar) {
+    if (editFetched && (editError || !apiEditingCar)) {
       message.error("Mashina topilmadi");
       router.replace("/profile/owner/moshinalarim");
       return;
     }
 
+    if (!apiEditingCar || !editingCar) return;
+    if (hydratedCarIdRef.current === apiEditingCar.id) return;
+    hydratedCarIdRef.current = apiEditingCar.id;
+
+    const brand = brands.find(
+      (b) => b.name.toLowerCase() === apiEditingCar.brand.toLowerCase(),
+    );
+    if (brand) setSelectedBrandId(brand.id);
+
+    const regionId = apiEditingCar.region?.id;
+    if (regionId) setSelectedRegionId(regionId);
+
+    const images = (editingCar.images ?? []).map((img, index) => ({
+      uid: `edit-${apiEditingCar.id}-${index}`,
+      name: `image-${index}`,
+      status: "done" as const,
+      url: img.url || img.thumbUrl,
+    }));
+
     form.setFieldsValue({
-      ...editingCar,
+      brand: editingCar.brand,
+      model: editingCar.model,
+      year: editingCar.year,
+      color: editingCar.color,
+      number: editingCar.number,
+      categoryId: apiEditingCar.category?.id,
+      phone: editingCar.phone,
+      transmission:
+        TRANSMISSION_LABEL[editingCar.transmission] || editingCar.transmission,
+      fuel: FUEL_LABEL[editingCar.fuel] || editingCar.fuel,
+      engine: editingCar.engine,
+      seats: editingCar.seats,
+      airCondition: editingCar.airCondition,
+      condition: editingCar.condition,
+      regionId,
+      districtId: apiEditingCar.district?.id,
+      address: editingCar.address,
+      price: editingCar.price,
+      oldPrice: editingCar.oldPrice || undefined,
+      deposit: editingCar.deposit || undefined,
+      minDays: editingCar.minDays,
+      rules: editingCar.rules,
+      description: editingCar.description,
+      images,
+      agreement: true,
     });
 
     setDepositEnabled(Boolean(editingCar.deposit));
+    setFileList(images);
+  }, [
+    apiEditingCar,
+    brands,
+    brandsLoading,
+    editError,
+    editFetched,
+    editLoading,
+    editingCar,
+    form,
+    id,
+    isEdit,
+    router,
+  ]);
 
-    if (editingCar.images) {
-      setFileList(editingCar.images as UploadFile[]);
-      form.setFieldValue("images", editingCar.images);
-    }
-  }, [id, isLoaded, editingCar, form, router, isEdit]);
-
-  // Add va Edit
-  const onFinish = (values: Car) => {
-    if (isEdit) {
-      if (!editingCar) {
-        message.error("Tahrirlanadigan mashina topilmadi");
-        return;
+  const buildPayload = async (values: Record<string, unknown>) => {
+    const imageUrls: string[] = [];
+    for (const file of fileList) {
+      if (file.url && !file.originFileObj) {
+        imageUrls.push(file.url);
+        continue;
       }
-
-      setAllCars((prev) =>
-        prev.map((car) =>
-          String(car.id) === String(id)
-            ? {
-                ...car,
-                ...values,
-                id: car.id,
-              }
-            : car,
-        ),
-      );
-
-      message.success("Mashina muvaffaqiyatli yangilandi");
-
-      router.push("/profile/owner/moshinalarim");
-    } else {
-      setAllCars((prev) => [
-        ...prev,
-        {
-          ...values,
-          id: Date.now().toString(),
-        },
-      ]);
-
-      message.success("Mashina muvaffaqiyatli qo'shildi");
-
-      form.resetFields();
-      setFileList([]);
-      setDepositEnabled(false);
+      const raw = file.originFileObj as File | undefined;
+      if (raw) {
+        const okType = /^image\/(jpeg|jpg|png|webp|avif)$/i.test(raw.type);
+        if (!okType) {
+          throw new Error("Faqat JPEG, PNG, WebP yoki AVIF rasm yuklang");
+        }
+        if (raw.size <= 0 || raw.size > 8 * 1024 * 1024) {
+          throw new Error("Rasm hajmi 8 MB dan oshmasligi kerak");
+        }
+        imageUrls.push(await uploadImageFile(raw));
+      }
     }
-    router.push("/profile/owner/moshinalarim");
+
+    return {
+      brand: String(values.brand),
+      model: String(values.model),
+      year: Number(values.year),
+      color: values.color ? String(values.color) : undefined,
+      plateNumber: values.number ? String(values.number) : undefined,
+      categoryId: values.categoryId ? String(values.categoryId) : undefined,
+      fuelType: FUEL_MAP[String(values.fuel)] || "BENZIN",
+      transmission: TRANSMISSION_MAP[String(values.transmission)] || "AVTOMAT",
+      engineVolume: values.engine != null ? Number(values.engine) : undefined,
+      seats: values.seats != null ? Number(values.seats) : 5,
+      airCondition: Boolean(values.airCondition),
+      condition: values.condition ? String(values.condition) : undefined,
+      regionId: String(values.regionId),
+      districtId: values.districtId ? String(values.districtId) : undefined,
+      address: values.address ? String(values.address) : undefined,
+      dailyPrice: Number(values.price),
+      oldPrice: values.oldPrice != null ? Number(values.oldPrice) : undefined,
+      deposit:
+        depositEnabled && values.deposit != null
+          ? Number(values.deposit)
+          : undefined,
+      minDays: values.minDays != null ? Number(values.minDays) : 1,
+      rules: values.rules ? String(values.rules) : undefined,
+      description: values.description
+        ? String(values.description)
+        : undefined,
+      phone: values.phone ? String(values.phone) : undefined,
+      imageUrls,
+    };
   };
 
-  // Edit ma'lumotlari yuklanayotgan payt
-  if (isEdit && !isLoaded) {
+  const onFinish = async (values: Car & Record<string, unknown>) => {
+    try {
+      setSaving(true);
+      const payload = await buildPayload(values);
+
+      if (isEdit && id) {
+        await updateCar.mutateAsync({ id, payload });
+        message.success("Mashina muvaffaqiyatli yangilandi");
+      } else {
+        await createCar.mutateAsync(payload);
+        message.success("Mashina muvaffaqiyatli qo‘shildi");
+        form.resetFields();
+        setFileList([]);
+        setDepositEnabled(false);
+      }
+
+      router.push("/profile/owner/moshinalarim");
+    } catch (error: unknown) {
+      message.error(getApiErrorMessage(error, "Saqlashda xatolik yuz berdi"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isEdit && editLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
         <p className="text-lg font-semibold text-[#00863e]">
@@ -192,7 +335,7 @@ export default function AddCar() {
     );
   }
 
-  if (isEdit && !editingCar) {
+  if (isEdit && !editLoading && !editingCar) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
         <p className="text-lg font-semibold text-[#6d7a73]">
@@ -318,22 +461,30 @@ export default function AddCar() {
                     <Select
                       size="large"
                       showSearch
+                      loading={brandsLoading}
                       placeholder="Markani tanlang"
-                      options={carBrands.map((x: CarBrandType) => ({
-                        label: x.label,
-                        value: x.value,
+                      optionFilterProp="label"
+                      options={brands.map((b) => ({
+                        label: brandLabel(b.name),
+                        value: b.name,
                       }))}
+                      onChange={(value: string) => {
+                        const found = brands.find((b) => b.name === value);
+                        setSelectedBrandId(found?.id);
+                        form.setFieldValue("model", undefined);
+                      }}
                     />
                   </Form.Item>
 
-                  <Form.Item label="Category" name="category">
+                  <Form.Item label="Kategoriya" name="categoryId">
                     <Select
                       size="large"
                       showSearch
-                      placeholder="Category tanlang"
-                      options={carCategory.map((x: CarBrandType) => ({
-                        label: x.label,
-                        value: x.value,
+                      placeholder="Kategoriya tanlang"
+                      optionFilterProp="label"
+                      options={(categoriesData ?? []).map((c) => ({
+                        label: c.nameUz || c.name,
+                        value: c.id,
                       }))}
                     />
                   </Form.Item>
@@ -341,9 +492,24 @@ export default function AddCar() {
                   <Form.Item
                     label="Modeli"
                     name="model"
-                    rules={[{ required: true, message: "Modelni kiriting" }]}
+                    rules={[{ required: true, message: "Modelni tanlang" }]}
                   >
-                    <Input size="large" placeholder="Masalan: Malibu 2" />
+                    <Select
+                      size="large"
+                      showSearch
+                      loading={modelsLoading}
+                      disabled={!selectedBrandId}
+                      placeholder={
+                        selectedBrandId
+                          ? "Modelni tanlang"
+                          : "Avval markani tanlang"
+                      }
+                      optionFilterProp="label"
+                      options={models.map((m) => ({
+                        label: m.name,
+                        value: m.name,
+                      }))}
+                    />
                   </Form.Item>
 
                   <Form.Item
@@ -490,26 +656,47 @@ export default function AddCar() {
                 <div className="grid grid-cols-1 gap-x-5 md:grid-cols-2">
                   <Form.Item
                     label="Viloyat / Shahar"
-                    name="region"
+                    name="regionId"
                     rules={[{ required: true, message: "Hududni tanlang" }]}
                   >
                     <Select
                       size="large"
                       showSearch
+                      loading={regionsLoading}
                       placeholder="Hududni tanlang"
-                      options={regions.map((x) => ({
-                        label: x,
-                        value: x,
+                      optionFilterProp="label"
+                      options={regionsData.map((x) => ({
+                        label: x.nameUz || x.name,
+                        value: x.id,
                       }))}
+                      onChange={(value: string) => {
+                        setSelectedRegionId(value);
+                        form.setFieldValue("districtId", undefined);
+                      }}
                     />
                   </Form.Item>
 
                   <Form.Item
                     label="Tuman"
-                    name="district"
-                    rules={[{ required: true, message: "Tumanni kiriting" }]}
+                    name="districtId"
+                    rules={[{ required: true, message: "Tumanni tanlang" }]}
                   >
-                    <Input size="large" placeholder="Masalan: Chilonzor" />
+                    <Select
+                      size="large"
+                      showSearch
+                      loading={districtsLoading}
+                      disabled={!selectedRegionId}
+                      placeholder={
+                        selectedRegionId
+                          ? "Tumanni tanlang"
+                          : "Avval viloyatni tanlang"
+                      }
+                      optionFilterProp="label"
+                      options={districtsData.map((x) => ({
+                        label: x.name,
+                        value: x.id,
+                      }))}
+                    />
                   </Form.Item>
 
                   <Form.Item
@@ -665,12 +852,7 @@ export default function AddCar() {
 
                 <Form.Item
                   name="images"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Kamida bitta rasm yuklang",
-                    },
-                  ]}
+                  extra="Media server ishlamasa ham e'lonni saqlash mumkin"
                 >
                   <Upload
                     listType="picture-card"
@@ -744,6 +926,7 @@ export default function AddCar() {
                 type="primary"
                 size="large"
                 block
+                loading={saving}
                 className="!h-14 !rounded-full !border-0 !bg-[#00863e] !text-base !font-semibold !shadow-[0_8px_18px_rgba(0,134,62,0.22)] hover:!bg-[#006f35]"
               >
                 <CarOutlined />

@@ -1,7 +1,7 @@
-import React from 'react'
+"use client";
+
+import XabarlarInbox from "../../components/XabarlarInbox";
 
 export default function Xabarlar() {
-  return (
-    <div>Xabarlar</div>
-  )
+  return <XabarlarInbox roleLabel="Ijarachi kabineti" />;
 }

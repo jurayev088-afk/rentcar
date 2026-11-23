@@ -31,7 +31,6 @@ export default function UseAllCarsContext({
   useEffect(() => {
     try {
       const savedAllCars = localStorage.getItem("allCars");
-
       if (savedAllCars) {
         setAllCars(JSON.parse(savedAllCars));
       }
@@ -44,15 +43,11 @@ export default function UseAllCarsContext({
 
   useEffect(() => {
     if (!isLoaded) return;
-
     localStorage.setItem("allCars", JSON.stringify(allCars));
   }, [allCars, isLoaded]);
 
   const removeCar = (id: string) => {
-    const cars = JSON.parse(localStorage.getItem("allCars") || "[]") as Car[];
-    const updatedCars = cars.filter((car) => car?.id !== id);
-    setAllCars(updatedCars);
-    localStorage.setItem("allCars", JSON.stringify(updatedCars));
+    setAllCars((prev) => prev.filter((car) => car?.id !== id));
   };
 
   return (

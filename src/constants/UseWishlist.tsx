@@ -1,78 +1,96 @@
-
 "use client";
 
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
-  useEffect,
-  useState,
+  useMemo,
 } from "react";
+import { message } from "antd";
+import { useRouter } from "next/navigation";
 import { Car } from "../types";
 import { useUser } from "./UseMeContext";
-import { useRouter } from "next/navigation";
+import { useFavorites, useToggleFavorite } from "../hooks/use-favorites";
+import { mapApiCarToUi } from "../lib/map-car";
+import { getAccessToken } from "../lib/auth-storage";
+import { getApiErrorMessage } from "../lib/api-error";
 
 interface WishlistContextType {
   wishlist: Car[];
-  setWishlist: React.Dispatch<React.SetStateAction<Car[]>>;
+  setWishlist: (cars: Car[]) => void;
   toggleWishlist: (car: Car) => void;
+  isLoading: boolean;
 }
 
-export const WishlistContext = createContext<
-  WishlistContextType | undefined
->(undefined);
+export const WishlistContext = createContext<WishlistContextType | undefined>(
+  undefined,
+);
 
 export default function UseWishlistContext({
   children,
 }: {
   children: ReactNode;
 }) {
-  const [wishlist, setWishlist] = useState<Car[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const {user} = useUser()
-  const router = useRouter()
+  const { user } = useUser();
+  const router = useRouter();
+  const { data: favoriteCars = [], isLoading } = useFavorites();
+  const toggleFavorite = useToggleFavorite();
 
-  // LocalStorage'dan ma'lumot olish
-  useEffect(() => {
-    try {
-      const savedWishlist = localStorage.getItem("wishlist");
+  const wishlist = useMemo(
+    () => favoriteCars.map(mapApiCarToUi),
+    [favoriteCars],
+  );
 
-      if (savedWishlist) {
-        setWishlist(JSON.parse(savedWishlist));
+  const toggleWishlist = useCallback(
+    (car: Car) => {
+      if (!user && !getAccessToken()) {
+        message.info("Sevimlilarga qo‘shish uchun tizimga kiring");
+        router.push("/login");
+        return;
       }
-    } catch (error) {
-      console.error("Wishlist yuklashda xatolik:", error);
-    } finally {
-      setIsLoaded(true);
-    }
-  }, []);
 
-  // Ma'lumot yuklangandan keyin saqlash
-  useEffect(() => {
-    if (!isLoaded) return;
+      if (user?.role === "COMPANY") {
+        message.warning(
+          "Sevimlilar faqat ijarachi hisobi uchun. Ijarachi sifatida kiring.",
+        );
+        return;
+      }
 
-    localStorage.setItem("wishlist", JSON.stringify(wishlist));
-  }, [wishlist, isLoaded]);
+      const isFavorite = wishlist.some((item) => item.id === car.id);
+      toggleFavorite.mutate(
+        { carId: String(car.id), isFavorite },
+        {
+          onSuccess: () => {
+            message.success(
+              isFavorite
+                ? "Sevimlilardan olib tashlandi"
+                : "Sevimlilarga qo‘shildi",
+            );
+          },
+          onError: (error) => {
+            message.error(
+              getApiErrorMessage(error, "Sevimlilarni yangilab bo‘lmadi"),
+            );
+          },
+        },
+      );
+    },
+    [router, toggleFavorite, user, wishlist],
+  );
 
-  const toggleWishlist = (car: Car) => {
-    if(user){
-      setWishlist((prev) =>
-      prev.some((item) => item.id === car.id)
-        ? prev.filter((item) => item.id !== car.id)
-        : [...prev, car]
-    );
-    }
-    else{
-      router.push('/login')
-    }
-  };
+  const value = useMemo(
+    () => ({
+      wishlist,
+      setWishlist: () => undefined,
+      toggleWishlist,
+      isLoading,
+    }),
+    [wishlist, toggleWishlist, isLoading],
+  );
 
   return (
-    <WishlistContext.Provider
-      value={{ wishlist, setWishlist, toggleWishlist }}
-    >
-      {children}
-    </WishlistContext.Provider>
+    <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>
   );
 }
 

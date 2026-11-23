@@ -6,7 +6,6 @@ import {
   Form,
   Input,
   message,
-  Spin,
   Upload,
   type UploadFile,
 } from "antd";
@@ -23,35 +22,124 @@ import {
 } from "@ant-design/icons";
 
 import { useParams, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
-import dayjs from "dayjs";
-import { UseBookings } from "@/src/constants/UseCarsBron";
-import { BookingType } from "@/src/types";
+import { useEffect, useState, type ReactNode } from "react";
+import dayjs, { type Dayjs } from "dayjs";
+import { useCreateBooking } from "@/src/hooks/use-bookings";
+import { useCar } from "@/src/hooks/use-cars";
+import { uploadImageFile } from "@/src/lib/upload-media";
+import { normalizePhoneInput } from "@/src/lib/media";
+import { getApiErrorMessage } from "@/src/lib/api-error";
+import { useUser } from "@/src/constants/UseMeContext";
+
+type BookingFormValues = {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  passportNumber?: string;
+  birthDate: Dayjs;
+  startDate: Dayjs;
+  endDate: Dayjs;
+  comment?: string;
+};
+
+const MIN_AGE = 18;
 
 export default function BookingCar() {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-
-  const { isLoaded, addBron } = UseBookings();
+  const createBooking = useCreateBooking();
   const router = useRouter();
+  const params = useParams();
+  const carId = String(params.id || "");
   const startDate = Form.useWatch("startDate", form);
+  const { user } = useUser();
+  const { data: apiCar, isLoading: carLoading } = useCar(carId || undefined);
+  const isRented = Boolean(apiCar?.isRented);
 
-  const onFinish = async (values: BookingType) => {
+  useEffect(() => {
+    if (!user) return;
+    const [firstName, ...rest] = (user.fullName || "").trim().split(/\s+/);
+    form.setFieldsValue({
+      firstName: firstName || undefined,
+      lastName: rest.join(" ") || undefined,
+      phone: user.phone ? normalizePhoneInput(user.phone) : undefined,
+    });
+  }, [user, form]);
+
+  const onFinish = async (values: BookingFormValues) => {
+    if (!carId) {
+      message.error("Mashina topilmadi");
+      return;
+    }
+    if (isRented) {
+      message.error("Bu mashina hozir ijarada");
+      return;
+    }
+
+    const raw = fileList[0]?.originFileObj as File | undefined;
+    const existingUrl =
+      typeof fileList[0]?.url === "string" ? fileList[0].url : undefined;
+
+    if (!values.birthDate) {
+      message.error("Tug‘ilgan sanani kiriting");
+      return;
+    }
+    const ageAtStart = values.startDate.diff(values.birthDate, "year");
+    if (ageAtStart < MIN_AGE) {
+      message.error("Bron qilish uchun 18 yoshdan katta bo‘lishingiz kerak");
+      return;
+    }
+
+    if (!raw && !existingUrl) {
+      message.error("Haydovchilik guvohnomasi rasmi majburiy");
+      return;
+    }
+
+    if (raw) {
+      const okType = /^image\/(jpeg|jpg|png|webp|avif)$/i.test(raw.type);
+      if (!okType) {
+        message.error("Faqat JPEG, PNG, WebP yoki AVIF rasm yuklang");
+        return;
+      }
+      if (raw.size <= 0 || raw.size > 8 * 1024 * 1024) {
+        message.error("Rasm hajmi 8 MB dan oshmasligi kerak");
+        return;
+      }
+    }
+
     try {
-      setLoading(true);
-      addBron({ ...values, id: Date.now(), status: "PENDING" });
-      message.success("Bron so'rovingiz tayyor!");
+      let licenseImageUrl = existingUrl;
+      if (raw) {
+        licenseImageUrl = await uploadImageFile(raw);
+      }
+      if (!licenseImageUrl) {
+        message.error("Guvohnoma rasmini yuklab bo‘lmadi");
+        return;
+      }
+
+      const startAt = values.startDate.toDate().toISOString();
+      const endAt = values.endDate.toDate().toISOString();
+
+      await createBooking.mutateAsync({
+        carId,
+        firstName: values.firstName.trim(),
+        lastName: values.lastName.trim(),
+        phone: normalizePhoneInput(values.phone),
+        passportNumber: values.passportNumber?.trim(),
+        birthDate: values.birthDate.toDate().toISOString(),
+        startAt,
+        endAt,
+        comment: values.comment?.trim() || undefined,
+        licenseImageUrl,
+      });
+      message.success("Bron so‘rovingiz yuborildi!");
       form.resetFields();
       setFileList([]);
       router.push("/profile/renter/bronlarim");
-    } catch (error: any) {
-      console.error(error);
+    } catch (error: unknown) {
       message.error(
-        error?.response?.data?.message || "Bron qilishda xatolik yuz berdi",
+        getApiErrorMessage(error, "Bron qilishda xatolik yuz berdi"),
       );
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -70,6 +158,28 @@ export default function BookingCar() {
       </div>
     </div>
   );
+
+  if (!carLoading && isRented) {
+    return (
+      <div className="bg-[#f4f6f5] px-3 pb-16 pt-8 sm:px-5 sm:pt-10 lg:px-8">
+        <div className="mx-auto max-w-xl rounded-3xl border border-[#b7d7f0] bg-[#e7f3ff] p-8 text-center shadow-sm">
+          <h1 className="text-2xl font-bold text-[#1d6fb8]">
+            Bu mashina hozir ijarada
+          </h1>
+          <p className="mt-3 text-sm text-[#3d6f9a]">
+            Hozircha bron qilib bo‘lmaydi. Ijara tugagach qayta urinib ko‘ring.
+          </p>
+          <Button
+            type="primary"
+            className="!mt-6 !h-11 !rounded-full !border-0 !bg-[#00863e] hover:!bg-[#006f35]"
+            onClick={() => router.push(carId ? `/cars/${carId}` : "/cars")}
+          >
+            Orqaga
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#f4f6f5] px-3 pb-16 pt-8 sm:px-5 sm:pt-10 lg:px-8">
@@ -182,11 +292,28 @@ export default function BookingCar() {
 
                 <Form.Item
                   name="birthDate"
-                  label="Tug‘ilgan sanangiz"
+                  label="Tug‘ilgan sanangiz (18+)"
                   rules={[
                     {
                       required: true,
                       message: "Tug‘ilgan sanangizni tanlang",
+                    },
+                    {
+                      validator: (_, value: Dayjs | undefined) => {
+                        if (!value) return Promise.resolve();
+                        const ref = form.getFieldValue("startDate") as
+                          | Dayjs
+                          | undefined;
+                        const on = ref?.isValid() ? ref : dayjs();
+                        if (on.diff(value, "year") < MIN_AGE) {
+                          return Promise.reject(
+                            new Error(
+                              "Bron qilish uchun 18 yoshdan katta bo‘lishingiz kerak",
+                            ),
+                          );
+                        }
+                        return Promise.resolve();
+                      },
                     },
                   ]}
                 >
@@ -194,7 +321,9 @@ export default function BookingCar() {
                     className="!h-12 !w-full !rounded-xl"
                     format="DD.MM.YYYY"
                     placeholder="Kun / Oy / Yil"
-                    disabledDate={(date) => date.isAfter(dayjs(), "day")}
+                    disabledDate={(date) =>
+                      date.isAfter(dayjs().subtract(MIN_AGE, "year"), "day")
+                    }
                   />
                 </Form.Item>
               </div>
@@ -255,7 +384,7 @@ export default function BookingCar() {
                     placeholder="Tugash sanasi"
                     disabled={!startDate}
                     disabledDate={(date) =>
-                      !startDate || !date.isAfter(startDate, "day")
+                      !startDate || date.isBefore(startDate, "day")
                     }
                   />
                 </Form.Item>
@@ -269,7 +398,8 @@ export default function BookingCar() {
 
               <Form.Item
                 name="pravaImg"
-                label="Guvohnoma rasmi"
+                label="Guvohnoma rasmi (majburiy)"
+                required
                 rules={[
                   {
                     validator: () => {
@@ -278,6 +408,21 @@ export default function BookingCar() {
                           new Error("Guvohnoma rasmini yuklang"),
                         );
                       }
+                      const f = fileList[0]?.originFileObj as File | undefined;
+                      if (f) {
+                        if (
+                          !/^image\/(jpeg|jpg|png|webp|avif)$/i.test(f.type)
+                        ) {
+                          return Promise.reject(
+                            new Error("Faqat rasm fayli (JPEG/PNG/WebP/AVIF)"),
+                          );
+                        }
+                        if (f.size > 8 * 1024 * 1024) {
+                          return Promise.reject(
+                            new Error("Rasm 8 MB dan katta bo‘lmasin"),
+                          );
+                        }
+                      }
                       return Promise.resolve();
                     },
                   },
@@ -285,10 +430,23 @@ export default function BookingCar() {
               >
                 <Upload
                   listType="picture-card"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
                   maxCount={1}
                   fileList={fileList}
-                  beforeUpload={() => false}
+                  beforeUpload={(file) => {
+                    const okType = /^image\/(jpeg|jpg|png|webp|avif)$/i.test(
+                      file.type,
+                    );
+                    if (!okType) {
+                      message.error("Faqat JPEG, PNG, WebP yoki AVIF");
+                      return Upload.LIST_IGNORE;
+                    }
+                    if (file.size > 8 * 1024 * 1024) {
+                      message.error("Rasm 8 MB dan oshmasin");
+                      return Upload.LIST_IGNORE;
+                    }
+                    return false;
+                  }}
                   onChange={({ fileList: next }) => {
                     const newFileList = next.slice(-1);
                     setFileList(newFileList);
@@ -329,10 +487,10 @@ export default function BookingCar() {
                 htmlType="submit"
                 type="primary"
                 block
-                loading={loading}
+                loading={createBooking.isPending}
                 className="!mt-6 !h-12 !rounded-full !border-0 !bg-[#00863e] !font-bold !shadow-[0_8px_18px_rgba(0,134,62,0.22)] hover:!bg-[#006f35]"
               >
-                {!isLoaded ? <Spin /> : "Bron qilish"}
+                Bron qilish
               </Button>
             </Form>
           </div>

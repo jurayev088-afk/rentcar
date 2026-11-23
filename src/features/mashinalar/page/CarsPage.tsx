@@ -1,22 +1,40 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Cars from "@/src/components/Cars";
-import AppProvider from "@/src/provider/AppProvider";
 import Filter from "../components/Filter";
 import UseWishlistContext from "@/src/constants/UseWishlist";
-import { useEffect, useState } from "react";
-import { Car } from "@/src/types";
-import UseCarBrands from "@/src/constants/UseCarBrands";
-import UseAllCarsContext, { UseAllCars } from "@/src/constants/UseAllCars";
+import { useCars } from "@/src/hooks/use-cars";
+import { mapApiCarToUi } from "@/src/lib/map-car";
+import type { Car } from "@/src/types";
 
 export default function CarsPage() {
-  const { allCars } = UseAllCars();
-  const [filteredCars, setFilteredCars] = useState<Car[]>(allCars);
-  const displayedCars = filteredCars ?? allCars ?? [];
+  const searchParams = useSearchParams();
 
-  useEffect(() => {
-    setFilteredCars(allCars);
-  }, [allCars]);
+  const query = useMemo(
+    () => ({
+      regionId: searchParams.get("regionId") || undefined,
+      brand: searchParams.get("brand") || undefined,
+      model: searchParams.get("model") || undefined,
+      categoryId: searchParams.get("categoryId") || undefined,
+      companyId: searchParams.get("companyId") || undefined,
+      sort: searchParams.get("sort") || "newest",
+      limit: 100,
+      page: 1,
+    }),
+    [searchParams],
+  );
+
+  const { data, isLoading, isError } = useCars(query);
+
+  const cars = useMemo(
+    () => (data?.items ?? []).map(mapApiCarToUi),
+    [data?.items],
+  );
+
+  const [filteredCars, setFilteredCars] = useState<Car[]>([]);
+  const shown = filteredCars.length ? filteredCars : cars;
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-3 py-6 sm:px-5 sm:py-8 lg:px-8">
@@ -33,31 +51,30 @@ export default function CarsPage() {
               Sayohatingiz uchun qulay va ishonchli avtomobilni tanlang
             </p>
           </div>
-
           <div className="inline-flex items-center gap-2 rounded-full border border-[#d7e8dd] bg-[#f6faf7] px-4 py-2 text-sm font-medium text-[#3f4b44]">
             <span className="h-2 w-2 animate-pulse rounded-full bg-[#00863e]" />
             Jami:{" "}
-            <span className="font-bold text-[#00863e]">
-              {displayedCars.length} ta
-            </span>{" "}
+            <span className="font-bold text-[#00863e]">{shown.length} ta</span>{" "}
             avtomobil
           </div>
         </div>
       </div>
 
-      <div className="flex w-full flex-col items-start gap-6 md:flex-row md:gap-7">
-        <UseCarBrands>
-          <Filter cars={allCars} setFilteredCars={setFilteredCars} />
-        </UseCarBrands>
+      {isLoading && (
+        <p className="mb-4 text-sm text-[#6d7a73]">Mashinalar yuklanmoqda...</p>
+      )}
+      {isError && (
+        <p className="mb-4 text-sm text-red-600">
+          Mashinalarni yuklashda xatolik. Backendni tekshiring.
+        </p>
+      )}
 
+      <div className="flex w-full flex-col items-start gap-6 overflow-visible md:flex-row md:gap-16">
+        <Filter cars={cars} setFilteredCars={setFilteredCars} />
         <div className="min-w-0 flex-1">
-          <AppProvider>
-            <UseWishlistContext>
-              <UseAllCarsContext>
-                <Cars cars={allCars} filteredCars={filteredCars} />
-              </UseAllCarsContext>
-            </UseWishlistContext>
-          </AppProvider>
+          <UseWishlistContext>
+            <Cars cars={cars} filteredCars={shown} />
+          </UseWishlistContext>
         </div>
       </div>
     </div>

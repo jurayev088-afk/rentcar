@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Collapse,
@@ -23,8 +23,18 @@ import {
   Send,
   ChevronRight,
 } from "lucide-react";
+import { useUser } from "@/src/constants/UseMeContext";
+import { useCreateMurojaat } from "@/src/hooks/use-murojaatlar";
 
 const { TextArea } = Input;
+
+const SUBJECT_OPTIONS = [
+  { label: "Bron bilan bog‘liq muammo", value: "bron", subject: "Bron bilan bog‘liq muammo" },
+  { label: "To‘lov bilan bog‘liq muammo", value: "payment", subject: "To‘lov bilan bog‘liq muammo" },
+  { label: "Avtomobil ijarasi", value: "rental", subject: "Avtomobil ijarasi" },
+  { label: "Akkaunt bilan bog‘liq muammo", value: "account", subject: "Akkaunt bilan bog‘liq muammo" },
+  { label: "Boshqa savol", value: "other", subject: "Boshqa savol" },
+];
 
 const categories = [
   { label: "Barchasi", value: "all" },
@@ -115,6 +125,17 @@ const contactItems = [
 export default function YordamMarkazi() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const [form] = Form.useForm();
+  const { user } = useUser();
+  const createMurojaat = useCreateMurojaat();
+
+  useEffect(() => {
+    if (!user) return;
+    form.setFieldsValue({
+      name: user.fullName,
+      contact: user.email || user.phone,
+    });
+  }, [user, form]);
 
   const filteredFaq = useMemo(() => {
     return faqData.filter((item) => {
@@ -129,10 +150,41 @@ export default function YordamMarkazi() {
     });
   }, [search, activeCategory]);
 
-  const handleSubmit = () => {
-    message.info(
-      "Murojaat formasi tayyor. Xabar yuborilishi uchun backend API ulash kerak.",
-    );
+  const handleSubmit = async (values: {
+    name: string;
+    contact: string;
+    subject: string;
+    message: string;
+  }) => {
+    const option = SUBJECT_OPTIONS.find((o) => o.value === values.subject);
+    const contact = values.contact.trim();
+    const isEmail = contact.includes("@");
+
+    try {
+      await createMurojaat.mutateAsync({
+        name: values.name.trim(),
+        email: isEmail ? contact : user?.email,
+        phone: isEmail ? user?.phone : contact,
+        type: values.subject,
+        subject: option?.subject ?? values.subject,
+        message: values.message.trim(),
+      });
+      message.success(
+        "Murojaat yuborildi. Javob Xabarlar bo‘limiga keladi.",
+      );
+      form.setFieldsValue({ subject: undefined, message: "" });
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string | string[] } } })
+          ?.response?.data?.message;
+      message.error(
+        Array.isArray(msg)
+          ? msg[0]
+          : typeof msg === "string"
+            ? msg
+            : "Murojaat yuborilmadi",
+      );
+    }
   };
 
   return (
@@ -304,7 +356,7 @@ export default function YordamMarkazi() {
           </p>
         </div>
 
-        <Form layout="vertical" onFinish={handleSubmit}>
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <div className="grid gap-4 md:grid-cols-2">
             <Form.Item
               label="Ismingiz"
@@ -341,20 +393,20 @@ export default function YordamMarkazi() {
             <Select
               size="large"
               placeholder="Murojaat turini tanlang"
-              options={[
-                { label: "Bron bilan bog‘liq muammo", value: "bron" },
-                { label: "To‘lov bilan bog‘liq muammo", value: "payment" },
-                { label: "Avtomobil ijarasi", value: "rental" },
-                { label: "Akkaunt bilan bog‘liq muammo", value: "account" },
-                { label: "Boshqa savol", value: "other" },
-              ]}
+              options={SUBJECT_OPTIONS.map(({ label, value }) => ({
+                label,
+                value,
+              }))}
             />
           </Form.Item>
 
           <Form.Item
             label="Xabaringiz"
             name="message"
-            rules={[{ required: true, message: "Xabaringizni yozing" }]}
+            rules={[
+              { required: true, message: "Xabaringizni yozing" },
+              { min: 3, message: "Kamida 3 belgi yozing" },
+            ]}
           >
             <TextArea
               rows={4}
@@ -369,6 +421,7 @@ export default function YordamMarkazi() {
             type="primary"
             htmlType="submit"
             size="large"
+            loading={createMurojaat.isPending}
             icon={<Send size={16} />}
             className="!h-11 !rounded-full !border-0 !bg-[#00863e] !px-6 !font-bold hover:!bg-[#006f35]"
           >

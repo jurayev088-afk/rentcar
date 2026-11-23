@@ -1,46 +1,83 @@
 "use client";
 
-import { UseBookings } from "@/src/constants/UseCarsBron";
-import { Table, Button, Image, Space, Tooltip, Empty } from "antd";
+import { Table, Button, Image, Space, Tooltip, Empty, message } from "antd";
 import {
   PhoneOutlined,
   CalendarOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import type { BookingType } from "@/src/types";
+import {
+  useCompanyBookings,
+  useCompleteBooking,
+  useConfirmBooking,
+  useRejectBooking,
+  type ApiBooking,
+} from "@/src/hooks/use-bookings";
+import { getApiErrorMessage } from "@/src/lib/api-error";
+
+const statusStyles: Record<string, string> = {
+  PENDING_COMPANY: "bg-[#fff4e5] text-[#c47a10] ring-[#f0d4a8]",
+  CONFIRMED: "bg-[#eaf6ef] text-[#00863e] ring-[#b9dfc6]",
+  REJECTED: "bg-red-50 text-red-600 ring-red-200",
+  CANCELLED: "bg-red-50 text-red-600 ring-red-200",
+  ACTIVE: "bg-[#e7f3ff] text-[#1d6fb8] ring-[#b7d7f0]",
+  COMPLETED: "bg-[#eef2f0] text-[#5a675f] ring-[#d7ddd9]",
+};
+
+const statusLabels: Record<string, string> = {
+  PENDING_COMPANY: "Kutilmoqda",
+  CONFIRMED: "Tasdiqlangan",
+  REJECTED: "Rad etilgan",
+  CANCELLED: "Bekor qilingan",
+  ACTIVE: "Faol",
+  COMPLETED: "Yakunlangan",
+};
+
+// COMPLETED style already above
 
 export default function BronlarTable() {
-  const { carBron, setCarBron, isLoaded } = UseBookings();
+  const { data, isLoading } = useCompanyBookings();
+  const confirmBooking = useConfirmBooking();
+  const rejectBooking = useRejectBooking();
+  const completeBooking = useCompleteBooking();
+  const items = data?.items ?? [];
 
-  const updateStatus = (
-    id: string | number,
-    status: BookingType["status"],
-  ) => {
-    setCarBron((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, status } : item)),
-    );
-  };
-
-  const formatDate = (date: string | Date | { toString(): string }) => {
+  const formatDate = (date?: string | null) => {
     if (!date) return "-";
-    const d = new Date(date as string);
+    const d = new Date(date);
+    if (Number.isNaN(d.getTime())) return "-";
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   };
 
-  const statusStyles = {
-    PENDING: "bg-[#fff4e5] text-[#c47a10] ring-[#f0d4a8]",
-    CONFIRMED: "bg-[#eaf6ef] text-[#00863e] ring-[#b9dfc6]",
-    REJECTED: "bg-red-50 text-red-600 ring-red-200",
-  } as const;
+  const handleConfirm = async (id: string) => {
+    try {
+      await confirmBooking.mutateAsync(id);
+      message.success("Bron tasdiqlandi");
+    } catch (error: unknown) {
+      message.error(getApiErrorMessage(error, "Tasdiqlashda xatolik"));
+    }
+  };
 
-  const statusLabels = {
-    PENDING: "Kutilmoqda",
-    CONFIRMED: "Tasdiqlangan",
-    REJECTED: "Rad etilgan",
-  } as const;
+  const handleReject = async (id: string) => {
+    try {
+      await rejectBooking.mutateAsync({ id });
+      message.success("Bron rad etildi");
+    } catch (error: unknown) {
+      message.error(getApiErrorMessage(error, "Rad etishda xatolik"));
+    }
+  };
 
-  const columns: ColumnsType<BookingType> = [
+  const handleComplete = async (id: string) => {
+    try {
+      await completeBooking.mutateAsync(id);
+      message.success("Bron yakunlandi");
+    } catch (error: unknown) {
+      message.error(getApiErrorMessage(error, "Yakunlashda xatolik"));
+    }
+  };
+
+  const columns: ColumnsType<ApiBooking> = [
     {
       title: "Mijoz",
       key: "customer",
@@ -55,7 +92,14 @@ export default function BronlarTable() {
             <p className="font-semibold text-[#1f2d25]">
               {record.firstName} {record.lastName}
             </p>
-            <p className="mt-1 text-xs text-[#8d9892]">ID: {record.id}</p>
+            <p className="mt-1 text-xs text-[#8d9892]">
+              {record.code || record.id}
+            </p>
+            {record.car && (
+              <p className="mt-1 text-xs text-[#6d7a73]">
+                {record.car.brand} {record.car.model}
+              </p>
+            )}
           </div>
         </div>
       ),
@@ -97,8 +141,8 @@ export default function BronlarTable() {
     },
     {
       title: "Boshlanishi",
-      dataIndex: "startDate",
-      key: "startDate",
+      dataIndex: "startAt",
+      key: "startAt",
       width: 155,
       render: (date: string) => (
         <div className="flex items-center gap-2">
@@ -111,8 +155,8 @@ export default function BronlarTable() {
     },
     {
       title: "Tugashi",
-      dataIndex: "endDate",
-      key: "endDate",
+      dataIndex: "endAt",
+      key: "endAt",
       width: 145,
       render: (date: string) => (
         <div className="flex items-center gap-2">
@@ -138,28 +182,21 @@ export default function BronlarTable() {
     },
     {
       title: "Guvohnoma",
-      dataIndex: "pravaImg",
-      key: "pravaImg",
-      width: 160,
-      render: (images) => (
-        <Space>
-          {images?.length > 0 ? (
-            images.map((file: BookingType["pravaImg"][number]) => (
-              <Image
-                key={file.uid}
-                src={file.thumbUrl || file.url}
-                alt={file.name}
-                width={48}
-                height={42}
-                className="rounded-lg object-cover"
-                fallback=""
-              />
-            ))
-          ) : (
-            <span className="text-xs text-[#8d9892]">Rasm yo‘q</span>
-          )}
-        </Space>
-      ),
+      dataIndex: "licenseImageUrl",
+      key: "licenseImageUrl",
+      width: 120,
+      render: (url: string) =>
+        url ? (
+          <Image
+            src={url}
+            alt="Guvohnoma"
+            width={48}
+            height={42}
+            className="rounded-lg object-cover"
+          />
+        ) : (
+          <span className="text-xs text-[#8d9892]">Rasm yo‘q</span>
+        ),
     },
     {
       title: "Holati",
@@ -167,10 +204,11 @@ export default function BronlarTable() {
       key: "status",
       width: 140,
       fixed: "right",
-      render: (status: BookingType["status"]) => (
+      render: (status: string) => (
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset ${
-            statusStyles[status] || "bg-[#eef2f0] text-[#5a675f] ring-[#d7ddd9]"
+            statusStyles[status] ||
+            "bg-[#eef2f0] text-[#5a675f] ring-[#d7ddd9]"
           }`}
         >
           <span className="h-1.5 w-1.5 rounded-full bg-current" />
@@ -185,14 +223,15 @@ export default function BronlarTable() {
       fixed: "right",
       render: (_, record) => (
         <Space>
-          {record.status === "PENDING" && (
+          {record.status === "PENDING_COMPANY" && (
             <>
               <Tooltip title="Bronni tasdiqlash">
                 <Button
                   type="primary"
                   size="small"
+                  loading={confirmBooking.isPending}
                   className="!rounded-full !border-0 !bg-[#00863e] hover:!bg-[#006f35]"
-                  onClick={() => updateStatus(record.id, "CONFIRMED")}
+                  onClick={() => handleConfirm(record.id)}
                 >
                   Tasdiqlash
                 </Button>
@@ -202,8 +241,9 @@ export default function BronlarTable() {
                 <Button
                   danger
                   size="small"
+                  loading={rejectBooking.isPending}
                   className="!rounded-full"
-                  onClick={() => updateStatus(record.id, "REJECTED")}
+                  onClick={() => handleReject(record.id)}
                 >
                   Rad etish
                 </Button>
@@ -211,9 +251,24 @@ export default function BronlarTable() {
             </>
           )}
 
-          {record.status === "CONFIRMED" && (
-            <span className="inline-flex rounded-full bg-[#eaf6ef] px-3 py-1.5 text-xs font-semibold text-[#00863e]">
-              Tasdiqlangan
+          {(record.status === "CONFIRMED" || record.status === "ACTIVE") && (
+            <Tooltip title="Ijarani yakunlash">
+              <Button
+                type="primary"
+                size="small"
+                loading={completeBooking.isPending}
+                className="!rounded-full !border-0 !bg-[#00863e] hover:!bg-[#006f35]"
+                onClick={() => handleComplete(record.id)}
+              >
+                Yakunlash
+              </Button>
+            </Tooltip>
+          )}
+
+          {record.status === "COMPLETED" && (
+            <span className="inline-flex rounded-full bg-[#eef2f0] px-3 py-1.5 text-xs font-semibold text-[#5a675f]">
+              Yakunlangan
+              {record.ratingScore ? ` · ${record.ratingScore}/5` : ""}
             </span>
           )}
 
@@ -227,7 +282,7 @@ export default function BronlarTable() {
     },
   ];
 
-  if (!isLoaded) {
+  if (isLoading) {
     return (
       <div className="flex justify-center rounded-3xl border border-[#e5e9e7] bg-white py-20 text-[#00863e]">
         Ma&apos;lumotlar yuklanmoqda...
@@ -252,32 +307,32 @@ export default function BronlarTable() {
           <div className="rounded-2xl border border-[#e5e9e7] bg-[#f6faf7] px-4 py-3">
             <p className="text-xs text-[#8d9892]">Jami bronlar</p>
             <p className="mt-1 text-xl font-bold text-[#1f2d25]">
-              {carBron.length}
+              {items.length}
             </p>
           </div>
 
           <div className="rounded-2xl border border-[#f0d4a8] bg-[#fff4e5] px-4 py-3">
             <p className="text-xs text-[#c47a10]">Kutilmoqda</p>
             <p className="mt-1 text-xl font-bold text-[#c47a10]">
-              {carBron.filter((x) => x.status === "PENDING").length}
+              {items.filter((x) => x.status === "PENDING_COMPANY").length}
             </p>
           </div>
 
           <div className="rounded-2xl border border-[#b9dfc6] bg-[#eaf6ef] px-4 py-3">
             <p className="text-xs text-[#00863e]">Tasdiqlangan</p>
             <p className="mt-1 text-xl font-bold text-[#00863e]">
-              {carBron.filter((x) => x.status === "CONFIRMED").length}
+              {items.filter((x) => x.status === "CONFIRMED").length}
             </p>
           </div>
         </div>
       </div>
 
       <div className="overflow-hidden rounded-3xl border border-[#e5e9e7] bg-white shadow-[0_8px_24px_rgba(16,37,26,0.03)]">
-        <Table<BookingType>
+        <Table<ApiBooking>
           columns={columns}
-          dataSource={carBron}
+          dataSource={items}
           rowKey="id"
-          scroll={{ x: 1800 }}
+          scroll={{ x: 1600 }}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,

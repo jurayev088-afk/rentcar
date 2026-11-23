@@ -1,42 +1,99 @@
 import axios from "axios";
+import {
+  clearTokens,
+  getAccessToken,
+  getRefreshToken,
+  setTokens,
+} from "../lib/auth-storage";
+
+const baseURL =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+  "http://localhost:3000/api/v1";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL, // .env.local faylidagi manzil
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
-console.log("BASE URL:", api.defaults.baseURL);
+function unwrapPayload<T>(payload: unknown): T {
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "success" in payload &&
+    "data" in payload
+  ) {
+    return (payload as { data: T }).data;
+  }
+  return payload as T;
+}
 
-// So'rov ketishidan oldin tokenni biriktirish
 api.interceptors.request.use(
   (config) => {
-    // Next.js da window/localStorage faqat browser muhitida mavjud
-    if (typeof window !== "undefined") {
-      const accessToken = localStorage.getItem("bizdaAccessTokin");
-      if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
+    const accessToken = getAccessToken();
+    if (accessToken) {
+      config.headers.Authorization = `Bearer ${accessToken}`;
+    }
+    // FormData uchun default application/json ni olib tashlash (boundary kerak)
+    if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+      if (typeof config.headers?.set === "function") {
+        config.headers.set("Content-Type", false as unknown as string);
+      } else if (config.headers) {
+        delete (config.headers as Record<string, unknown>)["Content-Type"];
+        delete (config.headers as Record<string, unknown>)["content-type"];
       }
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
-// Serverdan javob kelganda xatolikni ushlash
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken() {
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return null;
+
+  try {
+    const { data } = await axios.post(`${baseURL}/auth/yangilash`, {
+      refreshToken,
+    });
+    const tokens = unwrapPayload<{
+      accessToken: string;
+      refreshToken: string;
+    }>(data);
+    setTokens(tokens.accessToken, tokens.refreshToken);
+    return tokens.accessToken;
+  } catch {
+    clearTokens();
+    return null;
+  }
+}
+
 api.interceptors.response.use(
-  (response) => response,
-  async (err) => {
-    if (err.response?.status === 401) {
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("bizdaAccessTokin");
-        localStorage.removeItem("bizdaRefreshTokin");
+  (response) => {
+    response.data = unwrapPayload(response.data);
+    return response;
+  },
+  async (error) => {
+    const original = error.config as
+      | (typeof error.config & { _retry?: boolean })
+      | undefined;
+    if (error.response?.status === 401 && original && !original._retry) {
+      original._retry = true;
+      refreshPromise ??= refreshAccessToken().finally(() => {
+        refreshPromise = null;
+      });
+      const newToken = await refreshPromise;
+      if (newToken) {
+        original.headers = original.headers ?? {};
+        original.headers.Authorization = `Bearer ${newToken}`;
+        return api(original);
       }
     }
-    return Promise.reject(err);
-  }
+    return Promise.reject(error);
+  },
 );
 
 export default api;

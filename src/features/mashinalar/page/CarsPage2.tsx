@@ -1,13 +1,16 @@
-import UseAllCarsContext from '@/src/constants/UseAllCars'
-import React from 'react'
-import CarsPage from './CarsPage'
+"use client";
+
+import { Suspense } from "react";
+import CarsPage from "./CarsPage";
 
 export default function CarsPage2() {
   return (
-    <div>
-        <UseAllCarsContext>
-            <CarsPage/>
-        </UseAllCarsContext>
-    </div>
-  )
+    <Suspense
+      fallback={
+        <div className="p-8 text-sm text-[#6d7a73]">Yuklanmoqda...</div>
+      }
+    >
+      <CarsPage />
+    </Suspense>
+  );
 }

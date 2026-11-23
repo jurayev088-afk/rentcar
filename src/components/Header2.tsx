@@ -43,7 +43,7 @@ export default function Header2() {
 
       <div
         id="booking"
-        className="relative z-[2] mx-auto mt-2 w-[min(calc(100%-32px),980px)] max-[365px]:w-[calc(100%-20px)] sm:w-[min(calc(100%-40px),980px)] lg:mt-6 lg:w-[min(calc(100%-48px),1100px)]"
+        className="relative z-[2] mx-auto mt-2 w-[min(calc(100%-32px),1100px)] max-[365px]:w-[calc(100%-20px)] sm:w-[min(calc(100%-40px),1100px)] lg:mt-6 lg:w-[min(calc(100%-48px),1240px)]"
       >
         <HeaderSearch />
       </div>

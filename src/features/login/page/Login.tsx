@@ -1,16 +1,30 @@
 "use client";
 
 import RentoLogo from "@/src/components/RentoLogo";
-import { useUser, type Account } from "@/src/constants/UseMeContext";
+import { useUser } from "@/src/constants/UseMeContext";
+import { useLogin } from "@/src/hooks/use-login";
+import { useRegister } from "@/src/hooks/use-register";
 import { Button, Form, Input } from "antd";
-import { ArrowLeft, ArrowRight, Building2, CarFront } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  CarFront,
+  ShieldCheck,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import "./login.css";
+import { useEffect, useMemo, useState } from "react";
 
-type Credentials = Pick<Account, "phone" | "password">;
-type Registration = Omit<Account, "role">;
+type Credentials = { phone: string; password: string };
+type Registration = {
+  fullName: string;
+  phone: string;
+  email?: string;
+  password: string;
+  companyName?: string;
+  stir?: string;
+};
 
 const phoneRules = [
   { required: true, message: "Telefon raqamingizni kiriting." },
@@ -20,6 +34,29 @@ const phoneRules = [
   },
 ];
 
+const copy = {
+  USER: {
+    eyebrow: "Mijoz kabineti",
+    title: "Avtomobil ijara\nqidiruvingiz shu yerda",
+    description:
+      "Minglab mashinalar orasidan o‘zingizga mosini tanlang, bron qiling va ijarani profilingizdan kuzating.",
+    welcome: "Xush kelibsiz, Mijoz!",
+    welcomeSub: "Bron va sevimlilar uchun hisobingizga kiring",
+    registerHint: "Ijaraga moshina olish uchun tezkor ro‘yxatdan o‘ting",
+    shield: "Mijoz uchun himoyalangan kirish",
+  },
+  COMPANY: {
+    eyebrow: "Kompaniya kabineti",
+    title: "Avtoparkingiz\nboshqaruvi shu yerda",
+    description:
+      "Mashinalarni joylashtiring, bronlarni tasdiqlang va kompaniya statistikasini yagona paneldan nazorat qiling.",
+    welcome: "Xush kelibsiz, kompaniya!",
+    welcomeSub: "Kompaniya kabinetiga kirish uchun ma’lumotlaringizni kiriting",
+    registerHint: "Kompaniyani RENTO’da ochish uchun ro‘yxatdan o‘ting",
+    shield: "Kompaniya uchun himoyalangan kirish",
+  },
+} as const;
+
 export default function Login({
   destination,
   initialRegister = false,
@@ -28,166 +65,200 @@ export default function Login({
   initialRegister?: boolean;
 }) {
   const router = useRouter();
-  const { loading, logIn, registerUser, users } = useUser();
-  const accounts: Account[] = users;
-  const [role, setRole] = useState<Account["role"]>("RENTER");
+  const { user, loading } = useUser();
+  const loginMutation = useLogin();
+  const registerMutation = useRegister();
+  const [role, setRole] = useState<"USER" | "COMPANY">("USER");
   const [isRegister, setIsRegister] = useState(initialRegister);
-  const [error, setError] = useState("");
-  const loginTitle = useRef<HTMLHeadingElement>(null);
-  const registerTitle = useRef<HTMLHeadingElement>(null);
-  const focusHeading = useRef(false);
-  const { user } = useUser();
+  const text = copy[role];
+
+  const afterAuthPath = useMemo(() => {
+    if (destination && destination !== "/") return destination;
+    return "/";
+  }, [destination]);
 
   useEffect(() => {
-    if (user) {
-      router.replace("/");
-    }
-  }, [user, router]);
+    if (!user) return;
+    router.replace(afterAuthPath);
+  }, [user, router, afterAuthPath]);
 
-  useEffect(() => {
-    if (focusHeading.current) {
-      (isRegister ? registerTitle : loginTitle).current?.focus({
-        preventScroll: true,
-      });
-      focusHeading.current = false;
-    }
-  }, [isRegister]);
-
-  function flip() {
-    setError("");
-    focusHeading.current = true;
-    setIsRegister(!isRegister);
+  async function signIn(values: Credentials) {
+    await loginMutation.mutateAsync(values);
+    router.replace(afterAuthPath);
   }
 
-  function signIn({ phone, password }: Credentials) {
-    const account = accounts.find(
-      (item) =>
-        item.phone === phone &&
-        item.password === password &&
-        item.role === role,
-    );
-    if (!account) {
-      setError("Telefon raqami yoki parol noto‘g‘ri.");
-      return;
-    }
-    logIn(account);
-    router.replace(destination);
+  async function signUp(values: Registration) {
+    await registerMutation.mutateAsync({
+      ...values,
+      role,
+      companyName: role === "COMPANY" ? values.companyName : undefined,
+    });
+    router.replace(afterAuthPath);
   }
 
-  function signUp(values: Registration) {
-    if (
-      accounts.some((item) => item.phone === values.phone && item.role === role)
-    ) {
-      setError("Bu telefon raqam bilan hisob ochilgan. Tizimga kiring.");
-      return;
-    }
-    registerUser({ ...values, fullName: values.fullName.trim(), role });
-    router.replace(destination);
-  }
+  const busy =
+    loading || loginMutation.isPending || registerMutation.isPending;
 
-  function renderFace(register: boolean) {
-    const hidden = register !== isRegister;
-    return (
-      <section
-        className={`rento-auth-face ${register ? "rento-auth-back" : ""}`}
-        aria-labelledby={register ? "register-title" : "login-title"}
-        aria-hidden={hidden}
-        inert={hidden}
-      >
-        <div className="rento-auth-content">
-          <Link href="/" className="rento-auth-brand">
-            <RentoLogo className="w-36" />
+  if (user) return null;
+
+  return (
+    <div className="flex min-h-screen w-full flex-col lg:flex-row">
+      <div className="relative flex min-h-[280px] flex-1 flex-col justify-between overflow-hidden bg-[linear-gradient(160deg,#0f2a1c_0%,#10251a_48%,#165a36_100%)] px-8 py-8 sm:px-12 lg:min-h-screen lg:px-16 lg:py-12">
+        <div className="pointer-events-none absolute -left-32 -top-32 h-[450px] w-[450px] rounded-full bg-[#00863e]/25 blur-[100px]" />
+        <div className="pointer-events-none absolute -bottom-40 -right-20 h-[400px] w-[400px] rounded-full bg-[#00863e]/15 blur-[100px]" />
+
+        <div className="relative z-10">
+          <Link href="/">
+            <RentoLogo className="w-36 brightness-0 invert" />
           </Link>
-          <h1
-            id={register ? "register-title" : "login-title"}
-            ref={register ? registerTitle : loginTitle}
-            tabIndex={-1}
-          >
-            {register ? "Hisob yarating" : "Hisobingizga kiring"}
-          </h1>
-          <p className="rento-auth-description">
-            {register
-              ? "RENTO bilan sayohatingizni boshlang."
-              : "Avtomobil ijarasini davom ettirish uchun kiring."}
-          </p>
+        </div>
 
-          <div
-            className="rento-auth-roles"
-            role="group"
-            aria-label="Hisob turi"
-          >
-            {(
-              [
-                ["RENTER", "Ijarachi", CarFront],
-                ["OWNER", "Kompaniya", Building2],
-              ] as const
-            ).map(([value, label, Icon]) => (
-              <button
-                key={value}
-                type="button"
-                aria-pressed={role === value}
-                onClick={() => {
-                  setRole(value);
-                  setError("");
-                }}
-              >
-                <Icon size={16} aria-hidden="true" /> {label}
-              </button>
-            ))}
+        <div className="relative z-10 my-10 max-w-[550px] lg:my-12">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[1.2px] text-white/90 backdrop-blur-sm">
+            {role === "COMPANY" ? (
+              <Building2 size={14} />
+            ) : (
+              <CarFront size={14} />
+            )}
+            {text.eyebrow}
           </div>
 
-          <Form
-            name={register ? "rento-registration" : "rento-login"}
-            layout="vertical"
-            requiredMark={false}
-            onValuesChange={() => setError("")}
-            onFinish={register ? signUp : signIn}
-            className="rento-auth-form"
-          >
-            {register && role === "OWNER" && (
-              <div className="rento-auth-fieldsPair">
-                <Form.Item name="companyName" label="Kompaniya nomi">
-                  <Input
-                    autoComplete="organization"
-                    placeholder="Kompaniya nomi"
-                  />
-                </Form.Item>
-                <Form.Item name="stir" label="STIR">
-                  <Input inputMode="numeric" placeholder="STIR raqami" />
-                </Form.Item>
-              </div>
+          <div className="mb-7 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-white backdrop-blur-sm">
+            {role === "COMPANY" ? (
+              <Building2 size={27} />
+            ) : (
+              <CarFront size={27} />
             )}
+          </div>
 
-            {register && (
-              <Form.Item
-                name="fullName"
-                label="Ism va familiya"
-                rules={[
-                  {
-                    required: true,
-                    whitespace: true,
-                    message: "Ism va familiyangizni kiriting.",
-                  },
-                ]}
-              >
-                <Input autoComplete="name" placeholder="Ism va familiyangiz" />
-              </Form.Item>
-            )}
+          <h1 className="whitespace-pre-line text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
+            {text.title}
+          </h1>
+
+          <p className="mt-6 max-w-[470px] text-sm leading-7 text-[#9aa59e] sm:text-base">
+            {text.description}
+          </p>
+        </div>
+
+        <div className="relative z-10 text-xs text-[#8d9892] sm:text-sm">
+          Rento · 2026
+        </div>
+      </div>
+
+      <div className="flex flex-1 items-center justify-center bg-[#f4f6f5] px-4 py-10 sm:px-8">
+        <div className="w-full max-w-[440px]">
+          <Link
+            href="/"
+            className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-[#6d7a73] no-underline hover:text-[#00863e] lg:hidden"
+          >
+            <ArrowLeft size={16} /> Bosh sahifa
+          </Link>
+
+          <div className="rounded-[28px] border border-white bg-white p-6 shadow-[0_20px_50px_rgba(16,37,26,0.08)] sm:p-8">
+            <h2 className="text-2xl font-bold text-[#1f2d25]">{text.welcome}</h2>
+            <p className="mt-2 text-sm text-[#6d7a73]">
+              {isRegister ? text.registerHint : text.welcomeSub}
+            </p>
 
             <div
-              className={`rento-auth-fieldsPair ${!register ? "rento-auth-singleColumn" : ""}`}
+              className="mt-5 grid grid-cols-2 gap-2 rounded-2xl bg-[#f4f6f5] p-1.5"
+              role="group"
+              aria-label="Hisob turi"
             >
+              {(
+                [
+                  ["USER", "Mijoz", CarFront],
+                  ["COMPANY", "Kompaniya", Building2],
+                ] as const
+              ).map(([value, label, Icon]) => {
+                const active = role === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setRole(value)}
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition ${
+                      active
+                        ? "bg-white text-[#00863e] shadow-sm"
+                        : "text-[#6d7a73] hover:text-[#1f2d25]"
+                    }`}
+                  >
+                    <Icon size={16} aria-hidden />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <Form
+              key={`${role}-${isRegister ? "reg" : "login"}`}
+              layout="vertical"
+              requiredMark={false}
+              onFinish={isRegister ? signUp : signIn}
+              className="mt-5"
+            >
+              {isRegister && role === "COMPANY" && (
+                <div className="grid grid-cols-1 gap-x-3 sm:grid-cols-2">
+                  <Form.Item
+                    name="companyName"
+                    label="Kompaniya nomi"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Kompaniya nomini kiriting.",
+                      },
+                    ]}
+                  >
+                    <Input
+                      size="large"
+                      autoComplete="organization"
+                      placeholder="Kompaniya nomi"
+                    />
+                  </Form.Item>
+                  <Form.Item name="stir" label="STIR">
+                    <Input
+                      size="large"
+                      inputMode="numeric"
+                      placeholder="STIR raqami"
+                    />
+                  </Form.Item>
+                </div>
+              )}
+
+              {isRegister && (
+                <Form.Item
+                  name="fullName"
+                  label="Ism va familiya"
+                  rules={[
+                    {
+                      required: true,
+                      whitespace: true,
+                      message: "Ism va familiyangizni kiriting.",
+                    },
+                  ]}
+                >
+                  <Input
+                    size="large"
+                    autoComplete="name"
+                    placeholder="Ism va familiyangiz"
+                  />
+                </Form.Item>
+              )}
+
               <Form.Item name="phone" label="Telefon raqami" rules={phoneRules}>
                 <Input
+                  size="large"
                   prefix="+998"
                   type="tel"
                   inputMode="numeric"
-                  autoComplete={register ? "tel-national" : "username"}
+                  autoComplete={isRegister ? "tel-national" : "username"}
                   maxLength={9}
                   placeholder="90 123 45 67"
                 />
               </Form.Item>
-              {register && (
+
+              {isRegister && (
                 <Form.Item
                   name="email"
                   label="Elektron pochta"
@@ -199,67 +270,72 @@ export default function Login({
                   ]}
                 >
                   <Input
+                    size="large"
                     type="email"
                     autoComplete="email"
                     placeholder="ism@example.uz"
                   />
                 </Form.Item>
               )}
+
+              <Form.Item
+                name="password"
+                label="Parol"
+                rules={[
+                  { required: true, message: "Parolni kiriting." },
+                  {
+                    min: 6,
+                    message: "Parol kamida 6 ta belgidan iborat bo‘lsin.",
+                  },
+                ]}
+              >
+                <Input.Password
+                  size="large"
+                  autoComplete={
+                    isRegister ? "new-password" : "current-password"
+                  }
+                  placeholder={
+                    isRegister ? "Parol yarating" : "Parolingizni kiriting"
+                  }
+                />
+              </Form.Item>
+
+              <Button
+                type="primary"
+                htmlType="submit"
+                disabled={busy}
+                loading={busy}
+                block
+                size="large"
+                className="!mt-1 !h-12 !rounded-xl !border-0 !bg-[#00863e] !font-bold hover:!bg-[#006f35]"
+              >
+                {isRegister ? "Hisob yaratish" : "Tizimga kirish"}{" "}
+                <ArrowRight size={17} aria-hidden />
+              </Button>
+            </Form>
+
+            <p className="mt-5 text-center text-sm text-[#6d7a73]">
+              {isRegister ? "Hisobingiz bormi?" : "Hisobingiz yo‘qmi?"}{" "}
+              <button
+                type="button"
+                onClick={() => setIsRegister((v) => !v)}
+                className="font-bold text-[#00863e] hover:underline"
+              >
+                {isRegister ? "Kirish" : "Ro‘yxatdan o‘tish"}
+              </button>
+            </p>
+
+            <div className="mt-5 flex items-center justify-center gap-2 text-xs font-medium text-[#00863e]">
+              <ShieldCheck size={15} />
+              {text.shield}
             </div>
+          </div>
 
-            <Form.Item
-              name="password"
-              label="Parol"
-              rules={[{ required: true, message: "Parolni kiriting." }]}
-            >
-              <Input.Password
-                autoComplete={register ? "new-password" : "current-password"}
-                placeholder={register ? "Parol yarating" : "Parolingiz"}
-              />
-            </Form.Item>
-
-            {!hidden && error && (
-              <p className="rento-auth-error" role="alert">
-                {error}
-              </p>
-            )}
-            <Button
-              type="primary"
-              htmlType="submit"
-              disabled={loading}
-              className="rento-auth-submit"
-            >
-              {register ? "Hisob yaratish" : "Kirish"}{" "}
-              <ArrowRight size={17} aria-hidden="true" />
-            </Button>
-          </Form>
-
-          <p className="rento-auth-switch">
-            {register ? "Hisobingiz bormi?" : "Hisobingiz yo‘qmi?"}{" "}
-            <button type="button" onClick={flip}>
-              {register ? "Kirish" : "Ro‘yxatdan o‘tish"}
-            </button>
+          <p className="mt-6 text-center text-xs text-[#8d9892]">
+            Rento. Barcha huquqlar himoyalangan.
           </p>
         </div>
-      </section>
-    );
-  }
-
-  if (user) return null;
-
-  return (
-    <main className="rento-auth-page">
-      <Link href="/" className="rento-auth-home">
-        <ArrowLeft size={17} aria-hidden="true" /> Bosh sahifaga
-      </Link>
-      <div className="rento-auth-scene">
-        <div
-          className={`rento-auth-card ${isRegister ? "rento-auth-flipped" : ""}`}
-        >
-          {renderFace(false)}
-          {renderFace(true)}
-        </div>
       </div>
-    </main>
+    </div>
   );
 }

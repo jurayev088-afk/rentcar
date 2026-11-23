@@ -19,7 +19,7 @@ interface CarBrandsContextType {
   isLoaded?: boolean;
 }
 
-const carBrand: CarBrandType[] = [
+export const carBrand: CarBrandType[] = [
   { label: "Chevrolet", value: "CHEVROLET" },
   { label: "BMW", value: "BMW" },
   { label: "Mercedes-Benz", value: "MERCEDES_BENZ" },

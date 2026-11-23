@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import SafeImage from "@/src/components/SafeImage";
 import { useRouter } from "next/navigation";
 import {
   Heart,
@@ -19,7 +19,7 @@ import { Car } from "@/src/types";
 
 export default function WishlistCard() {
   const router = useRouter();
-  const { wishlist, toggleWishlist } = UseWishlist();
+  const { wishlist, toggleWishlist, isLoading } = UseWishlist();
   const { user } = useUser();
 
   const formatPrice = (price: Car["price"]) => {
@@ -87,8 +87,11 @@ export default function WishlistCard() {
           </div>
         </div>
 
-        {/* CARS */}
-        {wishlist?.length > 0 && user ? (
+        {isLoading ? (
+          <div className="rounded-3xl border border-gray-100 bg-white py-20 text-center text-[#00863e]">
+            Sevimlilar yuklanmoqda...
+          </div>
+        ) : wishlist?.length > 0 && user ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {wishlist?.map((car) => {
               const isFavorite = wishlist.some((item) => item.id === car.id);
@@ -107,7 +110,7 @@ export default function WishlistCard() {
                 >
                   {/* Car image */}
                   <div className="relative h-56 w-full overflow-hidden bg-slate-100">
-                    <Image
+                    <SafeImage
                       src={carImage}
                       alt={carName}
                       fill

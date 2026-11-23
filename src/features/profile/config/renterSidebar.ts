@@ -4,9 +4,9 @@ import {
   Heart,
   MessageCircle,
   Headset,
-  Settings,
   UserRound,
   LogOut,
+  AlertTriangle,
 } from "lucide-react";
 
 export const renterSidebar = [
@@ -41,8 +41,13 @@ export const renterSidebar = [
     icon: Headset,
   },
   {
+    title: "Shikoyatlar",
+    href: "/profile/renter/shikoyatlar",
+    icon: AlertTriangle,
+  },
+  {
     title: "Chiqish",
     href: "/",
     icon: LogOut,
-  }
+  },
 ];

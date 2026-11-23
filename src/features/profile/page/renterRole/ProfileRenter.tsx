@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   CalendarCheck,
   CarFront,
@@ -17,83 +18,84 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useUser } from "@/src/constants/UseMeContext";
-
-const stats = [
-  {
-    title: "Jami bronlar",
-    value: "12",
-    description: "Barcha bronlaringiz",
-    icon: CalendarCheck,
-    tone: "bg-[#eaf6ef] text-[#00863e]",
-  },
-  {
-    title: "Faol ijaralar",
-    value: "02",
-    description: "Hozir foydalanilmoqda",
-    icon: CarFront,
-    tone: "bg-[#e7f3ff] text-[#1d6fb8]",
-  },
-  {
-    title: "Kutilayotgan",
-    value: "03",
-    description: "Tasdiqlanishi kutilmoqda",
-    icon: Clock3,
-    tone: "bg-[#fff4e5] text-[#c47a10]",
-  },
-  {
-    title: "Jami xarajat",
-    value: "4.5 mln",
-    description: "So'm hisobida",
-    icon: Wallet,
-    tone: "bg-[#f1eefc] text-[#6b4fd3]",
-  },
-];
-
-const bookings = [
-  {
-    id: "#RB-1024",
-    car: "Chevrolet Malibu 2",
-    date: "16 – 20 Noyabr, 2026",
-    price: "2 600 000 so'm",
-    status: "Tasdiqlangan",
-    color: "bg-[#eaf6ef] text-[#00863e]",
-    image:
-      "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=200",
-  },
-  {
-    id: "#RB-1023",
-    car: "BYD Song Plus",
-    date: "21 – 25 Noyabr, 2026",
-    price: "3 250 000 so'm",
-    status: "Kutilmoqda",
-    color: "bg-[#fff4e5] text-[#c47a10]",
-    image:
-      "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=200",
-  },
-  {
-    id: "#RB-1022",
-    car: "Kia K5",
-    date: "10 – 12 Noyabr, 2026",
-    price: "1 300 000 so'm",
-    status: "Yakunlangan",
-    color: "bg-[#eef2f0] text-[#5a675f]",
-    image:
-      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=200",
-  },
-];
-
-const expenses = [
-  { month: "Iyul", amount: 35 },
-  { month: "Avg", amount: 55 },
-  { month: "Sen", amount: 42 },
-  { month: "Okt", amount: 75 },
-  { month: "Noy", amount: 90 },
-  { month: "Dek", amount: 60 },
-];
+import { useMyBookings } from "@/src/hooks/use-bookings";
+import { useFavorites } from "@/src/hooks/use-favorites";
+import { carPrimaryImage } from "@/src/lib/media";
+import {
+  bookingStatusLabel,
+  formatDateRange,
+  formatDateShort,
+  formatMoney,
+  monthBucketsFromBookings,
+} from "@/src/lib/format";
 
 export default function ProfileRenter() {
   const { user } = useUser();
   const firstName = user?.fullName?.trim()?.split(" ")[0] || "foydalanuvchi";
+  const bookingsQuery = useMyBookings();
+  const favoritesQuery = useFavorites();
+
+  const bookings = bookingsQuery.data?.items ?? [];
+  const favoritesCount = favoritesQuery.data?.length ?? 0;
+
+  const stats = useMemo(() => {
+    const active = bookings.filter((b) =>
+      ["CONFIRMED", "ACTIVE"].includes(b.status),
+    ).length;
+    const pending = bookings.filter(
+      (b) => b.status === "PENDING_COMPANY",
+    ).length;
+    const spent = bookings
+      .filter((b) =>
+        ["CONFIRMED", "ACTIVE", "COMPLETED"].includes(b.status),
+      )
+      .reduce((sum, b) => sum + Number(b.totalAmount ?? 0), 0);
+
+    return [
+      {
+        title: "Jami bronlar",
+        value: String(bookings.length),
+        description: "Barcha bronlaringiz",
+        icon: CalendarCheck,
+        tone: "bg-[#eaf6ef] text-[#00863e]",
+      },
+      {
+        title: "Faol ijaralar",
+        value: String(active).padStart(2),
+        description: "Tasdiqlangan / faol",
+        icon: CarFront,
+        tone: "bg-[#e7f3ff] text-[#1d6fb8]",
+      },
+      {
+        title: "Kutilayotgan",
+        value: String(pending).padStart(2),
+        description: "Tasdiqlanishi kutilmoqda",
+        icon: Clock3,
+        tone: "bg-[#fff4e5] text-[#c47a10]",
+      },
+      {
+        title: "Jami xarajat",
+        value: formatMoney(spent),
+        description: "So‘m hisobida",
+        icon: Wallet,
+        tone: "bg-[#f1eefc] text-[#6b4fd3]",
+      },
+    ];
+  }, [bookings]);
+
+  const activeBooking =
+    bookings.find((b) => b.status === "ACTIVE") ||
+    bookings.find((b) => b.status === "CONFIRMED") ||
+    null;
+
+  const recentBookings = bookings.slice(0, 5);
+  const expenses = useMemo(() => {
+    const all = monthBucketsFromBookings(bookings);
+    const month = new Date().getMonth();
+    return all.slice(Math.max(0, month - 5), month + 1);
+  }, [bookings]);
+  const currentMonthSpend = expenses[expenses.length - 1]?.raw ?? 0;
+  const loading = bookingsQuery.isLoading;
 
   return (
     <div className="space-y-6">
@@ -106,7 +108,7 @@ export default function ProfileRenter() {
             Xush kelibsiz, {firstName}!
           </h1>
           <p className="mt-2 text-sm text-[#6d7a73]">
-            Ijaralaringiz va bronlaringizni bir joyda boshqaring.
+            Ijaralaringiz va bronlaringiz — real ma’lumotlar.
           </p>
         </div>
 
@@ -117,7 +119,6 @@ export default function ProfileRenter() {
             aria-label="Xabarlar"
           >
             <Bell size={18} />
-            <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#00863e]" />
           </Link>
           <Link
             href="/cars"
@@ -129,13 +130,17 @@ export default function ProfileRenter() {
         </div>
       </div>
 
+      {loading && (
+        <p className="text-sm text-[#6d7a73]">Dashboard yuklanmoqda...</p>
+      )}
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((item) => {
           const Icon = item.icon;
           return (
             <div
               key={item.title}
-              className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(16,37,26,0.07)]"
+              className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)]"
             >
               <div className="flex items-center justify-between">
                 <div
@@ -159,59 +164,92 @@ export default function ProfileRenter() {
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
         <div className="overflow-hidden rounded-3xl bg-[linear-gradient(145deg,#0f2a1c,#165a36_52%,#00863e)] p-5 text-white shadow-[0_14px_32px_rgba(0,134,62,0.2)] sm:p-6 xl:col-span-2">
-          <div className="flex items-center justify-between gap-3">
-            <div>
+          {activeBooking ? (
+            <>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm text-white/70">Hozirgi faol ijara</p>
+                  <h2 className="mt-1 text-xl font-bold">
+                    {activeBooking.car
+                      ? `${activeBooking.car.brand} ${activeBooking.car.model}`
+                      : "Avtomobil"}
+                  </h2>
+                </div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-2 text-xs font-semibold text-[#b7f0c8]">
+                  <span className="h-2 w-2 rounded-full bg-[#7dff9d]" />
+                  {bookingStatusLabel(activeBooking.status)}
+                </span>
+              </div>
+
+              <div className="mt-5 overflow-hidden rounded-2xl">
+                <img
+                  src={carPrimaryImage(activeBooking.car?.images)}
+                  alt="Faol ijara"
+                  className="h-52 w-full object-cover sm:h-64"
+                />
+              </div>
+
+              <div className="mt-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div>
+                  <h3 className="text-xl font-bold">
+                    {activeBooking.car
+                      ? `${activeBooking.car.brand} ${activeBooking.car.model}`
+                      : "Avtomobil"}
+                  </h3>
+                  <p className="mt-1 text-sm text-white/70">
+                    {activeBooking.code || activeBooking.id.slice(0, 8)}
+                    {activeBooking.company?.name
+                      ? ` · ${activeBooking.company.name}`
+                      : ""}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xl font-bold">
+                    {formatMoney(activeBooking.totalAmount)}
+                  </p>
+                  <p className="text-xs text-white/70">Jami summa</p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-2 gap-3 rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
+                <div>
+                  <p className="text-xs text-white/70">Olish sanasi</p>
+                  <p className="mt-2 flex items-center gap-2 text-sm font-semibold">
+                    <CalendarDays size={16} />
+                    {formatDateShort(activeBooking.startAt)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-white/70">Qaytarish sanasi</p>
+                  <p className="mt-2 flex items-center gap-2 text-sm font-semibold">
+                    <CalendarDays size={16} />
+                    {formatDateShort(activeBooking.endAt)}
+                  </p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex min-h-[280px] flex-col items-start justify-center">
               <p className="text-sm text-white/70">Hozirgi faol ijara</p>
-              <h2 className="mt-1 text-xl font-bold">Avtomobilingiz</h2>
-            </div>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-2 text-xs font-semibold text-[#b7f0c8]">
-              <span className="h-2 w-2 rounded-full bg-[#7dff9d]" />
-              Faol
-            </span>
-          </div>
-
-          <div className="mt-5 overflow-hidden rounded-2xl">
-            <img
-              src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=1000"
-              alt="Chevrolet Malibu"
-              className="h-52 w-full object-cover sm:h-64"
-            />
-          </div>
-
-          <div className="mt-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-            <div>
-              <h3 className="text-xl font-bold">Chevrolet Malibu 2</h3>
-              <p className="mt-1 text-sm text-white/70">
-                2024 · Oq rang · 01 A 777 AA
+              <h2 className="mt-2 text-2xl font-bold">Hali faol bron yo‘q</h2>
+              <p className="mt-2 max-w-md text-sm text-white/75">
+                Mashina bron qilib, kompaniya tasdiqlagach bu yerda ko‘rinadi.
               </p>
+              <Link
+                href="/cars"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-bold text-[#00863e]"
+              >
+                Mashina qidirish <ArrowRight size={16} />
+              </Link>
             </div>
-            <div>
-              <p className="text-xl font-bold">650 000 so&apos;m</p>
-              <p className="text-xs text-white/70">Bir kun uchun</p>
-            </div>
-          </div>
-
-          <div className="mt-5 grid grid-cols-2 gap-3 rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
-            <div>
-              <p className="text-xs text-white/70">Olish sanasi</p>
-              <p className="mt-2 flex items-center gap-2 text-sm font-semibold">
-                <CalendarDays size={16} />
-                16.11.2026
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-white/70">Qaytarish sanasi</p>
-              <p className="mt-2 flex items-center gap-2 text-sm font-semibold">
-                <CalendarDays size={16} />
-                20.11.2026
-              </p>
-            </div>
-          </div>
+          )}
         </div>
 
         <div className="rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] sm:p-6">
           <h2 className="text-lg font-bold text-[#1f2d25]">Tezkor amallar</h2>
-          <p className="mt-1 text-sm text-[#8d9892]">Kerakli bo&apos;limga tez o&apos;ting</p>
+          <p className="mt-1 text-sm text-[#8d9892]">
+            Kerakli bo&apos;limga tez o&apos;ting
+          </p>
 
           <div className="mt-6 space-y-3">
             {[
@@ -225,14 +263,14 @@ export default function ProfileRenter() {
               {
                 href: "/profile/renter/bronlarim",
                 title: "Mening bronlarim",
-                desc: "Barcha bronlarni ko'ring",
+                desc: `${bookings.length} ta bron`,
                 icon: CalendarCheck,
                 tone: "bg-[#e7f3ff] text-[#1d6fb8]",
               },
               {
                 href: "/sevimlilar",
                 title: "Sevimlilar",
-                desc: "Saqlangan avtomobillar",
+                desc: `${favoritesCount} ta saqlangan`,
                 icon: Heart,
                 tone: "bg-red-50 text-red-500",
               },
@@ -276,38 +314,59 @@ export default function ProfileRenter() {
           </div>
 
           <div className="mt-6 space-y-3">
-            {bookings.map((booking) => (
-              <div
-                key={booking.id}
-                className="flex flex-col gap-3 rounded-2xl border border-[#eef2f0] p-3 transition hover:border-[#d7e8dd] hover:bg-[#f8fbf9] sm:flex-row sm:items-center"
-              >
-                <img
-                  src={booking.image}
-                  alt={booking.car}
-                  className="h-20 w-full rounded-xl object-cover sm:w-28"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-[#8d9892]">{booking.id}</p>
-                  <h3 className="mt-1 font-semibold text-[#1f2d25]">
-                    {booking.car}
-                  </h3>
-                  <p className="mt-1 flex items-center gap-1 text-xs text-[#8d9892]">
-                    <CalendarDays size={13} />
-                    {booking.date}
-                  </p>
+            {recentBookings.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-[#d7e8dd] px-4 py-8 text-center text-sm text-[#8d9892]">
+                Hozircha bronlar yo‘q
+              </p>
+            ) : (
+              recentBookings.map((booking) => (
+                <div
+                  key={booking.id}
+                  className="flex flex-col gap-3 rounded-2xl border border-[#eef2f0] p-3 transition hover:border-[#d7e8dd] hover:bg-[#f8fbf9] sm:flex-row sm:items-center"
+                >
+                  <img
+                    src={carPrimaryImage(booking.car?.images)}
+                    alt={
+                      booking.car
+                        ? `${booking.car.brand} ${booking.car.model}`
+                        : "Car"
+                    }
+                    className="h-20 w-full rounded-xl object-cover sm:w-28"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs text-[#8d9892]">
+                      {booking.code || booking.id.slice(0, 8)}
+                    </p>
+                    <h3 className="mt-1 font-semibold text-[#1f2d25]">
+                      {booking.car
+                        ? `${booking.car.brand} ${booking.car.model}`
+                        : "Avtomobil"}
+                    </h3>
+                    <p className="mt-1 flex items-center gap-1 text-xs text-[#8d9892]">
+                      <CalendarDays size={13} />
+                      {formatDateRange(booking.startAt, booking.endAt)}
+                    </p>
+                  </div>
+                  <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
+                    <span
+                      className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                        booking.status === "CONFIRMED" ||
+                        booking.status === "ACTIVE"
+                          ? "bg-[#eaf6ef] text-[#00863e]"
+                          : booking.status === "PENDING_COMPANY"
+                            ? "bg-[#fff4e5] text-[#c47a10]"
+                            : "bg-[#eef2f0] text-[#5a675f]"
+                      }`}
+                    >
+                      {bookingStatusLabel(booking.status)}
+                    </span>
+                    <p className="text-sm font-bold text-[#1f2d25]">
+                      {formatMoney(booking.totalAmount)}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end">
-                  <span
-                    className={`rounded-full px-3 py-1.5 text-xs font-semibold ${booking.color}`}
-                  >
-                    {booking.status}
-                  </span>
-                  <p className="text-sm font-bold text-[#1f2d25]">
-                    {booking.price}
-                  </p>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -325,7 +384,7 @@ export default function ProfileRenter() {
           <div className="mt-7">
             <p className="text-sm text-[#8d9892]">Joriy oy xarajatlari</p>
             <h3 className="mt-1 text-2xl font-bold text-[#1f2d25]">
-              4 500 000 so&apos;m
+              {formatMoney(currentMonthSpend)}
             </h3>
           </div>
 
@@ -338,9 +397,11 @@ export default function ProfileRenter() {
                 <div className="flex h-full w-full items-end overflow-hidden rounded-t-md bg-[#eef2f0]">
                   <div
                     className={`w-full rounded-t-md ${
-                      item.month === "Noy" ? "bg-[#00863e]" : "bg-[#b7d9c4]"
+                      item === expenses[expenses.length - 1]
+                        ? "bg-[#00863e]"
+                        : "bg-[#b7d9c4]"
                     }`}
-                    style={{ height: `${item.amount}%` }}
+                    style={{ height: `${item.amountPct}%` }}
                   />
                 </div>
                 <span className="text-[11px] text-[#8d9892]">{item.month}</span>
@@ -351,7 +412,7 @@ export default function ProfileRenter() {
           <div className="mt-5 flex items-center gap-2 rounded-2xl bg-[#eaf6ef] p-3">
             <TrendingUp size={17} className="text-[#00863e]" />
             <p className="text-xs text-[#2f6b49]">
-              Xarajatlar statistikasi demo ma&apos;lumotlar asosida.
+              Xarajatlar bronlaringiz asosida hisoblanadi.
             </p>
           </div>
         </div>

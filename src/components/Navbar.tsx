@@ -23,9 +23,11 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 
-import { ArrowRight, Heart } from "lucide-react";
+import { ArrowRight, Bell, Heart } from "lucide-react";
 
 import { useUser } from "../constants/UseMeContext";
+import { useFavorites } from "../hooks/use-favorites";
+import { useNotifications } from "../hooks/use-notifications";
 import BookingAuthDialog from "../features/mashinalar/components/BookingAuthDialog";
 
 const navLinks = [
@@ -44,6 +46,11 @@ export default function Navbar({ home = false }: { home?: boolean }) {
   const [bookingPrompt, setBookingPrompt] = useState(false);
 
   const { user, loading } = useUser();
+  const { data: notifications } = useNotifications(Boolean(user));
+  const { data: favoriteCars = [] } = useFavorites();
+  const unreadCount = notifications?.unreadCount ?? 0;
+  const hasUnread = Boolean(user) && unreadCount > 0;
+  const likesCount = user?.role === "RENTER" ? favoriteCars.length : 0;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -86,9 +93,14 @@ export default function Navbar({ home = false }: { home?: boolean }) {
       : pathname === page || pathname.startsWith(`${page}/`);
 
   const profilePath =
-    user?.role === "RENTER"
-      ? "/profile/renter/profile"
-      : "/profile/owner/profile";
+    user?.role === "OWNER" || user?.role === "ADMIN"
+      ? "/profile/owner/profile"
+      : "/profile/renter/profile";
+
+  const xabarlarPath =
+    user?.role === "OWNER" || user?.role === "ADMIN"
+      ? "/profile/owner/xabarlar"
+      : "/profile/renter/xabarlar";
 
   const closeMobile = () => setMobileOpen(false);
 
@@ -96,6 +108,16 @@ export default function Navbar({ home = false }: { home?: boolean }) {
   const initial = fullName
     ? Array.from(fullName)[0].toLocaleUpperCase()
     : null;
+  const accountLabel = loading
+    ? "Yuklanmoqda..."
+    : user
+      ? fullName || "Kabinet"
+      : "Kirish";
+  const accountSubLabel = loading
+    ? "Kuting"
+    : user
+      ? "Kabinet"
+      : "Hisob";
 
   const onBookingClick = (event: ReactMouseEvent<HTMLAnchorElement>) => {
     if (user) return;
@@ -153,7 +175,11 @@ export default function Navbar({ home = false }: { home?: boolean }) {
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-2.5">
             <Link
               href="/sevimlilar"
-              aria-label="Sevimlilar"
+              aria-label={
+                likesCount > 0
+                  ? `Sevimlilar: ${likesCount} ta mashina`
+                  : "Sevimlilar"
+              }
               title="Sevimlilar"
               className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all duration-200 sm:inline-flex ${
                 isActive("/sevimlilar")
@@ -163,9 +189,35 @@ export default function Navbar({ home = false }: { home?: boolean }) {
             >
               <Heart
                 className={`h-[18px] w-[18px] ${
-                  isActive("/sevimlilar") ? "fill-current" : ""
+                  isActive("/sevimlilar") || likesCount > 0 ? "fill-current" : ""
                 }`}
               />
+              {likesCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#e11d48] px-1 text-[10px] font-bold leading-none text-white shadow-sm">
+                  {likesCount > 99 ? "99+" : likesCount}
+                </span>
+              )}
+            </Link>
+
+            <Link
+              href={user ? xabarlarPath : "/login"}
+              aria-label={
+                hasUnread
+                  ? `${unreadCount} ta o‘qilmagan bildirishnoma`
+                  : "Bildirishnomalar"
+              }
+              title="Bildirishnomalar"
+              className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all duration-200 sm:inline-flex ${
+                isActive("/profile/renter/xabarlar") ||
+                isActive("/profile/owner/xabarlar")
+                  ? "border-[#b9dfc6] bg-[#eaf6ef] text-[#00863e]"
+                  : "border-[#e5e9e7] bg-white text-[#4a5650] hover:border-[#b9dfc6] hover:bg-[#f6faf7] hover:text-[#00863e]"
+              }`}
+            >
+              <Bell className="h-[18px] w-[18px]" />
+              {hasUnread && (
+                <span className="absolute right-2 top-2 h-2 w-2 rounded-full border-2 border-white bg-[#e11d48]" />
+              )}
             </Link>
 
             <Link
@@ -190,10 +242,10 @@ export default function Navbar({ home = false }: { home?: boolean }) {
               </span>
               <span className="hidden min-w-0 sm:block">
                 <span className="block truncate text-[12px] font-bold leading-tight text-[#1f2d25]">
-                  {fullName || "Kirish"}
+                  {accountLabel}
                 </span>
                 <span className="block text-[10px] font-medium leading-tight text-[#7a8780]">
-                  {user ? "Kabinet" : "Hisob"}
+                  {accountSubLabel}
                 </span>
               </span>
             </Link>
@@ -267,7 +319,7 @@ export default function Navbar({ home = false }: { home?: boolean }) {
                 }`}
               >
                 <span
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${
+                  className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl ${
                     isActive("/sevimlilar")
                       ? "bg-red-500 text-white"
                       : "bg-[#f0f3f1] text-[#4f5c55]"
@@ -275,11 +327,54 @@ export default function Navbar({ home = false }: { home?: boolean }) {
                 >
                   <Heart
                     className={`h-4 w-4 ${
-                      isActive("/sevimlilar") ? "fill-current" : ""
+                      isActive("/sevimlilar") || likesCount > 0
+                        ? "fill-current"
+                        : ""
                     }`}
                   />
+                  {likesCount > 0 && (
+                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#e11d48] px-1 text-[9px] font-bold text-white">
+                      {likesCount > 99 ? "99+" : likesCount}
+                    </span>
+                  )}
                 </span>
-                Sevimlilar
+                <span className="flex-1">Sevimlilar</span>
+                {likesCount > 0 && (
+                  <span className="text-xs font-bold text-red-500">
+                    {likesCount}
+                  </span>
+                )}
+              </Link>
+
+              <Link
+                href={user ? xabarlarPath : "/login"}
+                onClick={closeMobile}
+                className={`flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[14px] font-semibold transition ${
+                  isActive("/profile/renter/xabarlar") ||
+                  isActive("/profile/owner/xabarlar")
+                    ? "bg-[#eaf6ef] text-[#00863e]"
+                    : "text-[#29362f] hover:bg-[#f3f6f4] hover:text-[#00863e]"
+                }`}
+              >
+                <span
+                  className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl ${
+                    isActive("/profile/renter/xabarlar") ||
+                    isActive("/profile/owner/xabarlar")
+                      ? "bg-[#00863e] text-white"
+                      : "bg-[#f0f3f1] text-[#4f5c55]"
+                  }`}
+                >
+                  <Bell className="h-4 w-4" />
+                  {hasUnread && (
+                    <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-white bg-[#e11d48]" />
+                  )}
+                </span>
+                <span className="flex-1">Bildirishnomalar</span>
+                {hasUnread && (
+                  <span className="text-xs font-bold text-[#e11d48]">
+                    {unreadCount}
+                  </span>
+                )}
               </Link>
             </div>
 
@@ -347,13 +442,13 @@ export default function Navbar({ home = false }: { home?: boolean }) {
 
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[14px] font-bold text-[#26352d]">
-                  {fullName || "Tizimga kirish"}
+                  {accountLabel === "Kirish" ? "Tizimga kirish" : accountLabel}
                 </span>
                 <span className="mt-0.5 block text-[11px] text-[#00863e]">
-                  {user?.role === "OWNER"
-                    ? "Avtomobil egasi kabineti"
-                    : user?.role === "RENTER"
-                      ? "Shaxsiy kabinetingizga kiring"
+                  {user?.role === "OWNER" || user?.role === "ADMIN"
+                    ? "Kompaniya kabineti"
+                    : user
+                      ? "Shaxsiy kabinet"
                       : "Tizimga kiring"}
                 </span>
               </span>

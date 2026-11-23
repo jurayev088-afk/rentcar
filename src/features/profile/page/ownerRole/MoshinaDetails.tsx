@@ -1,6 +1,5 @@
 "use client";
 
-import { UseAllCars } from "@/src/constants/UseAllCars";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import {
@@ -20,20 +19,29 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
+import SafeImage from "@/src/components/SafeImage";
+import { useCar } from "@/src/hooks/use-cars";
+import { mapApiCarToUi } from "@/src/lib/map-car";
 
 export default function MoshinaDetails() {
   const { id } = useParams<{ id: string }>();
-  const { allCars } = UseAllCars();
-
-  const car = allCars?.find((car) => String(car.id) === String(id));
+  const { data: apiCar, isLoading } = useCar(id);
+  const car = apiCar ? mapApiCarToUi(apiCar) : undefined;
   const [activeImage, setActiveImage] = useState(0);
   const currentImage = car?.images?.[activeImage];
 
   const imageUrl =
-    currentImage?.originFileObj instanceof Blob
-      ? URL.createObjectURL(currentImage.originFileObj)
-      : currentImage?.thumbUrl;
+    currentImage?.url ||
+    currentImage?.thumbUrl ||
+    currentImage?.originalUrl;
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center rounded-3xl border border-[#e5e9e7] bg-white text-[#00863e]">
+        Ma&apos;lumotlar yuklanmoqda...
+      </div>
+    );
+  }
 
   if (!car) {
     return (
@@ -135,7 +143,7 @@ export default function MoshinaDetails() {
         <div className="rounded-3xl border border-[#e5e9e7] bg-white p-4 shadow-[0_8px_24px_rgba(16,37,26,0.03)]">
           <div className="relative overflow-hidden rounded-2xl bg-[#eef2f0]">
             {car?.images?.length > 0 ? (
-              <Image
+              <SafeImage
                 width={900}
                 height={500}
                 src={imageUrl || ""}
@@ -166,7 +174,7 @@ export default function MoshinaDetails() {
                       : "border-transparent opacity-70 hover:opacity-100"
                   }`}
                 >
-                  <Image
+                  <SafeImage
                     width={120}
                     height={80}
                     src={image.thumbUrl}

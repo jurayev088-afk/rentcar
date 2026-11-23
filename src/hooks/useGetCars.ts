@@ -1,10 +1,9 @@
-import { useQuery } from "@tanstack/react-query"
-import api from "../services/api"
+"use client";
 
+import { useCars } from "./use-cars";
+
+/** Eski nom bilan moslik */
 export const useGetCars = () => {
-    const {data, isLoading} = useQuery({
-        queryKey:["get-cars"],
-        queryFn:() => api.get("/cars").then(res => res?.data)
-    })
-    return {data, isLoading}
-}
+  const { data, isLoading } = useCars({ limit: 24, sort: "newest" });
+  return { data: data?.items, isLoading };
+};

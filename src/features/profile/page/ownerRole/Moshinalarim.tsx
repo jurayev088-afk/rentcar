@@ -3,7 +3,6 @@
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import CarsTable from "./components/CarsTable";
-import UseAllCarsContext from "@/src/constants/UseAllCars";
 
 export default function Moshinalarim() {
   const router = useRouter();
@@ -33,9 +32,7 @@ export default function Moshinalarim() {
         </button>
       </div>
 
-      <UseAllCarsContext>
-        <CarsTable />
-      </UseAllCarsContext>
+      <CarsTable />
     </div>
   );
 }

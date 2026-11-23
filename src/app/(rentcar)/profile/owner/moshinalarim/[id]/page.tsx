@@ -1,14 +1,9 @@
-import UseAllCarsContext from '@/src/constants/UseAllCars';
-import MoshinaDetails from '@/src/features/profile/page/ownerRole/MoshinaDetails';
-import React from 'react'
+import MoshinaDetails from "@/src/features/profile/page/ownerRole/MoshinaDetails";
 
 export default function page() {
-    
   return (
     <div>
-        <UseAllCarsContext>
-            <MoshinaDetails/>
-        </UseAllCarsContext>
+      <MoshinaDetails />
     </div>
-  )
+  );
 }
