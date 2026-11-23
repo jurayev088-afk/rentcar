@@ -50,7 +50,7 @@ export default function UseWishlistContext({
         return;
       }
 
-      if (user?.role === "COMPANY") {
+      if (user?.role !== "RENTER") {
         message.warning(
           "Sevimlilar faqat ijarachi hisobi uchun. Ijarachi sifatida kiring.",
         );

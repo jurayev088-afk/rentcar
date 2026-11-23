@@ -38,7 +38,7 @@ export function useToggleFavorite() {
       carId: string;
       isFavorite: boolean;
     }) => {
-      if (user?.role === "COMPANY") {
+      if (user?.role !== "RENTER") {
         throw new Error("Sevimlilar faqat ijarachi hisobi uchun");
       }
       if (isFavorite) {
