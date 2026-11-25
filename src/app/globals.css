@@ -188,3 +188,34 @@ body {
   background: var(--green-hover) !important;
   border-color: var(--green-hover) !important;
 }
+
+/* Mobil pastki tab bar — kontent yashirinmasin */
+@media (max-width: 1023px) {
+  body.has-mobile-tabbar {
+    padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Clickable UI — hamma joyda pointer */
+a,
+button,
+[role="button"],
+label[for],
+summary,
+.ant-btn,
+.ant-checkbox-wrapper,
+.ant-radio-wrapper,
+.ant-select-selector,
+.ant-picker,
+input[type="submit"],
+input[type="button"],
+input[type="checkbox"],
+input[type="radio"] {
+  cursor: pointer;
+}
+
+button:disabled,
+.ant-btn:disabled,
+.ant-btn.ant-btn-loading {
+  cursor: not-allowed;
+}

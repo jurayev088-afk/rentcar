@@ -23,6 +23,7 @@ export function useFavorites() {
       return items.map((row) => row.car).filter(Boolean) as ApiCar[];
     },
     staleTime: 20_000,
+    placeholderData: (prev) => prev,
   });
 }
 
@@ -48,8 +49,8 @@ export function useToggleFavorite() {
       }
     },
     onMutate: async ({ carId, isFavorite }) => {
-      const key = ["favorites", user?.id] as const;
-      await qc.cancelQueries({ queryKey: key });
+      const key = ["favorites", user?.id ?? "anon"] as const;
+      await qc.cancelQueries({ queryKey: ["favorites"] });
       const prev = qc.getQueryData<ApiCar[]>(key);
 
       if (prev) {

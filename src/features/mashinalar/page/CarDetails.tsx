@@ -58,16 +58,18 @@ function SpecCard({
   value: string | number;
 }) {
   return (
-    <div className="group rounded-2xl border border-[#eef2f0] bg-[#f8fbf9] p-4 transition hover:border-[#b9dfc6] hover:bg-white hover:shadow-[0_10px_24px_rgba(0,134,62,0.06)]">
-      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf6ef] text-[#00863e] transition group-hover:scale-105">
-        <Icon size={18} />
+    <div className="flex items-center gap-2.5 rounded-xl border border-[#eef2f0] bg-[#f8fbf9] px-2.5 py-2.5 transition hover:border-[#b9dfc6] hover:bg-white">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#eaf6ef] text-[#00863e]">
+        <Icon size={15} />
       </div>
-      <p className="text-[11px] font-bold uppercase tracking-wide text-[#8d9892]">
-        {title}
-      </p>
-      <p className="mt-1 break-words text-sm font-extrabold text-[#1f2d25]">
-        {value || "Ko‘rsatilmagan"}
-      </p>
+      <div className="min-w-0">
+        <p className="text-[10px] font-bold uppercase tracking-wide text-[#8d9892]">
+          {title}
+        </p>
+        <p className="truncate text-[13px] font-extrabold text-[#1f2d25]">
+          {value || "—"}
+        </p>
+      </div>
     </div>
   );
 }
@@ -82,14 +84,14 @@ function InfoRow({
   value: ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-3 rounded-2xl bg-[#f6faf7] px-3.5 py-3">
-      <div className="flex min-w-0 items-center gap-2.5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-[#00863e] shadow-sm ring-1 ring-[#eaf6ef]">
-          <Icon size={16} />
+    <div className="flex items-center justify-between gap-2 rounded-xl bg-[#f6faf7] px-2.5 py-2">
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-[#00863e] ring-1 ring-[#eaf6ef]">
+          <Icon size={14} />
         </span>
-        <span className="text-sm text-[#6d7a73]">{label}</span>
+        <span className="text-xs text-[#6d7a73] sm:text-sm">{label}</span>
       </div>
-      <span className="max-w-[55%] text-right text-sm font-bold text-[#1f2d25]">
+      <span className="max-w-[55%] truncate text-right text-xs font-bold text-[#1f2d25] sm:text-sm">
         {value}
       </span>
     </div>
@@ -156,8 +158,13 @@ export default function CarDetails() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center text-sm text-[#6d7a73]">
-        Yuklanmoqda...
+      <div className="mx-auto max-w-[1100px] px-3 py-6 sm:px-5">
+        <div className="mb-4 h-8 w-28 animate-pulse rounded-full bg-[#eef2f0]" />
+        <div className="mb-4 h-9 w-2/3 max-w-md animate-pulse rounded-xl bg-[#eef2f0]" />
+        <div className="grid gap-4 lg:grid-cols-[1.45fr_0.9fr]">
+          <div className="h-[240px] animate-pulse rounded-2xl bg-[#eef2f0] sm:h-[300px]" />
+          <div className="h-[320px] animate-pulse rounded-2xl bg-[#eef2f0]" />
+        </div>
       </div>
     );
   }
@@ -225,57 +232,56 @@ export default function CarDetails() {
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f4f7f5_0%,#eef2f0_40%,#f4f6f5_100%)]">
-      <div className="mx-auto max-w-[1240px] px-3 pb-10 pt-5 sm:px-5 sm:pt-7 lg:px-8">
+      <div className="mx-auto max-w-[1100px] px-3 pb-6 pt-3 sm:px-5 sm:pb-8 sm:pt-4 lg:px-6">
         {/* Top bar */}
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <button
             type="button"
             onClick={() => router.back()}
-            className="inline-flex items-center gap-2 rounded-full border border-[#e5e9e7] bg-white px-3.5 py-2 text-sm font-semibold text-[#5a675f] shadow-sm transition hover:border-[#b9dfc6] hover:text-[#00863e]"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#e5e9e7] bg-white px-3 py-1.5 text-sm font-semibold text-[#5a675f] shadow-sm transition hover:border-[#b9dfc6] hover:text-[#00863e]"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={15} />
             Orqaga
           </button>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-[#00863e] shadow-sm ring-1 ring-[#d7e8dd]">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#00863e] shadow-sm ring-1 ring-[#d7e8dd]">
               {brand}
             </span>
-            <span className="rounded-full bg-white px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-[#5a675f] shadow-sm ring-1 ring-[#e5e9e7]">
+            <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#5a675f] shadow-sm ring-1 ring-[#e5e9e7]">
               {category}
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#00863e] px-3 py-1.5 text-[11px] font-bold text-white shadow-[0_6px_14px_rgba(0,134,62,0.25)]">
-              <BadgeCheck size={12} />
-              Ijara e’loni
+            <span className="inline-flex items-center gap-1 rounded-full bg-[#00863e] px-2.5 py-1 text-[10px] font-bold text-white">
+              <BadgeCheck size={11} />
+              Ijara
             </span>
           </div>
         </div>
 
         {/* Title */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-extrabold tracking-tight text-[#1f2d25] sm:text-4xl">
+        <div className="mb-4">
+          <h1 className="text-2xl font-extrabold tracking-tight text-[#1f2d25] sm:text-3xl">
             {brand} {car.model}
           </h1>
-          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-[#6d7a73]">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 shadow-sm ring-1 ring-[#e5e9e7]">
-              <MapPin size={14} className="text-[#00863e]" />
-              {[car.region, car.district, car.address]
-                .filter(Boolean)
-                .join(", ") || "Manzil ko‘rsatilmagan"}
+          <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-[#6d7a73] sm:text-sm">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 shadow-sm ring-1 ring-[#e5e9e7]">
+              <MapPin size={13} className="text-[#00863e]" />
+              {[car.region, car.district].filter(Boolean).join(", ") ||
+                "Manzil ko‘rsatilmagan"}
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 shadow-sm ring-1 ring-[#e5e9e7]">
-              <CalendarDays size={14} className="text-[#00863e]" />
+            <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 shadow-sm ring-1 ring-[#e5e9e7]">
+              <CalendarDays size={13} className="text-[#00863e]" />
               {car.year}-yil
             </span>
           </p>
         </div>
 
-        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.55fr_0.9fr]">
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1.45fr_0.9fr] lg:gap-5">
           {/* LEFT */}
-          <div className="space-y-5">
+          <div className="space-y-3.5">
             {/* Gallery */}
-            <section className="overflow-hidden rounded-[28px] border border-white/80 bg-white p-2.5 shadow-[0_16px_40px_rgba(16,37,26,0.07)] sm:p-3">
-              <div className="group relative h-[240px] overflow-hidden rounded-[22px] bg-[#0f1f16] sm:h-[380px] lg:h-[440px]">
+            <section className="overflow-hidden rounded-2xl border border-white/80 bg-white p-2 shadow-[0_12px_28px_rgba(16,37,26,0.06)] sm:rounded-[22px]">
+              <div className="group relative h-[200px] overflow-hidden rounded-xl bg-[#0f1f16] sm:h-[280px] lg:h-[320px]">
                 {images.length > 0 ? (
                   <SafeImage
                     src={images[activeImage]}
@@ -334,15 +340,15 @@ export default function CarDetails() {
               </div>
 
               {images.length > 1 && (
-                <div className="mt-3 flex gap-2.5 overflow-x-auto px-0.5 pb-1">
+                <div className="mt-2 flex gap-2 overflow-x-auto px-0.5 pb-0.5">
                   {images.map((image: string, index: number) => (
                     <button
                       key={index}
                       type="button"
                       onClick={() => setActiveImage(index)}
-                      className={`relative h-[68px] w-[96px] shrink-0 overflow-hidden rounded-xl border-2 transition sm:h-[78px] sm:w-[112px] ${
+                      className={`relative h-[52px] w-[72px] shrink-0 overflow-hidden rounded-lg border-2 transition sm:h-[60px] sm:w-[84px] ${
                         activeImage === index
-                          ? "border-[#00863e] shadow-[0_0_0_3px_rgba(0,134,62,0.12)]"
+                          ? "border-[#00863e] shadow-[0_0_0_2px_rgba(0,134,62,0.12)]"
                           : "border-transparent opacity-65 hover:opacity-100"
                       }`}
                     >
@@ -361,18 +367,16 @@ export default function CarDetails() {
             </section>
 
             {/* Specs */}
-            <section className="rounded-[28px] border border-white/80 bg-white p-5 shadow-[0_12px_32px_rgba(16,37,26,0.05)] sm:p-6">
-              <div className="mb-5 flex items-end justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-extrabold uppercase tracking-[1.3px] text-[#00863e]">
-                    Texnika
-                  </p>
-                  <h2 className="mt-1 text-xl font-extrabold text-[#1f2d25]">
-                    Texnik xususiyatlari
-                  </h2>
-                </div>
+            <section className="rounded-2xl border border-white/80 bg-white p-3.5 shadow-[0_10px_24px_rgba(16,37,26,0.04)] sm:p-4">
+              <div className="mb-3">
+                <p className="text-[10px] font-extrabold uppercase tracking-[1.2px] text-[#00863e]">
+                  Texnika
+                </p>
+                <h2 className="mt-0.5 text-base font-extrabold text-[#1f2d25] sm:text-lg">
+                  Texnik xususiyatlari
+                </h2>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {features.map((item) => (
                   <SpecCard
                     key={item.title}
@@ -384,63 +388,55 @@ export default function CarDetails() {
               </div>
             </section>
 
-            {/* About */}
-            <section className="rounded-[28px] border border-white/80 bg-white p-5 shadow-[0_12px_32px_rgba(16,37,26,0.05)] sm:p-6">
-              <p className="text-[11px] font-extrabold uppercase tracking-[1.3px] text-[#00863e]">
+            {/* About + Rules */}
+            <section className="rounded-2xl border border-white/80 bg-white p-3.5 shadow-[0_10px_24px_rgba(16,37,26,0.04)] sm:p-4">
+              <p className="text-[10px] font-extrabold uppercase tracking-[1.2px] text-[#00863e]">
                 Tavsif
               </p>
-              <h2 className="mt-1 text-xl font-extrabold text-[#1f2d25]">
+              <h2 className="mt-0.5 text-base font-extrabold text-[#1f2d25] sm:text-lg">
                 Avtomobil haqida
               </h2>
-              <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-[#5a675f]">
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[#5a675f]">
                 {car.description || "Tavsif kiritilmagan"}
               </p>
-            </section>
 
-            {/* Rules */}
-            <section className="rounded-[28px] border border-white/80 bg-white p-5 shadow-[0_12px_32px_rgba(16,37,26,0.05)] sm:p-6">
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#eaf6ef] text-[#00863e]">
-                  <ShieldCheck size={22} />
-                </div>
-                <div>
-                  <h2 className="font-extrabold text-[#1f2d25]">
+              <div className="mt-3 border-t border-[#eef2f0] pt-3">
+                <div className="mb-2 flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#eaf6ef] text-[#00863e]">
+                    <ShieldCheck size={16} />
+                  </div>
+                  <h3 className="text-sm font-extrabold text-[#1f2d25]">
                     Ijara qoidalari
-                  </h2>
-                  <p className="text-xs text-[#8d9892]">
-                    Avtomobildan foydalanish shartlari
-                  </p>
+                  </h3>
                 </div>
-              </div>
-
-              <p className="whitespace-pre-wrap rounded-2xl bg-[#f6faf7] p-4 text-sm leading-7 text-[#6d7a73] ring-1 ring-[#eaf6ef]">
-                {car.rules || "Maxsus qoidalar kiritilmagan"}
-              </p>
-
-              <div className="mt-4 flex items-center gap-2 text-sm">
-                {car.agreement ? (
-                  <>
-                    <CheckCircle2 size={18} className="text-[#00863e]" />
-                    <span className="font-semibold text-[#00863e]">
-                      Shartnoma shartlariga rozilik berilgan
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck size={18} className="text-[#8d9892]" />
-                    <span className="text-[#6d7a73]">
-                      Shartnoma tasdiqlanmagan
-                    </span>
-                  </>
-                )}
+                <p className="whitespace-pre-wrap rounded-xl bg-[#f6faf7] p-3 text-sm leading-6 text-[#6d7a73]">
+                  {car.rules || "Maxsus qoidalar kiritilmagan"}
+                </p>
+                <div className="mt-2 flex items-center gap-1.5 text-xs sm:text-sm">
+                  {car.agreement ? (
+                    <>
+                      <CheckCircle2 size={15} className="text-[#00863e]" />
+                      <span className="font-semibold text-[#00863e]">
+                        Shartnoma shartlariga rozilik berilgan
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck size={15} className="text-[#8d9892]" />
+                      <span className="text-[#6d7a73]">
+                        Shartnoma tasdiqlanmagan
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
             </section>
           </div>
 
           {/* RIGHT — booking card */}
-          <aside className="lg:sticky lg:top-24">
-            <div className="overflow-hidden rounded-[28px] border border-white/80 bg-white shadow-[0_20px_50px_rgba(16,37,26,0.1)]">
-              <div className="relative bg-[linear-gradient(135deg,#0f1f16_0%,#00863e_100%)] px-5 py-5 text-white">
+          <aside className="lg:sticky lg:top-20">
+            <div className="overflow-hidden rounded-2xl border border-white/80 bg-white shadow-[0_14px_36px_rgba(16,37,26,0.08)] sm:rounded-[22px]">
+              <div className="relative bg-[linear-gradient(135deg,#0f1f16_0%,#00863e_100%)] px-4 py-3.5 text-white">
                 <div
                   aria-hidden
                   className="pointer-events-none absolute inset-0 opacity-30"
@@ -449,28 +445,28 @@ export default function CarDetails() {
                       "radial-gradient(circle at 80% 20%, rgba(255,255,255,0.35), transparent 45%)",
                   }}
                 />
-                <p className="relative text-xs font-bold uppercase tracking-[1.2px] text-white/75">
+                <p className="relative text-[10px] font-bold uppercase tracking-[1.2px] text-white/75">
                   Bir kunlik ijara
                 </p>
-                <div className="relative mt-1 flex flex-wrap items-end gap-2">
-                  <h2 className="text-3xl font-extrabold tracking-tight">
+                <div className="relative mt-0.5 flex flex-wrap items-end gap-2">
+                  <h2 className="text-2xl font-extrabold tracking-tight sm:text-[28px]">
                     {formatPrice(car.price)}
                   </h2>
                 </div>
                 {hasDiscount && (
-                  <div className="relative mt-2 flex flex-wrap items-center gap-2">
-                    <span className="text-sm text-white/60 line-through">
+                  <div className="relative mt-1.5 flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-white/60 line-through">
                       {formatPrice(car.oldPrice)}
                     </span>
-                    <span className="rounded-full bg-[#ff5a7a] px-2.5 py-0.5 text-[11px] font-extrabold">
+                    <span className="rounded-full bg-[#ff5a7a] px-2 py-0.5 text-[10px] font-extrabold">
                       −{discountPct}% chegirma
                     </span>
                   </div>
                 )}
               </div>
 
-              <div className="space-y-2.5 p-5">
-                <p className="text-[11px] font-extrabold uppercase tracking-[1.2px] text-[#00863e]">
+              <div className="space-y-1.5 p-3.5 sm:p-4">
+                <p className="text-[10px] font-extrabold uppercase tracking-[1.2px] text-[#00863e]">
                   Ijara ma’lumotlari
                 </p>
 
@@ -500,38 +496,38 @@ export default function CarDetails() {
                   value={car.address || "—"}
                 />
 
-                <div className="pt-2">
-                  <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[1.2px] text-[#00863e]">
+                <div className="pt-1.5">
+                  <p className="mb-1.5 text-[10px] font-extrabold uppercase tracking-[1.2px] text-[#00863e]">
                     E’lon egasi
                   </p>
                   {car.companyId ? (
                     <Link
                       href={`/kompaniyalar/${car.companyId}`}
-                      className="flex items-center gap-3 rounded-2xl border border-[#eaf6ef] bg-[#f6faf7] p-3 no-underline transition hover:border-[#b9dfc6]"
+                      className="flex items-center gap-2.5 rounded-xl border border-[#eaf6ef] bg-[#f6faf7] p-2.5 no-underline transition hover:border-[#b9dfc6]"
                     >
-                      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#00863e] shadow-sm ring-1 ring-[#eaf6ef]">
-                        <Building2 size={22} />
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-[#00863e] shadow-sm ring-1 ring-[#eaf6ef]">
+                        <Building2 size={18} />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-bold text-[#1f2d25]">
+                        <span className="block truncate text-sm font-bold text-[#1f2d25]">
                           {car.companyName || "Kompaniya"}
                         </span>
-                        <span className="mt-0.5 block text-xs text-[#8a9690]">
+                        <span className="mt-0.5 block text-[11px] text-[#8a9690]">
                           {brand} {car.model} · {car.year}
                         </span>
                       </span>
-                      <ArrowRight size={16} className="text-[#00863e]" />
+                      <ArrowRight size={14} className="text-[#00863e]" />
                     </Link>
                   ) : (
-                    <div className="flex items-center gap-3 rounded-2xl bg-[#f6faf7] p-3">
-                      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#00863e] shadow-sm">
-                        <CarFront size={22} />
+                    <div className="flex items-center gap-2.5 rounded-xl bg-[#f6faf7] p-2.5">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-[#00863e] shadow-sm">
+                        <CarFront size={18} />
                       </span>
                       <div>
-                        <p className="font-bold text-[#1f2d25]">
+                        <p className="text-sm font-bold text-[#1f2d25]">
                           {brand} {car.model}
                         </p>
-                        <p className="text-xs text-[#8a9690]">
+                        <p className="text-[11px] text-[#8a9690]">
                           {car.year} · {category}
                         </p>
                       </div>
@@ -542,21 +538,20 @@ export default function CarDetails() {
                 {car.phone && (
                   <a
                     href={`tel:${car.phone}`}
-                    className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d7e8dd] bg-white py-3 text-sm font-bold text-[#00863e] no-underline transition hover:bg-[#eaf6ef]"
+                    className="mt-0.5 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#d7e8dd] bg-white py-2.5 text-sm font-bold text-[#00863e] no-underline transition hover:bg-[#eaf6ef]"
                   >
-                    <Phone size={16} />
+                    <Phone size={15} />
                     Qo‘ng‘iroq qilish
                   </a>
                 )}
 
                 {isRented ? (
-                  <div className="mt-1 rounded-2xl border border-[#b7d7f0] bg-[#e7f3ff] px-4 py-3.5 text-center">
+                  <div className="mt-0.5 rounded-xl border border-[#b7d7f0] bg-[#e7f3ff] px-3 py-2.5 text-center">
                     <p className="text-sm font-extrabold text-[#1d6fb8]">
                       Bu mashina hozir ijarada
                     </p>
-                    <p className="mt-1 text-[11px] leading-5 text-[#3d6f9a]">
-                      Hozircha bron qilib bo‘lmaydi. Ijara tugagach qayta
-                      urinib ko‘ring.
+                    <p className="mt-0.5 text-[11px] leading-4 text-[#3d6f9a]">
+                      Ijara tugagach qayta urinib ko‘ring.
                     </p>
                   </div>
                 ) : (
@@ -565,15 +560,13 @@ export default function CarDetails() {
                       type="button"
                       onClick={openBooking}
                       disabled={authLoading}
-                      className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#00863e] py-3.5 text-sm font-extrabold text-white shadow-[0_10px_24px_rgba(0,134,62,0.28)] transition hover:bg-[#006f35] disabled:opacity-60"
+                      className="mt-0.5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#00863e] py-3 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(0,134,62,0.25)] transition hover:bg-[#006f35] disabled:opacity-60"
                     >
                       Mashinani bron qilish
-                      <ArrowRight size={16} />
+                      <ArrowRight size={15} />
                     </button>
-
-                    <p className="text-center text-[11px] leading-5 text-[#8a9690]">
-                      Bron qilish orqali ushbu avtomobilni ijaraga olish uchun
-                      ariza yuborasiz.
+                    <p className="text-center text-[10px] leading-4 text-[#8a9690]">
+                      Bron orqali ijaraga olish uchun ariza yuborasiz.
                     </p>
                   </>
                 )}

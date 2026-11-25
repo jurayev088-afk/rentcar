@@ -1,9 +1,9 @@
 "use client";
 
-import { Car } from "@/src/types";
 import { Checkbox, Slider } from "antd";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ListFilter, X } from "lucide-react";
 import { useBrands } from "@/src/hooks/use-brands";
 import { useCategories } from "@/src/hooks/use-categories";
 import { brandLabel } from "@/src/lib/media";
@@ -21,7 +21,7 @@ export const carCategory = [
 ];
 
 const PRICE_MIN = 100_000;
-const PRICE_MAX = 3_000_000;
+const PRICE_MAX = 15_000_000;
 const PRICE_STEP = 50_000;
 
 export type AppliedFilters = {
@@ -45,62 +45,70 @@ function sameList(a: string[], b: string[]) {
   return sa.every((v, i) => v === sb[i]);
 }
 
-function filterCars(cars: Car[], next: AppliedFilters) {
-  return cars.filter((item) => {
-    const matchCategory =
-      next.categories.length === 0 ||
-      next.categories.some((value) => {
-        const v = value.toLowerCase();
-        return (
-          item.category?.toLowerCase().includes(v) ||
-          item.category?.toLowerCase() === v
-        );
-      });
-
-    const matchBrand =
-      next.brands.length === 0 ||
-      next.brands.some(
-        (value) => item.brand?.toLowerCase() === value.toLowerCase(),
-      );
-
-    const price = Number(item.price) || 0;
-    const matchPrice = price >= next.minPrice && price <= next.maxPrice;
-
-    return matchCategory && matchBrand && matchPrice;
-  });
+function activeCount(applied: AppliedFilters) {
+  let n = 0;
+  n += applied.categories.length;
+  n += applied.brands.length;
+  if (applied.minPrice !== PRICE_MIN || applied.maxPrice !== PRICE_MAX) n += 1;
+  return n;
 }
 
-export default function Filter({
-  cars,
-  setFilteredCars,
-}: {
-  cars: Car[];
-  setFilteredCars: (cars: Car[]) => void;
-}) {
+type CategoryRow = { id: string; label: string };
+
+/** Filtr → /cars URL (server pagination uchun) */
+function buildCarsUrl(
+  next: AppliedFilters,
+  categoryRows: CategoryRow[],
+) {
+  const params = new URLSearchParams();
+
+  if (next.brands.length === 1) {
+    params.set("brand", next.brands[0]);
+  } else if (next.brands.length > 1) {
+    // Ko‘p brand: API bitta brand oladi — birinchisini yuboramiz, qolgani clientda emas
+    // Barcha brandlar uchun alohida emas; bitta tanlangan bo‘lmasa hammasi
+    params.set("brand", next.brands[0]);
+  }
+
+  if (next.categories.length >= 1) {
+    const hit = categoryRows.find(
+      (c) =>
+        c.label.toLowerCase() === next.categories[0].toLowerCase(),
+    );
+    if (hit) params.set("categoryId", hit.id);
+  }
+
+  if (next.minPrice > PRICE_MIN) params.set("minPrice", String(next.minPrice));
+  if (next.maxPrice < PRICE_MAX) params.set("maxPrice", String(next.maxPrice));
+
+  const qs = params.toString();
+  return qs ? `/cars?${qs}` : "/cars";
+}
+
+export default function Filter() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const urlBrand = searchParams.get("brand") || undefined;
+  const urlMin = searchParams.get("minPrice");
+  const urlMax = searchParams.get("maxPrice");
+  const urlCategoryId = searchParams.get("categoryId") || undefined;
+  const [open, setOpen] = useState(false);
+  const filterDrivenRef = useRef(false);
 
   const formatPrice = (value: number) =>
     new Intl.NumberFormat("ru-RU").format(value);
 
-  const initialBrands = useMemo(
-    () => (urlBrand ? [urlBrand] : []),
-    [urlBrand],
-  );
-
-  const [draftCategories, setDraftCategories] = useState<string[]>([]);
-  const [draftBrands, setDraftBrands] = useState<string[]>(initialBrands);
-  const [draftPrice, setDraftPrice] = useState<[number, number]>([
-    PRICE_MIN,
-    PRICE_MAX,
-  ]);
-  const [applied, setApplied] = useState<AppliedFilters>(() => ({
-    ...EMPTY,
-    brands: initialBrands,
-  }));
-
   const { data: brandsPage } = useBrands({ limit: 200 });
   const { data: categoriesData = [] } = useCategories();
+
+  const categoryRows: CategoryRow[] = useMemo(
+    () =>
+      (Array.isArray(categoriesData) ? categoriesData : []).map((c) => ({
+        id: c.id,
+        label: c.nameUz || c.name,
+      })),
+    [categoriesData],
+  );
 
   const brandOptions = useMemo(
     () =>
@@ -113,18 +121,45 @@ export default function Filter({
 
   const categoryOptions = useMemo(
     () =>
-      (Array.isArray(categoriesData) ? categoriesData : []).map((c) => ({
-        label: c.nameUz || c.name,
-        value: c.nameUz || c.name,
-      })),
-    [categoriesData],
+      categoryRows.length
+        ? categoryRows.map((c) => ({ label: c.label, value: c.label }))
+        : carCategory,
+    [categoryRows],
   );
+
+  const urlCategoryLabel = useMemo(() => {
+    if (!urlCategoryId) return undefined;
+    return categoryRows.find((c) => c.id === urlCategoryId)?.label;
+  }, [categoryRows, urlCategoryId]);
+
+  const initialFromUrl = useMemo((): AppliedFilters => {
+    return {
+      categories: urlCategoryLabel ? [urlCategoryLabel] : [],
+      brands: urlBrand ? [urlBrand] : [],
+      minPrice: urlMin ? Number(urlMin) || PRICE_MIN : PRICE_MIN,
+      maxPrice: urlMax ? Number(urlMax) || PRICE_MAX : PRICE_MAX,
+    };
+  }, [urlBrand, urlCategoryLabel, urlMax, urlMin]);
+
+  const [draftCategories, setDraftCategories] = useState<string[]>(
+    initialFromUrl.categories,
+  );
+  const [draftBrands, setDraftBrands] = useState<string[]>(
+    initialFromUrl.brands,
+  );
+  const [draftPrice, setDraftPrice] = useState<[number, number]>([
+    initialFromUrl.minPrice,
+    initialFromUrl.maxPrice,
+  ]);
+  const [applied, setApplied] = useState<AppliedFilters>(initialFromUrl);
 
   const isDirty =
     !sameList(draftCategories, applied.categories) ||
     !sameList(draftBrands, applied.brands) ||
     draftPrice[0] !== applied.minPrice ||
     draftPrice[1] !== applied.maxPrice;
+
+  const appliedCount = activeCount(applied);
 
   const applyAll = useCallback(() => {
     const next: AppliedFilters = {
@@ -133,59 +168,91 @@ export default function Filter({
       minPrice: draftPrice[0],
       maxPrice: draftPrice[1],
     };
+    filterDrivenRef.current = true;
     setApplied(next);
-    setFilteredCars(filterCars(cars, next));
-  }, [cars, draftBrands, draftCategories, draftPrice, setFilteredCars]);
+    router.replace(buildCarsUrl(next, categoryRows));
+    setOpen(false);
+  }, [categoryRows, draftBrands, draftCategories, draftPrice, router]);
 
-  // Ro‘yxat yangilanganda qo‘llangan filtrni saqlab qolamiz (faqat cars o‘zgaganda)
+  // Home / tashqi URL o‘zgarsa filtrni sync
   useEffect(() => {
-    setFilteredCars(filterCars(cars, applied));
-    // applied ni dep qilmaymiz — O‘tish/Tozalash o‘zi set qiladi
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cars, setFilteredCars]);
+    if (filterDrivenRef.current) {
+      filterDrivenRef.current = false;
+      return;
+    }
+    setDraftCategories(initialFromUrl.categories);
+    setDraftBrands(initialFromUrl.brands);
+    setDraftPrice([initialFromUrl.minPrice, initialFromUrl.maxPrice]);
+    setApplied(initialFromUrl);
+  }, [initialFromUrl]);
+
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   const resetFilters = () => {
+    filterDrivenRef.current = true;
     setDraftCategories([]);
     setDraftBrands([]);
     setDraftPrice([PRICE_MIN, PRICE_MAX]);
     setApplied(EMPTY);
-    setFilteredCars(cars);
+    router.replace("/cars");
   };
 
-  return (
-    <aside className="relative z-20 w-full shrink-0 overflow-visible rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] md:sticky md:top-24 md:max-w-[280px]">
-      <div className="flex items-center justify-between border-b border-[#eef2f0] pb-4">
+  const panel = (
+    <>
+      <div className="flex items-center justify-between border-b border-[#eef2f0] pb-3">
         <h2 className="text-base font-bold text-[#1f2d25]">Filtrlar</h2>
-        <button
-          type="button"
-          onClick={resetFilters}
-          className="cursor-pointer text-xs font-semibold text-[#00863e] transition hover:text-[#006f35]"
-        >
-          Tozalash
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="cursor-pointer text-xs font-semibold text-[#00863e] transition hover:text-[#006f35]"
+          >
+            Tozalash
+          </button>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[#e5e9e7] bg-[#f6faf7] text-[#3f4b44] transition hover:border-[#b9dfc6] hover:text-[#00863e] lg:hidden"
+            aria-label="Filtrni yopish"
+          >
+            <X size={16} />
+          </button>
+        </div>
       </div>
 
-      <section className="border-b border-[#eef2f0] py-5">
-        <h3 className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#6d7a73]">
+      <section className="border-b border-[#eef2f0] py-4">
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#6d7a73]">
           Mashina turi
         </h3>
-        <div className="max-h-48 overflow-y-auto pr-1">
+        <div className="max-h-44 overflow-y-auto pr-1">
           <Checkbox.Group
-            className="flex flex-col gap-3"
-            options={categoryOptions.length ? categoryOptions : carCategory}
+            className="flex flex-col gap-2.5"
+            options={categoryOptions}
             value={draftCategories}
             onChange={(vals) => setDraftCategories(vals as string[])}
           />
         </div>
       </section>
 
-      <section className="border-b border-[#eef2f0] py-5">
-        <h3 className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#6d7a73]">
+      <section className="border-b border-[#eef2f0] py-4">
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#6d7a73]">
           Marka
         </h3>
-        <div className="max-h-48 overflow-y-auto pr-1">
+        <div className="max-h-44 overflow-y-auto pr-1">
           <Checkbox.Group
-            className="flex flex-col gap-3"
+            className="flex flex-col gap-2.5"
             options={brandOptions}
             value={draftBrands}
             onChange={(vals) => setDraftBrands(vals as string[])}
@@ -193,8 +260,8 @@ export default function Filter({
         </div>
       </section>
 
-      <section className="relative py-5">
-        <h3 className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#6d7a73]">
+      <section className="relative py-4">
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#6d7a73]">
           Kunlik narx
         </h3>
 
@@ -266,12 +333,62 @@ export default function Filter({
           <button
             type="button"
             onClick={applyAll}
-            className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-[#00863e] px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(0,134,62,0.28)] transition hover:bg-[#006f35] md:absolute md:right-0 md:top-8 md:z-30 md:mt-0 md:w-auto md:translate-x-[calc(100%+12px)] md:rounded-lg md:px-3.5 md:py-2"
+            className="mt-4 inline-flex w-full cursor-pointer items-center justify-center rounded-xl bg-[#00863e] px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(0,134,62,0.28)] transition hover:bg-[#006f35] lg:absolute lg:right-0 lg:top-8 lg:z-30 lg:mt-0 lg:w-auto lg:translate-x-[calc(100%+12px)] lg:rounded-lg lg:px-3.5 lg:py-2"
           >
             O‘tish
           </button>
         )}
       </section>
-    </aside>
+
+      <div className="sticky bottom-0 -mx-4 mt-2 border-t border-[#eef2f0] bg-white px-4 pt-3 pb-1 lg:hidden">
+        <button
+          type="button"
+          onClick={applyAll}
+          className="inline-flex w-full cursor-pointer items-center justify-center rounded-full bg-[#00863e] px-4 py-3 text-sm font-extrabold text-white shadow-[0_8px_20px_rgba(0,134,62,0.28)]"
+        >
+          Filtrlarni qo‘llash
+        </button>
+      </div>
+    </>
+  );
+
+  return (
+    <>
+      <div className="mb-1 flex w-full items-center justify-between gap-2 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#e5e9e7] bg-white py-2 pl-2.5 pr-4 text-sm font-bold text-[#1f2d25] shadow-[0_4px_14px_rgba(16,37,26,0.06)] transition hover:border-[#b9dfc6] hover:bg-[#f6faf7]"
+        >
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#e5e9e7] bg-[#f6faf7] text-[#26352d]">
+            <ListFilter size={16} />
+          </span>
+          Filter
+          {appliedCount > 0 && (
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[#00863e] px-1.5 text-[11px] font-bold text-white">
+              {appliedCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      <aside className="relative z-20 hidden w-full shrink-0 overflow-visible rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] lg:sticky lg:top-24 lg:block lg:max-w-[280px]">
+        {panel}
+      </aside>
+
+      {open && (
+        <div className="fixed inset-0 z-[80] lg:hidden">
+          <button
+            type="button"
+            aria-label="Yopish"
+            className="absolute inset-0 cursor-pointer bg-[#10251a]/35 backdrop-blur-[2px]"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-[24px] border border-[#e5e9e7] bg-white p-4 shadow-[0_-16px_40px_rgba(16,37,26,0.18)] sm:inset-y-0 sm:left-0 sm:right-auto sm:max-h-none sm:w-[min(100%,360px)] sm:rounded-none sm:rounded-r-[24px] sm:p-5">
+            {panel}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

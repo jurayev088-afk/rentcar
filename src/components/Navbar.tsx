@@ -29,6 +29,7 @@ import { useUser } from "../constants/UseMeContext";
 import { useFavorites } from "../hooks/use-favorites";
 import { useNotifications } from "../hooks/use-notifications";
 import BookingAuthDialog from "../features/mashinalar/components/BookingAuthDialog";
+import MobileBottomNav from "./MobileBottomNav";
 
 const navLinks = [
   { href: "/", label: "Bosh sahifa", icon: HomeOutlined },
@@ -136,13 +137,13 @@ export default function Navbar({ home = false }: { home?: boolean }) {
         }`}
         aria-label="Asosiy navigatsiya"
       >
-        <div className="mx-auto flex min-h-[68px] w-full max-w-[1440px] items-center gap-3 px-3 sm:px-5 lg:min-h-[80px] lg:gap-5 lg:px-8">
+        <div className="mx-auto flex min-h-[56px] w-full max-w-[1440px] items-center gap-3 px-4 sm:min-h-[68px] sm:px-5 lg:min-h-[80px] lg:gap-5 lg:px-8">
           <Link
             href="/"
             onClick={closeMobile}
             className="flex shrink-0 items-center transition-opacity hover:opacity-90"
           >
-            <RentoLogo className="w-[108px] sm:w-[128px] lg:w-[148px]" />
+            <RentoLogo className="w-[112px] sm:w-[128px] lg:w-[148px]" />
           </Link>
 
           <div className="hidden items-center gap-1 xl:flex">
@@ -173,6 +174,7 @@ export default function Navbar({ home = false }: { home?: boolean }) {
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-2.5">
+            {/* Desktop-only actions — mobileda pastki tab bar ishlatiladi */}
             <Link
               href="/sevimlilar"
               aria-label={
@@ -181,7 +183,7 @@ export default function Navbar({ home = false }: { home?: boolean }) {
                   : "Sevimlilar"
               }
               title="Sevimlilar"
-              className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all duration-200 sm:inline-flex ${
+              className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all duration-200 lg:inline-flex ${
                 isActive("/sevimlilar")
                   ? "border-red-200 bg-red-50 text-red-500 shadow-[0_4px_12px_rgba(239,68,68,0.12)]"
                   : "border-[#e5e9e7] bg-white text-[#4a5650] hover:border-red-200 hover:bg-red-50 hover:text-red-500"
@@ -207,7 +209,7 @@ export default function Navbar({ home = false }: { home?: boolean }) {
                   : "Bildirishnomalar"
               }
               title="Bildirishnomalar"
-              className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all duration-200 sm:inline-flex ${
+              className={`relative hidden h-11 w-11 items-center justify-center rounded-full border transition-all duration-200 lg:inline-flex ${
                 isActive("/profile/renter/xabarlar") ||
                 isActive("/profile/owner/xabarlar")
                   ? "border-[#b9dfc6] bg-[#eaf6ef] text-[#00863e]"
@@ -223,10 +225,9 @@ export default function Navbar({ home = false }: { home?: boolean }) {
             <Link
               href="/cars"
               onClick={onBookingClick}
-              className="group inline-flex min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[#00863e] px-3.5 text-[12px] font-bold text-white shadow-[0_6px_16px_rgba(0,134,62,0.22)] transition-all hover:bg-[#006f35] hover:shadow-[0_8px_20px_rgba(0,134,62,0.28)] active:scale-[0.98] sm:px-5 sm:text-[13px]"
+              className="group hidden min-h-11 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[#00863e] px-5 text-[13px] font-bold text-white shadow-[0_6px_16px_rgba(0,134,62,0.22)] transition-all hover:bg-[#006f35] hover:shadow-[0_8px_20px_rgba(0,134,62,0.28)] active:scale-[0.98] lg:inline-flex"
             >
-              <span className="sm:hidden">Bron qilish</span>
-              <span className="hidden sm:inline">Mashina bron qilish</span>
+              Mashina bron qilish
               <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
             </Link>
 
@@ -235,7 +236,7 @@ export default function Navbar({ home = false }: { home?: boolean }) {
               aria-label={
                 fullName ? `Shaxsiy kabinet: ${fullName}` : "Tizimga kirish"
               }
-              className="group flex h-11 max-w-[180px] items-center gap-2 rounded-full border border-[#e5e9e7] bg-white py-1 pl-1 pr-2.5 transition-all hover:border-[#b9dfc6] hover:bg-[#f6faf7] sm:pr-3.5"
+              className="group hidden h-11 max-w-[180px] items-center gap-2 rounded-full border border-[#e5e9e7] bg-white py-1 pl-1 pr-3.5 transition-all hover:border-[#b9dfc6] hover:bg-[#f6faf7] lg:flex"
             >
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#00863e] text-[13px] font-bold text-white shadow-[0_3px_8px_rgba(0,134,62,0.25)]">
                 {initial ?? <UserOutlined />}
@@ -253,19 +254,19 @@ export default function Navbar({ home = false }: { home?: boolean }) {
             <button
               type="button"
               onClick={() => setMobileOpen((open) => !open)}
-              className={`inline-flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border transition-all xl:hidden ${
+              className={`inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl transition-all xl:hidden ${
                 mobileOpen
-                  ? "border-[#00863e] bg-[#eaf6ef] text-[#00863e]"
-                  : "border-[#e5e9e7] bg-white text-[#26352d] hover:border-[#b9dfc6] hover:bg-[#f6faf7]"
+                  ? "bg-[#eaf6ef] text-[#00863e]"
+                  : "bg-transparent text-[#1a1a1a] hover:bg-[#f3f6f4]"
               }`}
               aria-label={mobileOpen ? "Menyuni yopish" : "Menyuni ochish"}
               aria-expanded={mobileOpen}
               aria-controls="rent-mobile-menu"
             >
               {mobileOpen ? (
-                <CloseOutlined className="text-[16px]" />
+                <CloseOutlined className="text-[18px]" />
               ) : (
-                <MenuOutlined className="text-[16px]" />
+                <MenuOutlined className="text-[18px]" />
               )}
             </button>
           </div>
@@ -274,13 +275,13 @@ export default function Navbar({ home = false }: { home?: boolean }) {
         {mobileOpen && (
           <div
             id="rent-mobile-menu"
-            className="absolute inset-x-0 top-full z-50 border-t border-[#e9eeeb] bg-white/98 px-3 pb-5 pt-3 shadow-[0_18px_40px_rgba(16,37,26,0.14)] backdrop-blur-xl sm:inset-x-auto sm:right-5 sm:mt-2 sm:w-[360px] sm:rounded-3xl sm:border sm:border-[#e6ebe8] sm:p-4"
+            className="absolute inset-x-0 top-full z-50 max-h-[min(72dvh,560px)] overflow-y-auto border-t border-[#e9eeeb] bg-white/98 px-3 py-2 shadow-[0_14px_32px_rgba(16,37,26,0.12)] backdrop-blur-xl sm:inset-x-auto sm:right-4 sm:mt-1.5 sm:max-h-[min(80dvh,640px)] sm:w-[340px] sm:rounded-2xl sm:border sm:border-[#e6ebe8] sm:p-3"
           >
-            <div className="mb-3 lg:hidden">
-              <NavbarSearch />
+            <div className="mb-2 lg:hidden">
+              <NavbarSearch className="!gap-2 !px-3 !py-1.5" />
             </div>
 
-            <div className="grid gap-1">
+            <div className="grid gap-0.5">
               {navLinks.map(({ href, label, icon: Icon }) => {
                 const active = isActive(href);
 
@@ -289,20 +290,20 @@ export default function Navbar({ home = false }: { home?: boolean }) {
                     key={href}
                     href={href}
                     onClick={closeMobile}
-                    className={`flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[14px] font-semibold transition ${
+                    className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold transition ${
                       active
                         ? "bg-[#eaf6ef] text-[#00863e]"
                         : "text-[#29362f] hover:bg-[#f3f6f4] hover:text-[#00863e]"
                     }`}
                   >
                     <span
-                      className={`inline-flex h-9 w-9 items-center justify-center rounded-xl ${
+                      className={`inline-flex h-8 w-8 items-center justify-center rounded-lg ${
                         active
                           ? "bg-[#00863e] text-white"
                           : "bg-[#f0f3f1] text-[#4f5c55]"
                       }`}
                     >
-                      <Icon className="text-[16px]" />
+                      <Icon className="text-[14px]" />
                     </span>
                     {label}
                   </Link>
@@ -312,35 +313,35 @@ export default function Navbar({ home = false }: { home?: boolean }) {
               <Link
                 href="/sevimlilar"
                 onClick={closeMobile}
-                className={`flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[14px] font-semibold transition ${
+                className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold transition ${
                   isActive("/sevimlilar")
                     ? "bg-red-50 text-red-500"
                     : "text-[#29362f] hover:bg-red-50 hover:text-red-500"
                 }`}
               >
                 <span
-                  className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl ${
+                  className={`relative inline-flex h-8 w-8 items-center justify-center rounded-lg ${
                     isActive("/sevimlilar")
                       ? "bg-red-500 text-white"
                       : "bg-[#f0f3f1] text-[#4f5c55]"
                   }`}
                 >
                   <Heart
-                    className={`h-4 w-4 ${
+                    className={`h-3.5 w-3.5 ${
                       isActive("/sevimlilar") || likesCount > 0
                         ? "fill-current"
                         : ""
                     }`}
                   />
                   {likesCount > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#e11d48] px-1 text-[9px] font-bold text-white">
+                    <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#e11d48] px-0.5 text-[8px] font-bold text-white">
                       {likesCount > 99 ? "99+" : likesCount}
                     </span>
                   )}
                 </span>
                 <span className="flex-1">Sevimlilar</span>
                 {likesCount > 0 && (
-                  <span className="text-xs font-bold text-red-500">
+                  <span className="text-[11px] font-bold text-red-500">
                     {likesCount}
                   </span>
                 )}
@@ -349,7 +350,7 @@ export default function Navbar({ home = false }: { home?: boolean }) {
               <Link
                 href={user ? xabarlarPath : "/login"}
                 onClick={closeMobile}
-                className={`flex items-center gap-3 rounded-2xl px-3.5 py-3 text-[14px] font-semibold transition ${
+                className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold transition ${
                   isActive("/profile/renter/xabarlar") ||
                   isActive("/profile/owner/xabarlar")
                     ? "bg-[#eaf6ef] text-[#00863e]"
@@ -357,30 +358,30 @@ export default function Navbar({ home = false }: { home?: boolean }) {
                 }`}
               >
                 <span
-                  className={`relative inline-flex h-9 w-9 items-center justify-center rounded-xl ${
+                  className={`relative inline-flex h-8 w-8 items-center justify-center rounded-lg ${
                     isActive("/profile/renter/xabarlar") ||
                     isActive("/profile/owner/xabarlar")
                       ? "bg-[#00863e] text-white"
                       : "bg-[#f0f3f1] text-[#4f5c55]"
                   }`}
                 >
-                  <Bell className="h-4 w-4" />
+                  <Bell className="h-3.5 w-3.5" />
                   {hasUnread && (
-                    <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full border-2 border-white bg-[#e11d48]" />
+                    <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full border border-white bg-[#e11d48]" />
                   )}
                 </span>
                 <span className="flex-1">Bildirishnomalar</span>
                 {hasUnread && (
-                  <span className="text-xs font-bold text-[#e11d48]">
+                  <span className="text-[11px] font-bold text-[#e11d48]">
                     {unreadCount}
                   </span>
                 )}
               </Link>
             </div>
 
-            <div className="my-3.5 h-px bg-[#edf0ee]" />
+            <div className="my-2 h-px bg-[#edf0ee]" />
 
-            <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[1.4px] text-[#87938b]">
+            <p className="mb-1 px-1 text-[9px] font-bold uppercase tracking-[1.2px] text-[#87938b]">
               Avtomobil ijarasi
             </p>
 
@@ -399,52 +400,52 @@ export default function Navbar({ home = false }: { home?: boolean }) {
                 }
                 closeMobile();
               }}
-              className="group flex items-center gap-3 rounded-2xl border border-[#c6e5d1] bg-[#eff8f2] p-3 transition-all hover:border-[#00863e] hover:bg-[#e4f4e9]"
+              className="group flex items-center gap-2.5 rounded-xl border border-[#c6e5d1] bg-[#eff8f2] px-2.5 py-2 transition-all hover:border-[#00863e] hover:bg-[#e4f4e9]"
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#00863e] text-white shadow-[0_6px_14px_rgba(0,134,62,0.25)]">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#00863e] text-white">
                 {user?.role === "OWNER" ? (
-                  <PlusOutlined className="text-[18px]" />
+                  <PlusOutlined className="text-[14px]" />
                 ) : (
-                  <CarOutlined className="text-[18px]" />
+                  <CarOutlined className="text-[14px]" />
                 )}
               </span>
 
               <span className="min-w-0 flex-1">
-                <span className="block text-[14px] font-extrabold text-[#173c27]">
+                <span className="block text-[13px] font-bold leading-tight text-[#173c27]">
                   {user?.role === "OWNER"
                     ? "Mashinamni ijaraga berish"
                     : "Ijaraga mashina topish"}
                 </span>
-                <span className="mt-0.5 block text-[11px] leading-4 text-[#668071]">
+                <span className="mt-0.5 block text-[10px] leading-snug text-[#668071]">
                   {user?.role === "OWNER"
                     ? "Avtomobilingizni ijaraga joylashtiring"
                     : "O‘zingizga mos avtomobilni ijaraga oling"}
                 </span>
               </span>
 
-              <RightOutlined className="text-xs text-[#00863e] transition-transform group-hover:translate-x-0.5" />
+              <RightOutlined className="text-[10px] text-[#00863e] transition-transform group-hover:translate-x-0.5" />
             </Link>
 
-            <div className="my-3.5 h-px bg-[#edf0ee]" />
+            <div className="my-2 h-px bg-[#edf0ee]" />
 
-            <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[1.4px] text-[#87938b]">
+            <p className="mb-1 px-1 text-[9px] font-bold uppercase tracking-[1.2px] text-[#87938b]">
               Shaxsiy kabinet
             </p>
 
             <Link
               href={user ? profilePath : "/login"}
               onClick={closeMobile}
-              className="group flex items-center gap-3 rounded-2xl border border-[#e5e9e7] bg-white p-3 transition-all hover:border-[#b9dfc6] hover:bg-[#f6faf7]"
+              className="group flex items-center gap-2.5 rounded-xl border border-[#e5e9e7] bg-white px-2.5 py-2 transition-all hover:border-[#b9dfc6] hover:bg-[#f6faf7]"
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#10251a] text-[15px] font-bold text-white">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#10251a] text-[12px] font-bold text-white">
                 {initial ?? <UserOutlined />}
               </span>
 
               <span className="min-w-0 flex-1">
-                <span className="block truncate text-[14px] font-bold text-[#26352d]">
+                <span className="block truncate text-[13px] font-bold leading-tight text-[#26352d]">
                   {accountLabel === "Kirish" ? "Tizimga kirish" : accountLabel}
                 </span>
-                <span className="mt-0.5 block text-[11px] text-[#00863e]">
+                <span className="mt-0.5 block text-[10px] text-[#00863e]">
                   {user?.role === "OWNER" || user?.role === "ADMIN"
                     ? "Kompaniya kabineti"
                     : user
@@ -453,7 +454,7 @@ export default function Navbar({ home = false }: { home?: boolean }) {
                 </span>
               </span>
 
-              <RightOutlined className="text-xs text-[#8a9690] transition-transform group-hover:translate-x-0.5" />
+              <RightOutlined className="text-[10px] text-[#8a9690] transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
         )}
@@ -472,6 +473,8 @@ export default function Navbar({ home = false }: { home?: boolean }) {
         open={bookingPrompt}
         onCancel={() => setBookingPrompt(false)}
       />
+
+      {!mobileOpen && <MobileBottomNav />}
     </>
   );
 }

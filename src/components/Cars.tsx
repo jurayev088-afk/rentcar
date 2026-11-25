@@ -1,7 +1,7 @@
 "use client";
 
 import SafeImage from "./SafeImage";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Heart,
   MapPin,
@@ -20,6 +20,7 @@ import { WishlistContext } from "../constants/UseWishlist";
 import { carStatus, type Car } from "../types";
 import { useUser } from "../constants/UseMeContext";
 import { brandLabel } from "../lib/media";
+import CarsLoadingGrid from "./CarsLoadingGrid";
 
 const fallbackImage =
   "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=800&q=80";
@@ -59,9 +60,9 @@ export function CarCard({
   return (
     <article
       onClick={() => router.push(`/cars/${car.id}`)}
-      className={`group flex cursor-pointer flex-col overflow-hidden rounded-[26px] border border-[#e5e9e7] bg-white shadow-[0_8px_24px_rgba(16,37,26,0.04)] transition-all duration-300  hover:border-[#b9dfc6] hover:shadow-[0_16px_36px_rgba(0,134,62,0.12)] ${className}`}
+      className={`group flex cursor-pointer flex-col overflow-hidden rounded-[22px] border border-[#e5e9e7] bg-white shadow-[0_8px_24px_rgba(16,37,26,0.04)] transition-all duration-300 hover:border-[#b9dfc6] hover:shadow-[0_16px_36px_rgba(0,134,62,0.12)] ${className}`}
     >
-      <div className="relative h-56 w-full overflow-hidden bg-slate-100">
+      <div className="relative h-44 w-full overflow-hidden bg-slate-100 sm:h-52">
         <SafeImage
           src={carImage}
           alt={carName}
@@ -93,21 +94,30 @@ export function CarCard({
         {showWishlist && wishlistCtx && (
           <button
             type="button"
+            disabled={
+              wishlistCtx.isToggling &&
+              wishlistCtx.pendingCarId === String(car.id)
+            }
             onClick={(e) => {
               e.stopPropagation();
               wishlistCtx.toggleWishlist(car);
             }}
             aria-label="Sevimlilarga qo‘shish"
-            className="absolute cursor-pointer right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/90 text-slate-700 shadow-lg backdrop-blur transition-all hover:scale-110 hover:bg-white"
+            className="absolute right-4 top-4 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/40 bg-white/90 text-slate-700 shadow-lg backdrop-blur transition-all hover:scale-110 hover:bg-white disabled:cursor-wait disabled:opacity-70"
           >
-            <Heart
-              size={20}
-              className={
-                isFavorite && user
-                  ? "fill-rose-500 text-rose-500"
-                  : "text-slate-600"
-              }
-            />
+            {wishlistCtx.isToggling &&
+            wishlistCtx.pendingCarId === String(car.id) ? (
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-rose-500" />
+            ) : (
+              <Heart
+                size={20}
+                className={
+                  isFavorite && user
+                    ? "fill-rose-500 text-rose-500"
+                    : "text-slate-600"
+                }
+              />
+            )}
           </button>
         )}
 
@@ -119,7 +129,7 @@ export function CarCard({
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-1 flex-col p-3.5 sm:p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="mt-1 text-md font-extrabold tracking-tight text-[#1f2d25]">
@@ -217,41 +227,23 @@ interface CarsProps {
   cars: Car[];
   filteredCars: Car[];
   showWishlist?: boolean;
+  isLoading?: boolean;
+  /** true bo‘lsa — faqat haqiqatan bo‘sh (loading emas) */
+  forceEmpty?: boolean;
 }
 
 export default function Cars({
   cars,
   filteredCars,
   showWishlist = true,
+  isLoading = false,
+  forceEmpty = false,
 }: CarsProps) {
-  const searchParams = useSearchParams();
-
-  const location = searchParams.get("location");
-  const brand = searchParams.get("brand");
-  const model = searchParams.get("model");
-
-  // Home/header search URL parametrlari (region nomi, brand, model)
-  const displayedCars = useMemo(() => {
-    const sourceCars = filteredCars ?? cars ?? [];
-
-    return sourceCars.filter((car) => {
-      const matchRegion =
-        !location ||
-        car?.region?.toLowerCase()?.includes(location.toLowerCase().trim()) ||
-        car?.district?.toLowerCase()?.includes(location.toLowerCase().trim()) ||
-        car?.address?.toLowerCase()?.includes(location.toLowerCase().trim());
-
-      const matchBrand =
-        !brand ||
-        car?.brand?.toLowerCase()?.trim() === brand.toLowerCase().trim();
-
-      const matchModel =
-        !model ||
-        car?.model?.toLowerCase()?.trim() === model.toLowerCase().trim();
-
-      return matchRegion && matchBrand && matchModel;
-    });
-  }, [filteredCars, cars, location, brand, model]);
+  // Filtr / API natijasi — home URL bo‘yicha qayta kesilmasin
+  const displayedCars = useMemo(
+    () => filteredCars ?? cars ?? [],
+    [filteredCars, cars],
+  );
 
   // Public API allaqachon faqat APPROVED mashinalarni qaytaradi.
   // Status filtri faqat aniq yashirilganlarni (INACTIVE/REJECTED) kesadi.
@@ -264,28 +256,38 @@ export default function Cars({
     );
   });
 
+  if (isLoading && availableCars.length === 0) {
+    return (
+      <section className="mt-4 w-full min-w-0 sm:mt-6">
+        <CarsLoadingGrid count={6} />
+      </section>
+    );
+  }
+
   return (
-    <section className="mt-6 w-full min-w-0">
+    <section className="mt-4 w-full min-w-0 sm:mt-6">
       {availableCars.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 2xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:gap-5 xl:grid-cols-2 2xl:grid-cols-3">
           {availableCars.map((car) => (
             <CarCard key={car.id} car={car} showWishlist={showWishlist} />
           ))}
         </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-[#d7e8dd] bg-white px-6 py-20 text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eaf6ef]">
-            <CarFront size={30} className="text-[#00863e]" />
+      ) : forceEmpty || (!isLoading && availableCars.length === 0) ? (
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-[#d7e8dd] bg-white px-6 py-14 text-center sm:py-16">
+          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[linear-gradient(145deg,#eaf6ef,#d8f0e2)] text-[#00863e] shadow-[0_8px_18px_rgba(0,134,62,0.12)]">
+            <CarFront size={26} />
           </div>
 
-          <h3 className="text-lg font-bold text-[#1f2d25]">
+          <h3 className="text-base font-bold text-[#1f2d25] sm:text-lg">
             Avtomobillar topilmadi
           </h3>
 
-          <p className="mt-2 max-w-sm text-sm text-[#6d7a73]">
+          <p className="mt-1.5 max-w-sm text-sm text-[#6d7a73]">
             Hozircha ushbu parametrlar bo‘yicha avtomobillar mavjud emas.
           </p>
         </div>
+      ) : (
+        <CarsLoadingGrid count={6} />
       )}
     </section>
   );

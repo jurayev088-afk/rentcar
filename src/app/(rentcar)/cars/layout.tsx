@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "../../globals.css"
-import Footer from "@/src/components/Footer";
 import { ReactNode } from "react";
 import Navbar from "@/src/components/Navbar";
 
@@ -15,7 +14,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-[#f4f6f5]">
       <Navbar home />
       <main>{children}</main>
-      <Footer home />
     </div>
   );
 }

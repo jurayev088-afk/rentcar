@@ -21,6 +21,8 @@ interface WishlistContextType {
   setWishlist: (cars: Car[]) => void;
   toggleWishlist: (car: Car) => void;
   isLoading: boolean;
+  isToggling: boolean;
+  pendingCarId: string | null;
 }
 
 export const WishlistContext = createContext<WishlistContextType | undefined>(
@@ -44,6 +46,8 @@ export default function UseWishlistContext({
 
   const toggleWishlist = useCallback(
     (car: Car) => {
+      if (toggleFavorite.isPending) return;
+
       if (!user && !getAccessToken()) {
         message.info("Sevimlilarga qo‘shish uchun tizimga kiring");
         router.push("/login");
@@ -79,14 +83,20 @@ export default function UseWishlistContext({
     [router, toggleFavorite, user, wishlist],
   );
 
+  const pendingCarId = toggleFavorite.isPending
+    ? String(toggleFavorite.variables?.carId ?? "")
+    : null;
+
   const value = useMemo(
     () => ({
       wishlist,
       setWishlist: () => undefined,
       toggleWishlist,
       isLoading,
+      isToggling: toggleFavorite.isPending,
+      pendingCarId,
     }),
-    [wishlist, toggleWishlist, isLoading],
+    [wishlist, toggleWishlist, isLoading, toggleFavorite.isPending, pendingCarId],
   );
 
   return (

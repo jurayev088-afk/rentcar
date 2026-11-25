@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import api from "../services/api";
 import type { HomeData } from "../types/api";
 
@@ -23,5 +23,6 @@ export function useHome() {
       } satisfies HomeData;
     },
     staleTime: 30_000,
+    placeholderData: keepPreviousData,
   });
 }

@@ -99,6 +99,17 @@ export default function Login({
   const busy =
     loading || loginMutation.isPending || registerMutation.isPending;
 
+  if (loading) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-[#f4f6f5]">
+        <div className="flex flex-col items-center gap-3">
+          <span className="h-10 w-10 animate-spin rounded-full border-[3px] border-[#d7e8dd] border-t-[#00863e]" />
+          <p className="text-sm font-medium text-[#6d7a73]">Yuklanmoqda...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (user) return null;
 
   return (
@@ -177,8 +188,9 @@ export default function Login({
                     key={value}
                     type="button"
                     aria-pressed={active}
+                    disabled={busy}
                     onClick={() => setRole(value)}
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition ${
+                    className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-bold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                       active
                         ? "bg-white text-[#00863e] shadow-sm"
                         : "text-[#6d7a73] hover:text-[#1f2d25]"
@@ -307,10 +319,16 @@ export default function Login({
                 loading={busy}
                 block
                 size="large"
-                className="!mt-1 !h-12 !rounded-xl !border-0 !bg-[#00863e] !font-bold hover:!bg-[#006f35]"
+                className="!mt-1 !h-12 !cursor-pointer !rounded-xl !border-0 !bg-[#00863e] !font-bold hover:!bg-[#006f35]"
               >
-                {isRegister ? "Hisob yaratish" : "Tizimga kirish"}{" "}
-                <ArrowRight size={17} aria-hidden />
+                {busy
+                  ? isRegister
+                    ? "Yaratilmoqda..."
+                    : "Kirilmoqda..."
+                  : isRegister
+                    ? "Hisob yaratish"
+                    : "Tizimga kirish"}{" "}
+                {!busy && <ArrowRight size={17} aria-hidden />}
               </Button>
             </Form>
 
@@ -318,8 +336,9 @@ export default function Login({
               {isRegister ? "Hisobingiz bormi?" : "Hisobingiz yo‘qmi?"}{" "}
               <button
                 type="button"
+                disabled={busy}
                 onClick={() => setIsRegister((v) => !v)}
-                className="font-bold text-[#00863e] hover:underline"
+                className="cursor-pointer font-bold text-[#00863e] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isRegister ? "Kirish" : "Ro‘yxatdan o‘tish"}
               </button>

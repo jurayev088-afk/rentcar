@@ -19,7 +19,8 @@ import { Car } from "@/src/types";
 
 export default function WishlistCard() {
   const router = useRouter();
-  const { wishlist, toggleWishlist, isLoading } = UseWishlist();
+  const { wishlist, toggleWishlist, isLoading, isToggling, pendingCarId } =
+    UseWishlist();
   const { user } = useUser();
 
   const formatPrice = (price: Car["price"]) => {
@@ -88,8 +89,19 @@ export default function WishlistCard() {
         </div>
 
         {isLoading ? (
-          <div className="rounded-3xl border border-gray-100 bg-white py-20 text-center text-[#00863e]">
-            Sevimlilar yuklanmoqda...
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="overflow-hidden rounded-[22px] border border-gray-100 bg-white"
+              >
+                <div className="h-44 animate-pulse bg-[#eef2f0]" />
+                <div className="space-y-3 p-4">
+                  <div className="h-4 w-2/3 animate-pulse rounded bg-[#eef2f0]" />
+                  <div className="h-3 w-1/2 animate-pulse rounded bg-[#eef2f0]" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : wishlist?.length > 0 && user ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -134,21 +146,26 @@ export default function WishlistCard() {
 
                     <button
                       type="button"
+                      disabled={isToggling && pendingCarId === String(car.id)}
                       onClick={(e) => {
                         e.stopPropagation();
                         toggleWishlist(car);
                       }}
                       aria-label="Sevimlilarga qo‘shish"
-                      className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/90 text-slate-700 shadow-lg backdrop-blur transition-all hover:scale-110 hover:bg-white"
+                      className="absolute right-4 top-4 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/40 bg-white/90 text-slate-700 shadow-lg backdrop-blur transition-all hover:scale-110 hover:bg-white disabled:cursor-wait disabled:opacity-70"
                     >
-                      <Heart
-                        size={20}
-                        className={
-                          isFavorite && user
-                            ? "fill-rose-500 text-rose-500"
-                            : "text-slate-600"
-                        }
-                      />
+                      {isToggling && pendingCarId === String(car.id) ? (
+                        <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-rose-500" />
+                      ) : (
+                        <Heart
+                          size={20}
+                          className={
+                            isFavorite && user
+                              ? "fill-rose-500 text-rose-500"
+                              : "text-slate-600"
+                          }
+                        />
+                      )}
                     </button>
 
                     <div className="absolute bottom-4 left-4 flex items-center gap-2 text-white">

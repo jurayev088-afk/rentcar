@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import api from "../services/api";
 
 export type ApiBrand = {
@@ -62,6 +62,7 @@ export function useBrands(params?: {
       };
     },
     staleTime: 5 * 60_000,
+    placeholderData: keepPreviousData,
   });
 }
 

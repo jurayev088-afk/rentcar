@@ -22,7 +22,7 @@ import {
 } from "@ant-design/icons";
 
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import { useCreateBooking } from "@/src/hooks/use-bookings";
 import { useCar } from "@/src/hooks/use-cars";
@@ -43,10 +43,14 @@ type BookingFormValues = {
 };
 
 const MIN_AGE = 18;
+const BRONLARIM_PATH = "/profile/renter/bronlarim";
 
 export default function BookingCar() {
   const [form] = Form.useForm();
   const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const submitLockRef = useRef(false);
   const createBooking = useCreateBooking();
   const router = useRouter();
   const params = useParams();
@@ -55,6 +59,7 @@ export default function BookingCar() {
   const { user } = useUser();
   const { data: apiCar, isLoading: carLoading } = useCar(carId || undefined);
   const isRented = Boolean(apiCar?.isRented);
+  const isLoading = submitting || createBooking.isPending;
 
   useEffect(() => {
     if (!user) return;
@@ -66,7 +71,17 @@ export default function BookingCar() {
     });
   }, [user, form]);
 
+  const goToBronlarim = () => {
+    router.replace(BRONLARIM_PATH);
+  };
+
   const onFinish = async (values: BookingFormValues) => {
+    // Allaqachon yuborilgan — qayta bron yaratmasin, bronlarimga o‘tsin
+    if (submitted || submitLockRef.current) {
+      if (submitted) goToBronlarim();
+      return;
+    }
+
     if (!carId) {
       message.error("Mashina topilmadi");
       return;
@@ -107,6 +122,9 @@ export default function BookingCar() {
       }
     }
 
+    submitLockRef.current = true;
+    setSubmitting(true);
+
     try {
       let licenseImageUrl = existingUrl;
       if (raw) {
@@ -114,6 +132,8 @@ export default function BookingCar() {
       }
       if (!licenseImageUrl) {
         message.error("Guvohnoma rasmini yuklab bo‘lmadi");
+        submitLockRef.current = false;
+        setSubmitting(false);
         return;
       }
 
@@ -132,11 +152,15 @@ export default function BookingCar() {
         comment: values.comment?.trim() || undefined,
         licenseImageUrl,
       });
+
+      setSubmitted(true);
       message.success("Bron so‘rovingiz yuborildi!");
       form.resetFields();
       setFileList([]);
-      router.push("/profile/renter/bronlarim");
+      goToBronlarim();
     } catch (error: unknown) {
+      submitLockRef.current = false;
+      setSubmitting(false);
       message.error(
         getApiErrorMessage(error, "Bron qilishda xatolik yuz berdi"),
       );
@@ -484,13 +508,15 @@ export default function BookingCar() {
               </div>
 
               <Button
-                htmlType="submit"
+                htmlType={submitted ? "button" : "submit"}
                 type="primary"
                 block
-                loading={createBooking.isPending}
-                className="!mt-6 !h-12 !rounded-full !border-0 !bg-[#00863e] !font-bold !shadow-[0_8px_18px_rgba(0,134,62,0.22)] hover:!bg-[#006f35]"
+                loading={isLoading}
+                disabled={isLoading}
+                onClick={submitted ? goToBronlarim : undefined}
+                className="!mt-6 !h-12 !rounded-full !border-0 !bg-[#00863e] !font-bold !shadow-[0_8px_18px_rgba(0,134,62,0.22)] hover:!bg-[#006f35] disabled:!bg-[#00863e] disabled:!opacity-85"
               >
-                Bron qilish
+                {submitted ? "Mening bronlarim" : "Bron qilish"}
               </Button>
             </Form>
           </div>

@@ -62,27 +62,31 @@ export default function TopCompanies() {
       />
 
       <div className={`relative ${shell}`}>
-        <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
+        <div className="mb-6 flex items-center justify-between gap-4 sm:mb-8">
           <div className="max-w-xl">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#b9dfc6] bg-white/80 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[1.4px] text-[#00863e] shadow-sm backdrop-blur">
-              <Building2 className="h-3.5 w-3.5" aria-hidden />
-              Reyting · Hamkor kompaniyalar
-            </span>
-            <h2 className="mt-3 m-0 text-[22px] font-bold leading-[1.15] tracking-[-0.03em] text-[#1f2d25] sm:text-[28px]">
-              Eng top kompaniyalar
+            
+            <h2 className="m-0 text-[25px] font-bold leading-[1.15] tracking-[-0.03em] text-[#1f2d25] ">
+              Top kompaniyalar
             </h2>
           </div>
           <Link
             href="/kompaniyalar"
-            className="group inline-flex shrink-0 items-center gap-2 rounded-full border border-[#b9dfc6] bg-white px-4 py-2.5 text-sm font-bold text-[#00863e] no-underline shadow-sm transition hover:bg-[#00863e] hover:text-white"
+             className="inline-flex cursor-pointer shrink-0 items-center gap-1.5 text-sm font-bold text-[#00863e] no-underline hover:underline"
           >
             Hammasi
             <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
           </Link>
         </div>
 
-        {isLoading && (
-          <p className="text-sm text-[#6d7a73]">Kompaniyalar yuklanmoqda...</p>
+        {isLoading && companies.length === 0 && (
+          <div className="flex gap-3 overflow-hidden">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-40 w-[240px] shrink-0 animate-pulse rounded-2xl bg-white/80"
+              />
+            ))}
+          </div>
         )}
         {!isLoading && companies.length === 0 && (
           <p className="rounded-2xl border border-dashed border-[#d7e8dd] bg-white/70 px-4 py-6 text-sm text-[#6d7a73]">
