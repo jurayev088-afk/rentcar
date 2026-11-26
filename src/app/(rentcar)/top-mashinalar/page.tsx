@@ -1,10 +1,8 @@
 import TopCarsPage from "@/src/features/mashinalar/page/TopCarsPage";
-import {
-  fetchHomeData,
-  HOME_REVALIDATE_SECONDS,
-} from "@/src/lib/home-data";
+import { fetchHomeData } from "@/src/lib/home-data";
 
-export const revalidate = HOME_REVALIDATE_SECONDS;
+/** Next segment config — faqat literal bo‘lishi shart */
+export const revalidate = 60;
 
 export default async function page() {
   const data = await fetchHomeData();
