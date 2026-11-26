@@ -4,16 +4,16 @@ import { Button, message, Popconfirm, Space } from "antd";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Car } from "@/src/types";
-import { useHideCar } from "@/src/hooks/use-my-cars";
+import { useDeleteCar } from "@/src/hooks/use-my-cars";
 
 export default function CarActions({ record }: { record: Car }) {
   const router = useRouter();
-  const hideCar = useHideCar();
+  const deleteCar = useDeleteCar();
 
   const handleDelete = async () => {
     try {
-      await hideCar.mutateAsync(record.id);
-      message.success("Avtomobil yashirildi");
+      await deleteCar.mutateAsync(record.id);
+      message.success("Avtomobil o‘chirildi");
     } catch {
       message.error("O‘chirishda xatolik");
     }
@@ -36,15 +36,16 @@ export default function CarActions({ record }: { record: Car }) {
         }
       />
       <Popconfirm
-        title="Avtomobilni yashirasizmi?"
-        okText="Ha"
+        title="Avtomobilni o‘chirasizmi?"
+        description="Bu amalni bekor qilib bo‘lmaydi (bron bo‘lsa yashiriladi)."
+        okText="Ha, o‘chirish"
         cancelText="Yo‘q"
         onConfirm={handleDelete}
       >
         <Button
           type="text"
           danger
-          loading={hideCar.isPending}
+          loading={deleteCar.isPending}
           className="!flex !h-9 !w-9 !items-center !justify-center !rounded-xl hover:!bg-red-50"
           icon={<Trash2 size={16} />}
         />

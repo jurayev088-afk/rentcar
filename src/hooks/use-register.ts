@@ -12,7 +12,6 @@ import { meQueryKey } from "./use-me";
 type RegisterPayload = {
   fullName: string;
   phone: string;
-  email?: string;
   password: string;
   role: Extract<ApiRole, "USER" | "COMPANY">;
   companyName?: string;
@@ -27,7 +26,6 @@ export function useRegister() {
       const body = {
         fullName: payload.fullName.trim(),
         phone: normalizePhoneInput(payload.phone),
-        email: payload.email || undefined,
         password: payload.password,
         role: payload.role,
         companyName: payload.companyName?.trim(),

@@ -49,8 +49,8 @@ export default function UseWishlistContext({
       if (toggleFavorite.isPending) return;
 
       if (!user && !getAccessToken()) {
-        message.info("Sevimlilarga qo‘shish uchun tizimga kiring");
-        router.push("/login");
+        message.info("Sevimlilarga qo‘shish uchun ro‘yxatdan o‘ting");
+        router.push("/register?role=USER");
         return;
       }
 

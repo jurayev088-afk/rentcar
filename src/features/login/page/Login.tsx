@@ -15,12 +15,17 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import {
+  formatUzPhoneDisplay,
+  uzPhoneComplete,
+  uzPhoneDigits,
+} from "@/src/lib/input-masks";
+import type { AuthRole } from "@/src/features/login/authDestination";
 
 type Credentials = { phone: string; password: string };
 type Registration = {
   fullName: string;
   phone: string;
-  email?: string;
   password: string;
   companyName?: string;
   stir?: string;
@@ -29,8 +34,12 @@ type Registration = {
 const phoneRules = [
   { required: true, message: "Telefon raqamingizni kiriting." },
   {
-    pattern: /^\d{9}$/,
-    message: "Telefon raqami 9 ta raqamdan iborat bo‘lishi kerak.",
+    validator: async (_: unknown, value: string) => {
+      if (!value) return;
+      if (!uzPhoneComplete(value)) {
+        throw new Error("Telefon raqami 9 ta raqamdan iborat bo‘lishi kerak.");
+      }
+    },
   },
 ];
 
@@ -60,22 +69,33 @@ const copy = {
 export default function Login({
   destination,
   initialRegister = false,
+  initialRole = "USER",
 }: {
   destination: string;
   initialRegister?: boolean;
+  initialRole?: AuthRole;
 }) {
   const router = useRouter();
   const { user, loading } = useUser();
   const loginMutation = useLogin();
   const registerMutation = useRegister();
-  const [role, setRole] = useState<"USER" | "COMPANY">("USER");
+  const [role, setRole] = useState<AuthRole>(initialRole);
   const [isRegister, setIsRegister] = useState(initialRegister);
   const text = copy[role];
 
   const afterAuthPath = useMemo(() => {
     if (destination && destination !== "/") return destination;
+    if (role === "COMPANY") return "/profile/owner/moshinalarim/qoshish";
     return "/";
-  }, [destination]);
+  }, [destination, role]);
+
+  useEffect(() => {
+    setRole(initialRole);
+  }, [initialRole]);
+
+  useEffect(() => {
+    setIsRegister(initialRegister);
+  }, [initialRegister]);
 
   useEffect(() => {
     if (!user) return;
@@ -83,13 +103,17 @@ export default function Login({
   }, [user, router, afterAuthPath]);
 
   async function signIn(values: Credentials) {
-    await loginMutation.mutateAsync(values);
+    await loginMutation.mutateAsync({
+      ...values,
+      phone: uzPhoneDigits(values.phone),
+    });
     router.replace(afterAuthPath);
   }
 
   async function signUp(values: Registration) {
     await registerMutation.mutateAsync({
       ...values,
+      phone: uzPhoneDigits(values.phone),
       role,
       companyName: role === "COMPANY" ? values.companyName : undefined,
     });
@@ -114,7 +138,8 @@ export default function Login({
 
   return (
     <div className="flex min-h-screen w-full flex-col lg:flex-row">
-      <div className="relative flex min-h-[280px] flex-1 flex-col justify-between overflow-hidden bg-[linear-gradient(160deg,#0f2a1c_0%,#10251a_48%,#165a36_100%)] px-8 py-8 sm:px-12 lg:min-h-screen lg:px-16 lg:py-12">
+      {/* Desktop-only branding panel — mobileda faqat forma */}
+      <div className="relative hidden min-h-screen flex-1 flex-col justify-between overflow-hidden bg-[linear-gradient(160deg,#0f2a1c_0%,#10251a_48%,#165a36_100%)] px-12 py-12 lg:flex lg:px-16">
         <div className="pointer-events-none absolute -left-32 -top-32 h-[450px] w-[450px] rounded-full bg-[#00863e]/25 blur-[100px]" />
         <div className="pointer-events-none absolute -bottom-40 -right-20 h-[400px] w-[400px] rounded-full bg-[#00863e]/15 blur-[100px]" />
 
@@ -124,7 +149,7 @@ export default function Login({
           </Link>
         </div>
 
-        <div className="relative z-10 my-10 max-w-[550px] lg:my-12">
+        <div className="relative z-10 my-12 max-w-[550px]">
           <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[1.2px] text-white/90 backdrop-blur-sm">
             {role === "COMPANY" ? (
               <Building2 size={14} />
@@ -142,21 +167,19 @@ export default function Login({
             )}
           </div>
 
-          <h1 className="whitespace-pre-line text-3xl font-bold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
+          <h1 className="whitespace-pre-line text-4xl font-bold leading-tight tracking-tight text-white lg:text-5xl">
             {text.title}
           </h1>
 
-          <p className="mt-6 max-w-[470px] text-sm leading-7 text-[#9aa59e] sm:text-base">
+          <p className="mt-6 max-w-[470px] text-base leading-7 text-[#9aa59e]">
             {text.description}
           </p>
         </div>
 
-        <div className="relative z-10 text-xs text-[#8d9892] sm:text-sm">
-          Rento · 2026
-        </div>
+        <div className="relative z-10 text-sm text-[#8d9892]">Rento · 2026</div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center bg-[#f4f6f5] px-4 py-10 sm:px-8">
+      <div className="flex min-h-screen flex-1 items-center justify-center bg-[#f4f6f5] px-4 py-8 sm:px-8 sm:py-10">
         <div className="w-full max-w-[440px]">
           <Link
             href="/"
@@ -207,6 +230,7 @@ export default function Login({
               key={`${role}-${isRegister ? "reg" : "login"}`}
               layout="vertical"
               requiredMark={false}
+              validateTrigger={["onBlur", "onSubmit"]}
               onFinish={isRegister ? signUp : signIn}
               className="mt-5"
             >
@@ -258,41 +282,30 @@ export default function Login({
                 </Form.Item>
               )}
 
-              <Form.Item name="phone" label="Telefon raqami" rules={phoneRules}>
+              <Form.Item
+                name="phone"
+                label="Telefon raqami"
+                rules={phoneRules}
+                getValueFromEvent={(e) =>
+                  formatUzPhoneDisplay(e?.target?.value ?? "")
+                }
+                normalize={(v) => formatUzPhoneDisplay(String(v ?? ""))}
+              >
                 <Input
                   size="large"
                   prefix="+998"
                   type="tel"
                   inputMode="numeric"
                   autoComplete={isRegister ? "tel-national" : "username"}
-                  maxLength={9}
+                  maxLength={12}
                   placeholder="90 123 45 67"
                 />
               </Form.Item>
 
-              {isRegister && (
-                <Form.Item
-                  name="email"
-                  label="Elektron pochta"
-                  rules={[
-                    {
-                      type: "email",
-                      message: "Elektron pochta manzilini tekshiring.",
-                    },
-                  ]}
-                >
-                  <Input
-                    size="large"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="ism@example.uz"
-                  />
-                </Form.Item>
-              )}
-
               <Form.Item
                 name="password"
                 label="Parol"
+                validateTrigger={["onBlur", "onSubmit"]}
                 rules={[
                   { required: true, message: "Parolni kiriting." },
                   {

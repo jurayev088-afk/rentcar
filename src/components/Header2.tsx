@@ -1,12 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CircleArrowDown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { message } from "antd";
+import { ArrowRight } from "lucide-react";
 import { useUser } from "../constants/UseMeContext";
 import HeaderSearch from "./HeaderSearch";
 
 export default function Header2() {
   const { user } = useUser();
+  const router = useRouter();
+
+  const onListCar = (e: React.MouseEvent) => {
+    if (user?.role === "OWNER") return;
+    e.preventDefault();
+    if (user?.role === "RENTER") {
+      message.warning(
+        "Siz mijozsiz — mashina joylash uchun kompaniya nomidan kirishingiz kerak",
+      );
+      return;
+    }
+    router.push(
+      "/register?role=COMPANY&next=%2Fprofile%2Fowner%2Fmoshinalarim%2Fqoshish",
+    );
+  };
 
   return (
     <>
@@ -32,13 +49,17 @@ export default function Header2() {
           </Link>
 
           <Link
-            href={user ? "/profile/owner/moshinalarim/qoshish" : "/login"}
+            href={
+              user?.role === "OWNER"
+                ? "/profile/owner/moshinalarim/qoshish"
+                : "/register?role=COMPANY&next=%2Fprofile%2Fowner%2Fmoshinalarim%2Fqoshish"
+            }
+            onClick={onListCar}
             className="inline-flex min-h-[30px] items-center justify-center gap-2 whitespace-nowrap rounded-full border border-[#8e959a] bg-[#e3e6e8]/50 px-3.5 text-[clamp(12px,1.07vw,16px)] font-bold text-[#121516] no-underline transition hover:bg-[#f5f6f7] max-[860px]:min-h-10 max-[860px]:px-4 max-[365px]:px-3 lg:min-h-[clamp(30px,3vw,44px)]"
           >
             Ijaraga berish
           </Link>
         </div>
-
       </div>
 
       <div

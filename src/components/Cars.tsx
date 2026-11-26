@@ -96,40 +96,58 @@ export function CarCard({
   const hasDiscount = Number(car.oldPrice) > Number(car.price);
   const available = car.status !== "IJARADA" && car.status !== "BRON_QILINGAN";
 
-  const scrollerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const dragRef = useRef({ x: 0, y: 0, moved: false });
-
-  const onScrollerScroll = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const w = el.clientWidth || 1;
-    const next = Math.round(el.scrollLeft / w);
-    setActiveIndex(Math.min(Math.max(next, 0), images.length - 1));
-  }, [images.length]);
+  const dragRef = useRef({
+    x: 0,
+    y: 0,
+    moved: false,
+    axis: null as null | "x" | "y",
+    swiping: false,
+  });
 
   const goTo = useCallback(
     (index: number) => {
-      const el = scrollerRef.current;
-      if (!el) return;
-      el.scrollTo({ left: index * el.clientWidth, behavior: "smooth" });
+      setActiveIndex(Math.min(Math.max(index, 0), images.length - 1));
     },
-    [],
+    [images.length],
   );
 
   const openCar = useCallback(() => {
-    if (dragRef.current.moved) return;
+    if (dragRef.current.moved || dragRef.current.swiping) return;
     router.push(`/cars/${car.id}`);
   }, [car.id, router]);
 
   const onPointerDown = (e: ReactPointerEvent) => {
-    dragRef.current = { x: e.clientX, y: e.clientY, moved: false };
+    dragRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      moved: false,
+      axis: null,
+      swiping: false,
+    };
   };
 
   const onPointerMove = (e: ReactPointerEvent) => {
-    const dx = Math.abs(e.clientX - dragRef.current.x);
-    const dy = Math.abs(e.clientY - dragRef.current.y);
-    if (dx > 8 || dy > 8) dragRef.current.moved = true;
+    const dx = e.clientX - dragRef.current.x;
+    const dy = e.clientY - dragRef.current.y;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+
+    if (!dragRef.current.axis && (absX > 8 || absY > 8)) {
+      // Vertikal → sahifa scroll; gorizontal → rasm almashtirish
+      dragRef.current.axis = absX > absY ? "x" : "y";
+      dragRef.current.moved = true;
+    }
+  };
+
+  const onImagePointerUp = (e: ReactPointerEvent) => {
+    const dx = e.clientX - dragRef.current.x;
+    const absX = Math.abs(dx);
+    if (dragRef.current.axis === "x" && absX > 40 && images.length > 1) {
+      dragRef.current.swiping = true;
+      if (dx < 0) goTo(activeIndex + 1);
+      else goTo(activeIndex - 1);
+    }
   };
 
   const specs = [
@@ -162,24 +180,26 @@ export function CarCard({
       onPointerMove={onPointerMove}
       className={`group flex cursor-pointer flex-col overflow-hidden rounded-[14px] border border-[#e5e9e7] bg-white shadow-[0_6px_16px_rgba(16,37,26,0.04)] transition-all duration-300 hover:border-[#b9dfc6] hover:shadow-[0_16px_36px_rgba(0,134,62,0.12)] sm:rounded-[18px] ${className}`}
     >
-      {/* Image + swipe */}
-      <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-[#eef2f6] sm:aspect-[5/3.4]">
+      {/* Image + swipe (touch-action: pan-y — vertikal scroll bloklanmaydi) */}
+      <div
+        className="relative aspect-[16/10] w-full shrink-0 touch-pan-y overflow-hidden bg-[#eef2f6] sm:aspect-[5/3.4]"
+        onPointerUp={onImagePointerUp}
+      >
         <div
-          ref={scrollerRef}
-          onScroll={onScrollerScroll}
-          className="flex h-full w-full touch-pan-x snap-x snap-mandatory overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex h-full w-full transition-transform duration-300 ease-out"
+          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
         >
           {images.map((src, i) => (
             <div
               key={`${car.id}-img-${i}`}
-              className="relative h-full w-full shrink-0 snap-center"
+              className="relative h-full w-full shrink-0 grow-0 basis-full"
             >
               <SafeImage
                 src={src}
                 alt={`${carName} ${i + 1}`}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1280px) 25vw, 20vw"
-                className="object-cover!"
+                className="pointer-events-none object-cover! select-none"
                 draggable={false}
               />
             </div>

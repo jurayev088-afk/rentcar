@@ -29,7 +29,7 @@ import {
 } from "@ant-design/icons";
 import { useParams, useRouter } from "next/navigation";
 
-import { Car, carStatus } from "@/src/types";
+import type { Car } from "@/src/types";
 import { useBrandModels, useBrands } from "@/src/hooks/use-brands";
 import { useCategories } from "@/src/hooks/use-categories";
 import { useRegions } from "@/src/hooks/use-regions";
@@ -43,6 +43,11 @@ import { brandLabel } from "@/src/lib/media";
 import { mapApiCarToUi } from "@/src/lib/map-car";
 import { uploadImageFile } from "@/src/lib/upload-media";
 import { getApiErrorMessage } from "@/src/lib/api-error";
+import {
+  formatPlateNumber,
+  formatUzPhoneDisplay,
+  toE164Uz,
+} from "@/src/lib/input-masks";
 
 const FUEL_MAP: Record<string, string> = {
   Benzin: "BENZIN",
@@ -210,9 +215,13 @@ export default function AddCar() {
       model: editingCar.model,
       year: editingCar.year,
       color: editingCar.color,
-      number: editingCar.number,
+      number: editingCar.number
+        ? formatPlateNumber(String(editingCar.number))
+        : undefined,
       categoryId: apiEditingCar.category?.id,
-      phone: editingCar.phone,
+      phone: editingCar.phone
+        ? formatUzPhoneDisplay(String(editingCar.phone))
+        : undefined,
       transmission:
         TRANSMISSION_LABEL[editingCar.transmission] || editingCar.transmission,
       fuel: FUEL_LABEL[editingCar.fuel] || editingCar.fuel,
@@ -274,7 +283,9 @@ export default function AddCar() {
       model: String(values.model),
       year: Number(values.year),
       color: values.color ? String(values.color) : undefined,
-      plateNumber: values.number ? String(values.number) : undefined,
+      plateNumber: values.number
+        ? formatPlateNumber(String(values.number))
+        : undefined,
       categoryId: values.categoryId ? String(values.categoryId) : undefined,
       fuelType: FUEL_MAP[String(values.fuel)] || "BENZIN",
       transmission: TRANSMISSION_MAP[String(values.transmission)] || "AVTOMAT",
@@ -296,7 +307,7 @@ export default function AddCar() {
       description: values.description
         ? String(values.description)
         : undefined,
-      phone: values.phone ? String(values.phone) : undefined,
+      phone: values.phone ? toE164Uz(String(values.phone)) || undefined : undefined,
       imageUrls,
     };
   };
@@ -430,10 +441,9 @@ export default function AddCar() {
           onFinish={onFinish}
           requiredMark={false}
           initialValues={{
-            status:"Mavjud",
             transmission: "Avtomat",
             fuel: "Benzin",
-            airCondition:true,
+            airCondition: true,
             condition: "A'lo",
             minDays: 1,
             seats: 5,
@@ -536,24 +546,36 @@ export default function AddCar() {
                     <Input size="large" placeholder="Masalan: Qora" />
                   </Form.Item>
 
-                  <Form.Item label="Davlat raqami" name="number">
-                    <Input size="large" placeholder="01 A 123 BC" />
-                  </Form.Item>
-
-                  <Form.Item label="Status" name="status">
-                    <Select
-                    placeholder={"Status tanlang"}
-                      options={carStatus?.map((item) => {
-                       return {
-                          label: item?.label,
-                          value:item?.value
-                        }
-                      })}
+                  <Form.Item
+                    label="Davlat raqami"
+                    name="number"
+                    getValueFromEvent={(e) =>
+                      formatPlateNumber(e?.target?.value ?? "")
+                    }
+                    normalize={(v) => formatPlateNumber(String(v ?? ""))}
+                  >
+                    <Input
+                      size="large"
+                      placeholder="01 A 777 AA yoki 01 777 AAA"
+                      maxLength={11}
                     />
                   </Form.Item>
 
-                  <Form.Item label="Telefon raqam" name="phone">
-                    <Input size="large" placeholder="+998 93 777 77 77" />
+                  <Form.Item
+                    label="Telefon raqam"
+                    name="phone"
+                    getValueFromEvent={(e) =>
+                      formatUzPhoneDisplay(e?.target?.value ?? "")
+                    }
+                    normalize={(v) => formatUzPhoneDisplay(String(v ?? ""))}
+                  >
+                    <Input
+                      size="large"
+                      prefix="+998"
+                      placeholder="93 777 77 77"
+                      maxLength={12}
+                      inputMode="numeric"
+                    />
                   </Form.Item>
                 </div>
               </FormCard>

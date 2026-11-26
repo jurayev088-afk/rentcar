@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 
 import { ArrowRight, Bell, Heart } from "lucide-react";
+import { message } from "antd";
 
 import { useUser } from "../constants/UseMeContext";
 import { useFavorites } from "../hooks/use-favorites";
@@ -113,7 +114,7 @@ export default function Navbar({ home = false }: { home?: boolean }) {
     ? "Yuklanmoqda..."
     : user
       ? fullName || "Kabinet"
-      : "Kirish";
+      : "Ro‘yxat";
   const accountSubLabel = loading
     ? "Kuting"
     : user
@@ -202,7 +203,7 @@ export default function Navbar({ home = false }: { home?: boolean }) {
             </Link>
 
             <Link
-              href={user ? xabarlarPath : "/login"}
+              href={user ? xabarlarPath : "/register?role=USER"}
               aria-label={
                 hasUnread
                   ? `${unreadCount} ta o‘qilmagan bildirishnoma`
@@ -232,9 +233,13 @@ export default function Navbar({ home = false }: { home?: boolean }) {
             </Link>
 
             <Link
-              href={user ? profilePath : "/login"}
+              href={
+                user
+                  ? profilePath
+                  : "/register?role=USER&next=%2Fprofile%2Frenter%2Fprofile"
+              }
               aria-label={
-                fullName ? `Shaxsiy kabinet: ${fullName}` : "Tizimga kirish"
+                fullName ? `Shaxsiy kabinet: ${fullName}` : "Ro‘yxatdan o‘tish"
               }
               className="group hidden h-11 max-w-[180px] items-center gap-2 rounded-full border border-[#e5e9e7] bg-white py-1 pl-1 pr-3.5 transition-all hover:border-[#b9dfc6] hover:bg-[#f6faf7] lg:flex"
             >
@@ -348,7 +353,7 @@ export default function Navbar({ home = false }: { home?: boolean }) {
               </Link>
 
               <Link
-                href={user ? xabarlarPath : "/login"}
+                href={user ? xabarlarPath : "/register?role=USER"}
                 onClick={closeMobile}
                 className={`flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-semibold transition ${
                   isActive("/profile/renter/xabarlar") ||
@@ -385,46 +390,65 @@ export default function Navbar({ home = false }: { home?: boolean }) {
               Avtomobil ijarasi
             </p>
 
-            <Link
-              href={
-                user?.role === "OWNER"
-                  ? "/profile/owner/moshinalarim/qoshish"
-                  : "/cars"
-              }
-              onClick={(event) => {
-                if (!user) {
+            <div className="flex flex-col gap-2">
+              <Link
+                href="/cars"
+                onClick={closeMobile}
+                className="group flex items-center gap-2.5 rounded-xl border border-[#c6e5d1] bg-[#eff8f2] px-2.5 py-2 transition-all hover:border-[#00863e] hover:bg-[#e4f4e9]"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#00863e] text-white">
+                  <CarOutlined className="text-[14px]" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13px] font-bold leading-tight text-[#173c27]">
+                    Ijaraga mashina topish
+                  </span>
+                  <span className="mt-0.5 block text-[10px] leading-snug text-[#668071]">
+                    O‘zingizga mos avtomobilni ijaraga oling
+                  </span>
+                </span>
+                <RightOutlined className="text-[10px] text-[#00863e] transition-transform group-hover:translate-x-0.5" />
+              </Link>
+
+              <Link
+                href={
+                  user?.role === "OWNER"
+                    ? "/profile/owner/moshinalarim/qoshish"
+                    : "/register?role=COMPANY&next=%2Fprofile%2Fowner%2Fmoshinalarim%2Fqoshish"
+                }
+                onClick={(event) => {
+                  if (user?.role === "OWNER") {
+                    closeMobile();
+                    return;
+                  }
                   event.preventDefault();
                   closeMobile();
-                  router.push("/login");
-                  return;
-                }
-                closeMobile();
-              }}
-              className="group flex items-center gap-2.5 rounded-xl border border-[#c6e5d1] bg-[#eff8f2] px-2.5 py-2 transition-all hover:border-[#00863e] hover:bg-[#e4f4e9]"
-            >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#00863e] text-white">
-                {user?.role === "OWNER" ? (
+                  if (user?.role === "RENTER") {
+                    message.warning(
+                      "Siz mijozsiz — mashina joylash uchun kompaniya nomidan kirishingiz kerak",
+                    );
+                    return;
+                  }
+                  router.push(
+                    "/register?role=COMPANY&next=%2Fprofile%2Fowner%2Fmoshinalarim%2Fqoshish",
+                  );
+                }}
+                className="group flex items-center gap-2.5 rounded-xl border border-[#c6e5d1] bg-white px-2.5 py-2 transition-all hover:border-[#00863e] hover:bg-[#e4f4e9]"
+              >
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#10251a] text-white">
                   <PlusOutlined className="text-[14px]" />
-                ) : (
-                  <CarOutlined className="text-[14px]" />
-                )}
-              </span>
-
-              <span className="min-w-0 flex-1">
-                <span className="block text-[13px] font-bold leading-tight text-[#173c27]">
-                  {user?.role === "OWNER"
-                    ? "Mashinamni ijaraga berish"
-                    : "Ijaraga mashina topish"}
                 </span>
-                <span className="mt-0.5 block text-[10px] leading-snug text-[#668071]">
-                  {user?.role === "OWNER"
-                    ? "Avtomobilingizni ijaraga joylashtiring"
-                    : "O‘zingizga mos avtomobilni ijaraga oling"}
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[13px] font-bold leading-tight text-[#173c27]">
+                    Mashina joylash
+                  </span>
+                  <span className="mt-0.5 block text-[10px] leading-snug text-[#668071]">
+                    Avtomobilingizni ijaraga joylashtiring
+                  </span>
                 </span>
-              </span>
-
-              <RightOutlined className="text-[10px] text-[#00863e] transition-transform group-hover:translate-x-0.5" />
-            </Link>
+                <RightOutlined className="text-[10px] text-[#00863e] transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
 
             <div className="my-2 h-px bg-[#edf0ee]" />
 
@@ -433,7 +457,11 @@ export default function Navbar({ home = false }: { home?: boolean }) {
             </p>
 
             <Link
-              href={user ? profilePath : "/login"}
+              href={
+                user
+                  ? profilePath
+                  : "/register?role=USER&next=%2Fprofile%2Frenter%2Fprofile"
+              }
               onClick={closeMobile}
               className="group flex items-center gap-2.5 rounded-xl border border-[#e5e9e7] bg-white px-2.5 py-2 transition-all hover:border-[#b9dfc6] hover:bg-[#f6faf7]"
             >
@@ -443,7 +471,7 @@ export default function Navbar({ home = false }: { home?: boolean }) {
 
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[13px] font-bold leading-tight text-[#26352d]">
-                  {accountLabel === "Kirish" ? "Tizimga kirish" : accountLabel}
+                  {accountLabel === "Ro‘yxat" ? "Ro‘yxatdan o‘tish" : accountLabel}
                 </span>
                 <span className="mt-0.5 block text-[10px] text-[#00863e]">
                   {user?.role === "OWNER" || user?.role === "ADMIN"

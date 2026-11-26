@@ -50,14 +50,16 @@ export default function MobileBottomNav() {
       center: true,
     },
     {
-      href: user ? xabarlarPath : "/login",
+      href: user ? xabarlarPath : "/register?role=USER",
       label: "Xabarlar",
       icon: Bell,
       match: (p: string) => p.includes("/xabarlar"),
       badge: unreadCount,
     },
     {
-      href: user ? profilePath : "/login",
+      href: user
+        ? profilePath
+        : "/register?role=USER&next=%2Fprofile%2Frenter%2Fprofile",
       label: "Profil",
       icon: UserRound,
       match: (p: string) => p.startsWith("/profile") && !p.includes("/xabarlar"),

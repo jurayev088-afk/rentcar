@@ -27,9 +27,19 @@ import dayjs, { type Dayjs } from "dayjs";
 import { useCreateBooking } from "@/src/hooks/use-bookings";
 import { useCar } from "@/src/hooks/use-cars";
 import { uploadImageFile } from "@/src/lib/upload-media";
-import { normalizePhoneInput } from "@/src/lib/media";
 import { getApiErrorMessage } from "@/src/lib/api-error";
 import { useUser } from "@/src/constants/UseMeContext";
+import {
+  formatUzPhoneDisplay,
+  toE164Uz,
+  uzPhoneComplete,
+} from "@/src/lib/input-masks";
+import {
+  birthDateToDayjs,
+  loadRenterBookingProfile,
+  saveRenterBookingProfile,
+} from "@/src/lib/renter-profile-storage";
+import api from "@/src/services/api";
 
 type BookingFormValues = {
   firstName: string;
@@ -37,8 +47,7 @@ type BookingFormValues = {
   phone: string;
   passportNumber?: string;
   birthDate: Dayjs;
-  startDate: Dayjs;
-  endDate: Dayjs;
+  rentalRange: [Dayjs, Dayjs];
   comment?: string;
 };
 
@@ -55,7 +64,6 @@ export default function BookingCar() {
   const router = useRouter();
   const params = useParams();
   const carId = String(params.id || "");
-  const startDate = Form.useWatch("startDate", form);
   const { user } = useUser();
   const { data: apiCar, isLoading: carLoading } = useCar(carId || undefined);
   const isRented = Boolean(apiCar?.isRented);
@@ -63,11 +71,14 @@ export default function BookingCar() {
 
   useEffect(() => {
     if (!user) return;
-    const [firstName, ...rest] = (user.fullName || "").trim().split(/\s+/);
+    const saved = loadRenterBookingProfile(user.id);
+    const [fn, ...rest] = (user.fullName || "").trim().split(/\s+/);
     form.setFieldsValue({
-      firstName: firstName || undefined,
-      lastName: rest.join(" ") || undefined,
-      phone: user.phone ? normalizePhoneInput(user.phone) : undefined,
+      firstName: saved?.firstName || fn || undefined,
+      lastName: saved?.lastName || rest.join(" ") || undefined,
+      phone: formatUzPhoneDisplay(saved?.phone || user.phone || ""),
+      passportNumber: saved?.passportNumber || undefined,
+      birthDate: birthDateToDayjs(saved?.birthDate),
     });
   }, [user, form]);
 
@@ -99,7 +110,11 @@ export default function BookingCar() {
       message.error("Tug‘ilgan sanani kiriting");
       return;
     }
-    const ageAtStart = values.startDate.diff(values.birthDate, "year");
+    if (!values.rentalRange?.[0] || !values.rentalRange?.[1]) {
+      message.error("Ijara muddatini tanlang");
+      return;
+    }
+    const ageAtStart = values.rentalRange[0].diff(values.birthDate, "year");
     if (ageAtStart < MIN_AGE) {
       message.error("Bron qilish uchun 18 yoshdan katta bo‘lishingiz kerak");
       return;
@@ -137,14 +152,16 @@ export default function BookingCar() {
         return;
       }
 
-      const startAt = values.startDate.toDate().toISOString();
-      const endAt = values.endDate.toDate().toISOString();
+      const [start, end] = values.rentalRange;
+      const startAt = start.toDate().toISOString();
+      const endAt = end.toDate().toISOString();
+      const phoneE164 = toE164Uz(values.phone);
 
       await createBooking.mutateAsync({
         carId,
         firstName: values.firstName.trim(),
         lastName: values.lastName.trim(),
-        phone: normalizePhoneInput(values.phone),
+        phone: phoneE164,
         passportNumber: values.passportNumber?.trim(),
         birthDate: values.birthDate.toDate().toISOString(),
         startAt,
@@ -152,6 +169,24 @@ export default function BookingCar() {
         comment: values.comment?.trim() || undefined,
         licenseImageUrl,
       });
+
+      // Keyingi bron uchun profilga saqlash
+      if (user?.id) {
+        saveRenterBookingProfile(user.id, {
+          firstName: values.firstName.trim(),
+          lastName: values.lastName.trim(),
+          phone: phoneE164,
+          passportNumber: values.passportNumber?.trim(),
+          birthDate: values.birthDate.toDate().toISOString(),
+        });
+        try {
+          await api.patch("/foydalanuvchilar/profil", {
+            fullName: `${values.firstName.trim()} ${values.lastName.trim()}`.trim(),
+          });
+        } catch {
+          // profil yangilanmasa ham bron OK
+        }
+      }
 
       setSubmitted(true);
       message.success("Bron so‘rovingiz yuborildi!");
@@ -233,6 +268,7 @@ export default function BookingCar() {
               onFinish={onFinish}
               requiredMark={false}
               size="large"
+              validateTrigger={["onBlur", "onSubmit"]}
             >
               {sectionTitle(
                 <UserOutlined className="text-xl" />,
@@ -267,20 +303,35 @@ export default function BookingCar() {
               <Form.Item
                 name="phone"
                 label="Telefon raqamingiz"
+                getValueFromEvent={(e) =>
+                  formatUzPhoneDisplay(e?.target?.value ?? "")
+                }
+                normalize={(v) => formatUzPhoneDisplay(String(v ?? ""))}
                 rules={[
                   {
                     required: true,
                     message: "Telefon raqamingizni kiriting",
                   },
                   {
-                    pattern: /^\+998\d{9}$/,
-                    message: "Masalan: +998901234567",
+                    validator: async (_, value: string) => {
+                      if (!value) return;
+                      if (!uzPhoneComplete(value)) {
+                        throw new Error("Masalan: 90 123 45 67");
+                      }
+                    },
                   },
                 ]}
               >
                 <Input
-                  prefix={<PhoneOutlined className="text-[#8d9892]" />}
-                  placeholder="+998901234567"
+                  prefix={
+                    <span className="text-[#8d9892]">
+                      <PhoneOutlined className="mr-1" />
+                      +998
+                    </span>
+                  }
+                  placeholder="90 123 45 67"
+                  maxLength={12}
+                  inputMode="numeric"
                   className="!h-12 !rounded-xl"
                 />
               </Form.Item>
@@ -325,11 +376,7 @@ export default function BookingCar() {
                     {
                       validator: (_, value: Dayjs | undefined) => {
                         if (!value) return Promise.resolve();
-                        const ref = form.getFieldValue("startDate") as
-                          | Dayjs
-                          | undefined;
-                        const on = ref?.isValid() ? ref : dayjs();
-                        if (on.diff(value, "year") < MIN_AGE) {
+                        if (dayjs().diff(value, "year") < MIN_AGE) {
                           return Promise.reject(
                             new Error(
                               "Bron qilish uchun 18 yoshdan katta bo‘lishingiz kerak",
@@ -344,7 +391,9 @@ export default function BookingCar() {
                   <DatePicker
                     className="!h-12 !w-full !rounded-xl"
                     format="DD.MM.YYYY"
-                    placeholder="Kun / Oy / Yil"
+                    placeholder="Kun.Oy.Yil"
+                    inputReadOnly={false}
+                    allowClear
                     disabledDate={(date) =>
                       date.isAfter(dayjs().subtract(MIN_AGE, "year"), "day")
                     }
@@ -357,62 +406,42 @@ export default function BookingCar() {
               {sectionTitle(
                 <CalendarOutlined className="text-xl" />,
                 "Ijara muddati",
-                "Olish va qaytarish sanasini tanlang",
+                "Olish va qaytarish sanasini birgalikda tanlang",
               )}
 
-              <div className="grid grid-cols-1 gap-x-5 md:grid-cols-2">
-                <Form.Item
-                  name="startDate"
-                  label="Olish sanasi"
-                  rules={[
-                    { required: true, message: "Olish sanasini tanlang" },
-                  ]}
-                >
-                  <DatePicker
-                    showTime
-                    className="!h-12 !w-full !rounded-xl"
-                    format="DD.MM.YYYY HH:mm"
-                    placeholder="Boshlanish sanasi"
-                    disabledDate={(date) =>
-                      date.isBefore(dayjs().startOf("day"))
-                    }
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  name="endDate"
-                  label="Qaytarish sanasi"
-                  dependencies={["startDate"]}
-                  rules={[
-                    {
-                      required: true,
-                      message: "Qaytarish sanasini tanlang",
+              <Form.Item
+                name="rentalRange"
+                label="Olish — qaytarish"
+                rules={[
+                  {
+                    required: true,
+                    message: "Ijara muddatini tanlang",
+                  },
+                  {
+                    validator: (_, value: [Dayjs, Dayjs] | undefined) => {
+                      if (!value?.[0] || !value?.[1]) return Promise.resolve();
+                      if (value[1].isAfter(value[0])) return Promise.resolve();
+                      return Promise.reject(
+                        new Error(
+                          "Qaytarish sanasi olish sanasidan keyin bo‘lishi kerak",
+                        ),
+                      );
                     },
-                    {
-                      validator: (_, value) => {
-                        if (!value || !startDate) return Promise.resolve();
-                        if (value.isAfter(startDate)) return Promise.resolve();
-                        return Promise.reject(
-                          new Error(
-                            "Qaytarish sanasi olish sanasidan keyin bo‘lishi kerak",
-                          ),
-                        );
-                      },
-                    },
-                  ]}
-                >
-                  <DatePicker
-                    showTime
-                    className="!h-12 !w-full !rounded-xl"
-                    format="DD.MM.YYYY HH:mm"
-                    placeholder="Tugash sanasi"
-                    disabled={!startDate}
-                    disabledDate={(date) =>
-                      !startDate || date.isBefore(startDate, "day")
-                    }
-                  />
-                </Form.Item>
-              </div>
+                  },
+                ]}
+              >
+                <DatePicker.RangePicker
+                  showTime={{ format: "HH:mm" }}
+                  className="!h-12 !w-full !rounded-xl"
+                  format="DD.MM.YYYY HH:mm"
+                  placeholder={["Olish", "Qaytarish"]}
+                  allowClear
+                  inputReadOnly={false}
+                  disabledDate={(date) =>
+                    date.isBefore(dayjs().startOf("day"))
+                  }
+                />
+              </Form.Item>
 
               {sectionTitle(
                 <SolutionOutlined className="text-xl" />,

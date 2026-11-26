@@ -81,3 +81,18 @@ export function useHideCar() {
     },
   });
 }
+
+export function useDeleteCar() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data } = await api.delete(`/mashinalar/${id}`);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["my-cars"] });
+      qc.invalidateQueries({ queryKey: ["cars"] });
+      qc.invalidateQueries({ queryKey: ["home"] });
+    },
+  });
+}

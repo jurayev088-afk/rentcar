@@ -1,10 +1,10 @@
 "use client";
 
 import { useUser } from "@/src/constants/UseMeContext";
+import { bookingAuthHref } from "@/src/features/login/authDestination";
 import { useRouter } from "next/navigation";
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Button } from "antd";
-import BookingAuthDialog from "./BookingAuthDialog";
 
 export default function BookingAccess({
   carId,
@@ -16,6 +16,12 @@ export default function BookingAccess({
   const { user, loading } = useUser();
   const router = useRouter();
 
+  useEffect(() => {
+    if (loading || user) return;
+    // Birinchi bron: to‘g‘ridan-to‘g‘ri mijoz register
+    router.replace(bookingAuthHref("register", carId));
+  }, [loading, user, carId, router]);
+
   if (loading)
     return (
       <p className="px-5 pt-28" role="status">
@@ -25,11 +31,9 @@ export default function BookingAccess({
 
   if (!user) {
     return (
-      <BookingAuthDialog
-        carId={carId}
-        open
-        onCancel={() => router.replace(`/cars/${encodeURIComponent(carId)}`)}
-      />
+      <p className="px-5 pt-28 text-center text-sm text-[#6d7a73]" role="status">
+        Ro‘yxatdan o‘tish sahifasiga yo‘naltirilmoqda…
+      </p>
     );
   }
 
