@@ -70,7 +70,7 @@ export default function BookingCar() {
   const isLoading = submitting || createBooking.isPending;
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     const saved = loadRenterBookingProfile(user.id);
     const [fn, ...rest] = (user.fullName || "").trim().split(/\s+/);
     form.setFieldsValue({
