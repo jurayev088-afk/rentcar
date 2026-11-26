@@ -9,8 +9,9 @@ import {
   MapPin,
   Star,
 } from "lucide-react";
-import { useHome } from "@/src/hooks/use-home";
+import { toMoneyNumber } from "@/src/lib/format";
 import { companyLogo } from "@/src/lib/media";
+import type { HomeData } from "@/src/types/api";
 
 const shell =
   "mx-auto w-[min(calc(100%-80px),944px)] max-[860px]:w-[min(calc(100%-40px),760px)] max-[365px]:w-[calc(100%-28px)] lg:w-[min(calc(100%-8vw),1440px)]";
@@ -45,9 +46,8 @@ function rankStyle(rank: number) {
   return "bg-[#eaf6ef] text-[#00863e] ring-1 ring-[#b9dfc6]";
 }
 
-export default function TopCompanies() {
-  const { data: home, isLoading } = useHome();
-  const companies = (home?.topCompanies ?? []).slice(0, 10);
+export default function TopCompanies({ data }: { data: HomeData }) {
+  const companies = (data.topCompanies ?? []).slice(0, 10);
 
   return (
     <section
@@ -73,28 +73,15 @@ export default function TopCompanies() {
           </Link>
         </div>
 
-        {isLoading && companies.length === 0 && (
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-[168px] animate-pulse rounded-2xl bg-white/80"
-              />
-            ))}
-          </div>
-        )}
-
-        {!isLoading && companies.length === 0 && (
+        {companies.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-[#d7e8dd] bg-white/70 px-4 py-6 text-sm text-[#6d7a73]">
             Hozircha kompaniyalar yo‘q.
           </p>
-        )}
-
-        {companies.length > 0 && (
+        ) : (
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {companies.map((company, index) => {
               const rank = index + 1;
-              const rating = Number(company.ratingAvg || 0);
+              const rating = toMoneyNumber(company.ratingAvg, 0);
               const carsCount = company._count?.cars ?? 0;
 
               return (

@@ -98,7 +98,7 @@ export default function Filter() {
   const formatPrice = (value: number) =>
     new Intl.NumberFormat("ru-RU").format(value);
 
-  const { data: brandsPage } = useBrands({ limit: 200 });
+  const { data: brandsPage } = useBrands({ limit: 500 });
   const { data: categoriesData = [] } = useCategories();
 
   const categoryRows: CategoryRow[] = useMemo(

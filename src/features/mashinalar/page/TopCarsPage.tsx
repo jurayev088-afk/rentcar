@@ -5,14 +5,14 @@ import Cars from "@/src/components/Cars";
 import UseWishlistContext from "@/src/constants/UseWishlist";
 import { useHome } from "@/src/hooks/use-home";
 import { mapApiCarToUi } from "@/src/lib/map-car";
+import type { HomeData } from "@/src/types/api";
 
-export default function TopCarsPage() {
-  const { data, isLoading, isFetching, isError } = useHome();
+export default function TopCarsPage({ data: initialData }: { data: HomeData }) {
+  const { data, isFetching, isError } = useHome(initialData);
   const cars = useMemo(
     () => (data?.topCars ?? []).map(mapApiCarToUi),
     [data?.topCars],
   );
-  const showLoading = (isLoading || isFetching) && cars.length === 0;
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-3 py-6 sm:px-5 sm:py-8 lg:px-8">
@@ -39,8 +39,8 @@ export default function TopCarsPage() {
         <Cars
           cars={cars}
           filteredCars={cars}
-          isLoading={showLoading}
-          forceEmpty={!showLoading && !isFetching && cars.length === 0}
+          isLoading={false}
+          forceEmpty={cars.length === 0}
         />
       </UseWishlistContext>
     </div>

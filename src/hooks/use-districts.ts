@@ -1,7 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import api from "../services/api";
+import {
+  fetchStaticDistricts,
+  staticCatalogQueryOptions,
+} from "../lib/static-catalog";
 import type { District } from "../types/api";
 
 export function useDistricts(regionId?: string) {
@@ -9,11 +12,9 @@ export function useDistricts(regionId?: string) {
     queryKey: ["districts", regionId],
     enabled: Boolean(regionId),
     queryFn: async () => {
-      const { data } = await api.get<District[]>(
-        `/lokatsiyalar/viloyatlar/${regionId}/tumanlar`,
-      );
+      const data = await fetchStaticDistricts<District>(regionId!);
       return Array.isArray(data) ? data : [];
     },
-    staleTime: 5 * 60_000,
+    ...staticCatalogQueryOptions,
   });
 }

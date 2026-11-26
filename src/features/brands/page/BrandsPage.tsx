@@ -9,7 +9,7 @@ import BrandMark from "@/src/components/BrandMark";
 
 export default function BrandsPage() {
   const [q, setQ] = useState("");
-  const { data, isLoading, isError } = useBrands({ limit: 200 });
+  const { data, isLoading, isError } = useBrands({ limit: 500 });
 
   const allBrands = useMemo(() => data?.items ?? [], [data?.items]);
 
@@ -28,7 +28,6 @@ export default function BrandsPage() {
   return (
     <div className="min-h-screen bg-[#f3f5f4]">
       <div className="mx-auto w-full max-w-[1100px] px-3 py-5 sm:px-5 sm:py-7 lg:px-6">
-        {/* Compact header */}
         <header className="mb-5 rounded-2xl border border-[#e5e9e7] bg-white p-4 shadow-sm sm:p-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -37,6 +36,9 @@ export default function BrandsPage() {
               </h1>
               <p className="mt-0.5 text-sm text-[#6d7a73]">
                 Brand tanlang — mashinalar ochiladi
+                {!showLoading && allBrands.length > 0 ? (
+                  <span className="text-[#8a9690]"> · {allBrands.length} ta</span>
+                ) : null}
               </p>
             </div>
             <div className="relative w-full sm:max-w-[280px]">
@@ -74,13 +76,12 @@ export default function BrandsPage() {
           </p>
         )}
 
-        {/* Dense, tappable brand grid */}
         <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3 md:grid-cols-5 lg:grid-cols-6">
           {brands.map((item) => {
             const label = brandLabel(item.name);
             return (
               <Link
-                key={item.id}
+                key={item.id || item.slug || item.name.toLowerCase()}
                 href={`/cars?brand=${encodeURIComponent(item.name)}`}
                 className="group flex cursor-pointer flex-col items-center rounded-2xl border border-[#e8ecea] bg-white p-3 no-underline shadow-[0_4px_14px_rgba(16,37,26,0.04)] transition hover:-translate-y-0.5 hover:border-[#b9dfc6] hover:shadow-[0_10px_24px_rgba(0,134,62,0.1)] active:scale-[0.98]"
               >

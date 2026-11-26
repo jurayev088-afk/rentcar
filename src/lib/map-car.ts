@@ -1,5 +1,6 @@
 import type { ApiCar } from "../types/api";
 import type { Car, CarStatus } from "../types";
+import { toMoneyNumber } from "./format";
 import { carPrimaryImage, resolveMediaUrl } from "./media";
 
 function mapStatus(status?: string): CarStatus {
@@ -46,7 +47,7 @@ export function mapApiCarToUi(car: ApiCar): Car {
     category: car.category?.nameUz || car.category?.name || "",
     color: car.color || "",
     condition: "Yaxshi",
-    deposit: Number(car.deposit ?? 0),
+    deposit: toMoneyNumber(car.deposit),
     description: car.description || "",
     district: car.district?.nameUz || car.district?.name || "",
     engine: Number(car.engineCapacity ?? car.engineVolume ?? 0),
@@ -55,8 +56,8 @@ export function mapApiCarToUi(car: ApiCar): Car {
     minDays: car.minDays ?? 1,
     model: car.model,
     number: car.plateNumber || "",
-    oldPrice: Number(car.oldPrice ?? 0),
-    price: Number(car.dailyPrice ?? 0),
+    oldPrice: toMoneyNumber(car.oldPrice),
+    price: toMoneyNumber(car.dailyPrice),
     region: car.region?.nameUz || car.region?.name || "",
     rules: "",
     seats: car.seats ?? 5,

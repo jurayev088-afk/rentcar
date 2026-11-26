@@ -1,16 +1,19 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import api from "../services/api";
+import {
+  fetchStaticCategories,
+  staticCatalogQueryOptions,
+} from "../lib/static-catalog";
 import type { Category } from "../types/api";
 
 export function useCategories() {
   return useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const { data } = await api.get<Category[]>("/lokatsiyalar/kategoriyalar");
+      const data = await fetchStaticCategories<Category>();
       return Array.isArray(data) ? data : [];
     },
-    staleTime: 5 * 60_000,
+    ...staticCatalogQueryOptions,
   });
 }

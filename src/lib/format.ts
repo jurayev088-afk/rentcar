@@ -13,9 +13,50 @@ const MONTHS_UZ = [
   "Dek",
 ];
 
+/** Prisma Decimal / string / number → finite number (narx, reyting, …) */
+export function toMoneyNumber(value: unknown, fallback = 0): number {
+  if (value == null || value === "") return fallback;
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : fallback;
+  }
+  if (typeof value === "string") {
+    const n = Number(value.replace(/\s/g, "").replace(",", "."));
+    return Number.isFinite(n) ? n : fallback;
+  }
+  if (typeof value === "object") {
+    const v = value as {
+      toNumber?: () => number;
+      toString?: () => string;
+      s?: number;
+      d?: number[];
+    };
+    if (typeof v.toNumber === "function") {
+      const n = v.toNumber();
+      return Number.isFinite(n) ? n : fallback;
+    }
+    if (typeof v.toString === "function") {
+      const raw = v.toString();
+      if (raw && raw !== "[object Object]") {
+        const n = Number(raw);
+        if (Number.isFinite(n)) return n;
+      }
+    }
+    // JSON’ga aylanib qolgan Decimal.js: { s, e, d }
+    if (Array.isArray(v.d) && v.d.length > 0) {
+      const digits = v.d.map(String).join("");
+      const exp =
+        typeof (v as { e?: unknown }).e === "number"
+          ? ((v as { e: number }).e - digits.length + 1)
+          : 0;
+      const n = Number(`${v.s === -1 ? "-" : ""}${digits}e${exp}`);
+      return Number.isFinite(n) ? n : fallback;
+    }
+  }
+  return fallback;
+}
+
 export function formatMoney(value?: number | string | null) {
-  const n = Number(value ?? 0);
-  if (!Number.isFinite(n)) return "0 so‘m";
+  const n = toMoneyNumber(value, 0);
   if (n >= 1_000_000) {
     const mln = n / 1_000_000;
     return `${mln % 1 === 0 ? mln.toFixed(0) : mln.toFixed(1)} mln`;
@@ -63,7 +104,7 @@ export function monthBucketsFromBookings(
     if (!raw) continue;
     const d = new Date(raw);
     if (Number.isNaN(d.getTime()) || d.getFullYear() !== year) continue;
-    totals[d.getMonth()] += Number(item.totalAmount ?? 0);
+    totals[d.getMonth()] += toMoneyNumber(item.totalAmount);
   }
   return MONTHS_UZ.map((month, index) => ({
     month,

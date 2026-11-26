@@ -9,6 +9,7 @@ import api from "../services/api";
 import type { ApiCar, CarsQuery, Paginated } from "../types/api";
 
 const PAGE_SIZE = 12;
+const COMPANY_PAGE_SIZE = 8;
 
 export function useCars(params?: CarsQuery) {
   return useQuery({
@@ -27,25 +28,31 @@ export function useCars(params?: CarsQuery) {
   });
 }
 
-export type InfiniteCarsFilters = Omit<CarsQuery, "page" | "limit">;
+export type InfiniteCarsFilters = Omit<CarsQuery, "page" | "limit"> & {
+  pageSize?: number;
+};
 
-/** /cars — har safar 12 ta, scroll bilan keyingi sahifa */
+/** /cars — scroll bilan keyingi sahifa (default 12) */
 export function useInfiniteCars(filters: InfiniteCarsFilters) {
+  const { pageSize = PAGE_SIZE, ...rest } = filters;
   return useInfiniteQuery({
-    queryKey: ["cars-infinite", filters],
+    queryKey: ["cars-infinite", rest, pageSize],
+    enabled: Boolean(
+      rest.companyId === undefined || rest.companyId.length > 0,
+    ),
     queryFn: async ({ pageParam }) => {
       const { data } = await api.get<Paginated<ApiCar>>("/mashinalar", {
         params: {
-          ...filters,
+          ...rest,
           page: pageParam,
-          limit: PAGE_SIZE,
+          limit: pageSize,
         },
       });
       return {
         items: Array.isArray(data?.items) ? data.items : [],
         meta: data?.meta ?? {
           page: pageParam,
-          limit: PAGE_SIZE,
+          limit: pageSize,
           total: 0,
           totalPages: 0,
         },
@@ -60,6 +67,8 @@ export function useInfiniteCars(filters: InfiniteCarsFilters) {
     staleTime: 20_000,
   });
 }
+
+export { COMPANY_PAGE_SIZE };
 
 export function useCar(id?: string) {
   return useQuery({

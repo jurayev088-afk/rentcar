@@ -2,12 +2,16 @@
 const CAR_LOGO = (slug: string) =>
   `https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@master/logos/optimized/${slug}.png`;
 
+const SIMPLE = (slug: string, color = "111111") =>
+  `https://cdn.simpleicons.org/${slug}/${color}`;
+
 /** Datasetda bor brandlar — taxminiy slug yasamaymiz */
 const brandLogoByKey: Record<string, string> = {
   ACURA: CAR_LOGO("acura"),
   "ALFA ROMEO": CAR_LOGO("alfa-romeo"),
   "ASTON MARTIN": CAR_LOGO("aston-martin"),
   AUDI: CAR_LOGO("audi"),
+  BAIC: CAR_LOGO("baic-motor"),
   BENTLEY: CAR_LOGO("bentley"),
   BMW: CAR_LOGO("bmw"),
   BUGATTI: CAR_LOGO("bugatti"),
@@ -21,18 +25,24 @@ const brandLogoByKey: Record<string, string> = {
   CUPRA: CAR_LOGO("cupra"),
   DAEWOO: CAR_LOGO("daewoo"),
   DODGE: CAR_LOGO("dodge"),
+  EXEED: CAR_LOGO("exeed"),
   FERRARI: CAR_LOGO("ferrari"),
   FIAT: CAR_LOGO("fiat"),
   FORD: CAR_LOGO("ford"),
+  "GAC AION": CAR_LOGO("aion"),
+  GAC: CAR_LOGO("gac-group"),
+  AION: CAR_LOGO("aion"),
   GEELY: CAR_LOGO("geely"),
   GENESIS: CAR_LOGO("genesis"),
   GMC: CAR_LOGO("gmc"),
   "GREAT WALL": CAR_LOGO("great-wall"),
   HAVAL: CAR_LOGO("haval"),
   HONDA: CAR_LOGO("honda"),
+  HONGQI: CAR_LOGO("hongqi"),
   HYUNDAI: CAR_LOGO("hyundai"),
   INFINITI: CAR_LOGO("infiniti"),
   ISUZU: CAR_LOGO("isuzu"),
+  JAC: CAR_LOGO("jac"),
   JAGUAR: CAR_LOGO("jaguar"),
   JEEP: CAR_LOGO("jeep"),
   JETOUR: CAR_LOGO("jetour"),
@@ -42,7 +52,11 @@ const brandLogoByKey: Record<string, string> = {
   "LAND ROVER": CAR_LOGO("land-rover"),
   "RANGE ROVER": CAR_LOGO("land-rover"),
   LANDROVER: CAR_LOGO("land-rover"),
+  LEAPMOTOR: CAR_LOGO("leapmotor"),
   LEXUS: CAR_LOGO("lexus"),
+  LIXIANG: CAR_LOGO("li-auto"),
+  "LI AUTO": CAR_LOGO("li-auto"),
+  LI: CAR_LOGO("li-auto"),
   LINCOLN: CAR_LOGO("lincoln"),
   MASERATI: CAR_LOGO("maserati"),
   MAZDA: CAR_LOGO("mazda"),
@@ -53,6 +67,7 @@ const brandLogoByKey: Record<string, string> = {
   MINI: CAR_LOGO("mini"),
   MITSUBISHI: CAR_LOGO("mitsubishi"),
   NISSAN: CAR_LOGO("nissan"),
+  OMODA: CAR_LOGO("omoda"),
   OPEL: CAR_LOGO("opel"),
   PEUGEOT: CAR_LOGO("peugeot"),
   POLESTAR: CAR_LOGO("polestar"),
@@ -66,7 +81,7 @@ const brandLogoByKey: Record<string, string> = {
   SSANGYONG: CAR_LOGO("ssangyong"),
   SUBARU: CAR_LOGO("subaru"),
   SUZUKI: CAR_LOGO("suzuki"),
-  TESLA: CAR_LOGO("tesla"),
+  TESLA: SIMPLE("tesla", "CC0000"),
   TOYOTA: CAR_LOGO("toyota"),
   UAZ: CAR_LOGO("uaz"),
   VOLKSWAGEN: CAR_LOGO("volkswagen"),
@@ -78,6 +93,7 @@ const brandLogoByKey: Record<string, string> = {
   RIVIAN: CAR_LOGO("rivian"),
   UZAUTO: CAR_LOGO("chevrolet"),
   RAVON: CAR_LOGO("chevrolet"),
+  XIAOMI: SIMPLE("xiaomi", "FF6900"),
 };
 
 const fallbackCar =
@@ -154,29 +170,61 @@ export function companyLogo(logoUrl?: string | null) {
   return resolveMediaUrl(logoUrl) || fallbackCompany;
 }
 
+/** Mockupdagi aniq mashina rasmlari — public/categories */
 const categoryFallback: Record<string, string> = {
-  sedan:
-    "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&w=800&q=80",
-  suv: "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
-  krossover:
-    "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=800&q=80",
-  crossover:
-    "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=800&q=80",
-  hetchbek:
-    "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=800&q=80",
-  hatchback:
-    "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=800&q=80",
-  kupe: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
-  coupe:
-    "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
-  miniven:
-    "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80",
-  elektromobil:
-    "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
-  gibrid:
-    "https://images.unsplash.com/photo-1593941707881-a5bde0c4b8f3?auto=format&fit=crop&w=800&q=80",
+  sedan: "/categories/sedan.png",
+  suv: "/categories/krossover.png",
+  krossover: "/categories/krossover.png",
+  crossover: "/categories/krossover.png",
+  hetchbek: "/categories/byudjetli.png",
+  hatchback: "/categories/byudjetli.png",
+  kupe: "/categories/kupe.png",
+  coupe: "/categories/kupe.png",
+  miniven: "/categories/miniven.png",
+  minivan: "/categories/miniven.png",
+  elektromobil: "/categories/elektromobil.png",
+  elektro: "/categories/elektromobil.png",
+  electric: "/categories/elektromobil.png",
+  gibrid: "/categories/gibrid.png",
+  hybrid: "/categories/gibrid.png",
+  byudjetli: "/categories/byudjetli.png",
+  budget: "/categories/byudjetli.png",
+  premium: "/categories/premium.png",
+  lux: "/categories/premium.png",
+  luxury: "/categories/premium.png",
 };
 
+const categoryKeyAliases: [RegExp, string][] = [
+  [/sedan|седан/i, "sedan"],
+  [/krossover|crossover|suv|кроссовер/i, "krossover"],
+  [/kupe|coupe|купе/i, "kupe"],
+  [/miniven|minivan|минив/i, "miniven"],
+  [/elektro|electric|tesla|электр/i, "elektromobil"],
+  [/gibrid|hybrid|гибрид/i, "gibrid"],
+  [/byudjet|budget|бюджет/i, "byudjetli"],
+  [/premium|lux|премиум/i, "premium"],
+  [/hetch|hatch/i, "hetchbek"],
+];
+
+export function resolveCategoryKey(category: {
+  name?: string;
+  nameUz?: string | null;
+  slug?: string | null;
+}): string | null {
+  const raw = `${category.slug || ""} ${category.nameUz || ""} ${category.name || ""}`
+    .trim()
+    .toLowerCase();
+  const compact = raw.replace(/\s+/g, "");
+
+  if (categoryFallback[compact]) return compact;
+
+  for (const [re, key] of categoryKeyAliases) {
+    if (re.test(raw)) return key;
+  }
+  return null;
+}
+
+/** Lokal studio rasmlar birinchi — API imageUrl eski Unsplash’ni bosib ketmasin */
 export function categoryImage(category: {
   imageUrl?: string | null;
   iconUrl?: string | null;
@@ -184,15 +232,13 @@ export function categoryImage(category: {
   nameUz?: string | null;
   slug?: string | null;
 }) {
+  const key = resolveCategoryKey(category);
+  if (key && categoryFallback[key]) return categoryFallback[key];
+
   if (category.imageUrl) return category.imageUrl;
   if (category.iconUrl) return category.iconUrl;
-  const key = (category.slug || category.nameUz || category.name || "")
-    .toLowerCase()
-    .replace(/\s+/g, "");
-  return (
-    categoryFallback[key] ||
-    "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=640&q=80"
-  );
+
+  return categoryFallback.sedan;
 }
 
 export function formatPrice(value: number | string | null | undefined) {

@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { Table, Image } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMyCars } from "@/src/hooks/use-my-cars";
+import { formatMoney } from "@/src/lib/format";
 import { mapApiCarToUi } from "@/src/lib/map-car";
 import { Car, carStatus } from "@/src/types";
 import CarActions from "./CarActions";
@@ -78,9 +79,7 @@ export default function CarsTable() {
       dataIndex: "price",
       key: "price",
       render: (price) => (
-        <span className="font-semibold text-[#00863e]">
-          {Number(price).toLocaleString("uz-UZ")} so‘m
-        </span>
+        <span className="font-semibold text-[#00863e]">{formatMoney(price)}</span>
       ),
     },
     {

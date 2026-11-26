@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Form, Select } from "antd";
-import { Car, MapPin, Search, ArrowRight, Tag } from "lucide-react";
+import { Car, MapPin, Search, ArrowRight, Tag, Tags, CarFront } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { useRegions } from "../hooks/use-regions";
@@ -23,7 +23,7 @@ export default function HeaderSearch() {
 
   const { data: regionsData, isLoading: regionsLoading } = useRegions();
   const { data: brandsData, isLoading: brandsLoading } = useBrands({
-    limit: 200,
+    limit: 500,
   });
 
   const brands = brandsData?.items ?? [];
@@ -34,7 +34,7 @@ export default function HeaderSearch() {
 
   const { data: modelsData, isLoading: modelsLoading } = useBrandModels(
     selectedBrandId,
-    { limit: 200 },
+    { limit: 1000 },
   );
   const models = modelsData?.items ?? [];
 
@@ -42,7 +42,7 @@ export default function HeaderSearch() {
 
   const brandOptions = useMemo(
     () => [
-      { label: "Hamma brandlar", value: ALL_BRANDS },
+      { label: "Barcha brandlar", value: ALL_BRANDS },
       ...brands.map((item) => ({
         label: brandLabel(item.name),
         value: item.name,
@@ -119,7 +119,7 @@ export default function HeaderSearch() {
 
         <div className={fieldClass}>
           <div className={iconClass}>
-            <Tag size={19} strokeWidth={2} />
+            <Tags size={19} strokeWidth={2} />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Form.Item name="brand" className={itemClass}>
@@ -142,7 +142,7 @@ export default function HeaderSearch() {
 
         <div className={fieldClass}>
           <div className={iconClass}>
-            <Car size={19} strokeWidth={2} />
+            <CarFront size={19} strokeWidth={2} />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Form.Item name="model" className={itemClass}>

@@ -2,13 +2,24 @@
 
 import { Button, Empty, Spin, Tag, message } from "antd";
 import { Bell, CheckCheck, MailOpen } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useNotifications,
 } from "@/src/hooks/use-notifications";
+import { localizeStatusText } from "@/src/lib/uz-labels";
 
-function formatDate(value: string) {
+function asText(value: unknown, fallback = "") {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (value instanceof Date) return value.toISOString();
+  return fallback;
+}
+
+function formatDate(value: unknown) {
+  const raw = asText(value);
+  if (!raw) return "";
   try {
     return new Intl.DateTimeFormat("uz-UZ", {
       day: "2-digit",
@@ -16,9 +27,9 @@ function formatDate(value: string) {
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    }).format(new Date(value));
+    }).format(new Date(raw));
   } catch {
-    return value;
+    return raw;
   }
 }
 
@@ -39,12 +50,17 @@ export default function XabarlarInbox({
 }: {
   roleLabel: string;
 }) {
-  const { data, isLoading, isError, refetch } = useNotifications();
+  // localStorage token SSR’da yo‘q — mount bo‘lguncha bir xil skeleton
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const { data, isLoading, isError, refetch } = useNotifications(mounted);
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
 
   const items = data?.items ?? [];
   const unreadCount = data?.unreadCount ?? 0;
+  const showLoading = !mounted || isLoading;
 
   const onMarkRead = async (id: string, isRead: boolean) => {
     if (isRead) return;
@@ -96,7 +112,7 @@ export default function XabarlarInbox({
       </div>
 
       <div className="overflow-hidden rounded-3xl border border-[#e5e9e7] bg-white shadow-[0_8px_24px_rgba(16,37,26,0.03)]">
-        {isLoading ? (
+        {showLoading ? (
           <div className="flex justify-center py-16">
             <Spin />
           </div>
@@ -132,16 +148,18 @@ export default function XabarlarInbox({
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-semibold text-[#1f2d25]">{item.title}</p>
+                      <p className="font-semibold text-[#1f2d25]">
+                        {localizeStatusText(asText(item.title, "Xabar"))}
+                      </p>
                       <Tag className="!m-0 !rounded-full !border-0 !bg-[#eef2f0] !text-[#4d5a53]">
-                        {typeLabel(item.type, item.entityType)}
+                        {typeLabel(asText(item.type), asText(item.entityType) || null)}
                       </Tag>
                       {!item.isRead && (
                         <span className="h-2 w-2 rounded-full bg-[#00863e]" />
                       )}
                     </div>
                     <p className="mt-1 text-sm leading-6 text-[#6d7a73]">
-                      {item.body}
+                      {localizeStatusText(asText(item.body))}
                     </p>
                     <p className="mt-2 text-xs text-[#9aa59e]">
                       {formatDate(item.createdAt)}

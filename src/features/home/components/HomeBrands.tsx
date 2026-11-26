@@ -1,10 +1,8 @@
-"use client";
-
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { useHome } from "@/src/hooks/use-home";
 import { brandLabel, brandLogo } from "@/src/lib/media";
 import BrandMark from "@/src/components/BrandMark";
+import type { HomeData } from "@/src/types/api";
 
 const shell =
   "mx-auto w-[min(calc(100%-80px),944px)] max-[860px]:w-[min(calc(100%-40px),760px)] max-[365px]:w-[calc(100%-28px)] lg:w-[min(calc(100%-8vw),1440px)]";
@@ -12,16 +10,14 @@ const shell =
 const eyebrow =
   "m-0 text-[22px] font-bold leading-[1.15] tracking-[-0.03em] text-[#1f2d25] sm:text-[25px]";
 
-export default function HomeBrands() {
-  const { data, isLoading } = useHome();
-  // API brandCards kam bo‘lsa — brands ro‘yxatidan 10 tagacha to‘ldiramiz
+export default function HomeBrands({ data }: { data: HomeData }) {
+  const fromApi = data.brandCards ?? [];
   const brandCards = (() => {
-    const fromApi = data?.brandCards ?? [];
     if (fromApi.length >= 10) return fromApi.slice(0, 10);
 
     const seen = new Set(fromApi.map((b) => b.brand.toLowerCase()));
     const filled = [...fromApi];
-    for (const brand of data?.brands ?? []) {
+    for (const brand of data.brands ?? []) {
       if (filled.length >= 10) break;
       if (seen.has(brand.toLowerCase())) continue;
       seen.add(brand.toLowerCase());
@@ -45,17 +41,6 @@ export default function HomeBrands() {
           <ArrowRight className="h-3.5 w-3.5" aria-hidden />
         </Link>
       </div>
-
-      {isLoading && brandCards.length === 0 && (
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-[112px] animate-pulse rounded-[16px] bg-[#eef2f0]"
-            />
-          ))}
-        </div>
-      )}
 
       {brandCards.length > 0 && (
         <div className="grid grid-cols-2 gap-2.5 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">

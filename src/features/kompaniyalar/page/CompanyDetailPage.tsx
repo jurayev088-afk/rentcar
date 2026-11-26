@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Suspense, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -14,9 +14,14 @@ import {
   Star,
 } from "lucide-react";
 import Cars from "@/src/components/Cars";
+import CarsLoadingGrid from "@/src/components/CarsLoadingGrid";
 import UseWishlistContext from "@/src/constants/UseWishlist";
 import { useCompany } from "@/src/hooks/use-companies";
-import { useCars } from "@/src/hooks/use-cars";
+import {
+  COMPANY_PAGE_SIZE,
+  useInfiniteCars,
+} from "@/src/hooks/use-cars";
+import { toMoneyNumber } from "@/src/lib/format";
 import { companyLogo } from "@/src/lib/media";
 import { mapApiCarToUi } from "@/src/lib/map-car";
 
@@ -40,26 +45,99 @@ function Stars({ value }: { value: number }) {
   );
 }
 
+function CompanyDetailSkeleton() {
+  return (
+    <div className="min-h-screen bg-[linear-gradient(180deg,#f4f7f5_0%,#eef2f0_45%,#f4f6f5_100%)]">
+      <div className="mx-auto w-full max-w-[1240px] px-3 py-5 sm:px-5 sm:py-7 lg:px-8">
+        <div className="mb-5 flex items-center gap-2">
+          <div className="h-9 w-44 animate-pulse rounded-full bg-[#dde5e1]" />
+          <p className="text-sm font-semibold text-[#00863e]">Yuklanmoqda...</p>
+        </div>
+
+        <div className="mb-7 overflow-hidden rounded-[28px] border border-white/80 bg-white shadow-[0_20px_50px_rgba(16,37,26,0.1)]">
+          <div className="h-[140px] animate-pulse bg-[#dde5e1] sm:h-[168px]" />
+          <div className="relative px-4 pb-5 sm:px-6 sm:pb-6">
+            <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end">
+              <div className="h-[96px] w-[96px] animate-pulse rounded-[22px] bg-[#dde5e1] sm:h-[112px] sm:w-[112px]" />
+              <div className="flex-1 space-y-2 pb-1">
+                <div className="h-3 w-24 animate-pulse rounded bg-[#dde5e1]" />
+                <div className="h-8 w-56 animate-pulse rounded-xl bg-[#dde5e1] sm:w-72" />
+                <div className="h-4 w-40 animate-pulse rounded bg-[#dde5e1]" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-4 h-7 w-56 animate-pulse rounded-xl bg-[#dde5e1]" />
+        <CarsLoadingGrid count={8} />
+        <div className="mt-8 flex justify-center">
+          <span className="inline-flex h-10 w-10 animate-spin rounded-full border-[3px] border-[#c5d9cc] border-t-[#00863e]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CompanyDetailPage() {
   const params = useParams();
   const id = String(params.id || "");
   const { data: company, isLoading, isError } = useCompany(id);
-  const { data: carsData, isLoading: carsLoading } = useCars({
-    companyId: id,
-    limit: 50,
+
+  const {
+    data: carsPages,
+    isPending: carsPending,
+    isFetching,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteCars({
+    companyId: id || undefined,
+    pageSize: COMPANY_PAGE_SIZE,
+    sort: "newest",
   });
 
   const cars = useMemo(
-    () => (carsData?.items ?? []).map(mapApiCarToUi),
-    [carsData?.items],
+    () =>
+      (carsPages?.pages ?? []).flatMap((p) => p.items).map(mapApiCarToUi),
+    [carsPages?.pages],
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center text-sm text-[#6d7a73]">
-        Yuklanmoqda...
-      </div>
+  const totalCars =
+    carsPages?.pages?.[0]?.meta?.total ??
+    company?._count?.cars ??
+    cars.length;
+
+  const carsInitialLoading =
+    (carsPending || (isFetching && !isFetchingNextPage)) && cars.length === 0;
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const loadingMoreRef = useRef(false);
+
+  const loadMore = useCallback(() => {
+    if (!hasNextPage || isFetchingNextPage || loadingMoreRef.current) return;
+    loadingMoreRef.current = true;
+    void fetchNextPage().finally(() => {
+      loadingMoreRef.current = false;
+    });
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) loadMore();
+      },
+      { root: null, rootMargin: "280px 0px", threshold: 0 },
     );
+
+    io.observe(node);
+    return () => io.disconnect();
+  }, [loadMore, cars.length]);
+
+  if (isLoading) {
+    return <CompanyDetailSkeleton />;
   }
 
   if (isError || !company) {
@@ -82,7 +160,7 @@ export default function CompanyDetailPage() {
     );
   }
 
-  const rating = Number(company.ratingAvg || 0);
+  const rating = toMoneyNumber(company.ratingAvg, 0);
 
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f4f7f5_0%,#eef2f0_45%,#f4f6f5_100%)]">
@@ -95,7 +173,6 @@ export default function CompanyDetailPage() {
           Barcha kompaniyalar
         </Link>
 
-        {/* Premium company hero */}
         <section className="mb-7 overflow-hidden rounded-[28px] border border-white/80 bg-white shadow-[0_20px_50px_rgba(16,37,26,0.1)]">
           <div className="relative h-[140px] overflow-hidden bg-[#0f1f16] sm:h-[168px]">
             <Image
@@ -140,7 +217,7 @@ export default function CompanyDetailPage() {
                   <p className="text-[11px] font-extrabold uppercase tracking-[1.4px] text-[#00863e]">
                     Kompaniya
                   </p>
-                  <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-[white] sm:text-3xl">
+                  <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-[#1f2d25] sm:text-3xl">
                     {company.name}
                   </h1>
                   {company.description && (
@@ -177,7 +254,7 @@ export default function CompanyDetailPage() {
                   </p>
                   <p className="m-0 inline-flex items-center gap-1.5 text-lg font-extrabold text-[#1f2d25]">
                     <Car className="h-4 w-4 text-[#00863e]" />
-                    {cars.length} ta
+                    {totalCars} ta
                   </p>
                 </div>
 
@@ -195,7 +272,6 @@ export default function CompanyDetailPage() {
           </div>
         </section>
 
-        {/* Cars */}
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-[11px] font-extrabold uppercase tracking-[1.4px] text-[#00863e]">
@@ -209,22 +285,41 @@ export default function CompanyDetailPage() {
             </p>
           </div>
           <span className="rounded-full bg-white px-3.5 py-1.5 text-xs font-bold text-[#00863e] shadow-sm ring-1 ring-[#d7e8dd]">
-            {cars.length} ta e’lon
+            {totalCars} ta e’lon
           </span>
         </div>
 
-        {carsLoading && (
-          <p className="text-sm text-[#6d7a73]">Mashinalar yuklanmoqda...</p>
-        )}
-
         <UseWishlistContext>
-          <Suspense
-            fallback={
-              <p className="text-sm text-[#6d7a73]">Yuklanmoqda...</p>
-            }
-          >
-            <Cars cars={cars} filteredCars={cars} showWishlist={false} />
-          </Suspense>
+          {carsInitialLoading ? (
+            <CarsLoadingGrid count={8} />
+          ) : (
+            <>
+              <Cars
+                cars={cars}
+                filteredCars={cars}
+                showWishlist={false}
+                isLoading={false}
+                forceEmpty={!carsPending && !isFetching && cars.length === 0}
+              />
+
+              <div ref={sentinelRef} className="h-8 w-full" aria-hidden />
+
+              {isFetchingNextPage && (
+                <div className="mt-2 flex justify-center py-4">
+                  <span className="inline-flex items-center gap-2 text-sm font-medium text-[#00863e]">
+                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#d7e8dd] border-t-[#00863e]" />
+                    Yana yuklanmoqda...
+                  </span>
+                </div>
+              )}
+
+              {!hasNextPage && cars.length > 0 && (
+                <p className="mt-2 pb-4 text-center text-xs text-[#8a9690]">
+                  Barcha mashinalar ko‘rsatildi
+                </p>
+              )}
+            </>
+          )}
         </UseWishlistContext>
       </div>
     </div>

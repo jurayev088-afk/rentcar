@@ -132,13 +132,13 @@ export default function AddCar() {
   const [depositEnabled, setDepositEnabled] = useState(false);
 
   const { data: brandsData, isLoading: brandsLoading } = useBrands({
-    limit: 200,
+    limit: 500,
   });
   const brands = useMemo(() => brandsData?.items ?? [], [brandsData?.items]);
   const [selectedBrandId, setSelectedBrandId] = useState<string | undefined>();
   const { data: modelsData, isLoading: modelsLoading } = useBrandModels(
     selectedBrandId,
-    { limit: 200 },
+    { limit: 1000 },
   );
   const models = useMemo(() => modelsData?.items ?? [], [modelsData?.items]);
   const { data: categoriesData = [] } = useCategories();

@@ -1,14 +1,12 @@
-import { Suspense } from "react";
 import TopCarsPage from "@/src/features/mashinalar/page/TopCarsPage";
+import {
+  fetchHomeData,
+  HOME_REVALIDATE_SECONDS,
+} from "@/src/lib/home-data";
 
-export default function page() {
-  return (
-    <Suspense
-      fallback={
-        <div className="p-8 text-sm text-[#6d7a73]">Yuklanmoqda...</div>
-      }
-    >
-      <TopCarsPage />
-    </Suspense>
-  );
+export const revalidate = HOME_REVALIDATE_SECONDS;
+
+export default async function page() {
+  const data = await fetchHomeData();
+  return <TopCarsPage data={data} />;
 }

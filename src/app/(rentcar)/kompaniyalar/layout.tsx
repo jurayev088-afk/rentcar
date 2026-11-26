@@ -17,7 +17,6 @@ export default function KompaniyalarLayout({
     <div className="min-h-screen bg-[#f4f6f5]">
       <Navbar home />
       <main>{children}</main>
-      <Footer home />
     </div>
   );
 }

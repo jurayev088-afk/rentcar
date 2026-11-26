@@ -1,26 +1,16 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import api from "../services/api";
+import {
+  fetchStaticBrandModels,
+  fetchStaticBrands,
+  staticCatalogQueryOptions,
+  type StaticBrand,
+  type StaticCarModel,
+} from "../lib/static-catalog";
 
-export type ApiBrand = {
-  id: string;
-  name: string;
-  slug: string;
-  country?: string | null;
-  logo?: string | null;
-  isActive?: boolean;
-  modelsCount?: number;
-};
-
-export type ApiCarModel = {
-  id: string;
-  brandId: string;
-  name: string;
-  slug: string;
-  isActive?: boolean;
-  brand?: ApiBrand;
-};
+export type ApiBrand = StaticBrand;
+export type ApiCarModel = StaticCarModel;
 
 type Paginated<T> = {
   items: T[];
@@ -48,20 +38,18 @@ export function useBrands(params?: {
 }) {
   return useQuery({
     queryKey: ["brands-catalog", params],
-    queryFn: async () => {
-      const { data } = await api.get<Paginated<ApiBrand>>("/brands", {
-        params: {
-          page: params?.page ?? 1,
-          limit: params?.limit ?? 200,
-          search: params?.search || undefined,
-        },
+    queryFn: async (): Promise<Paginated<ApiBrand>> => {
+      const data = await fetchStaticBrands({
+        page: params?.page ?? 1,
+        limit: params?.limit ?? 500,
+        search: params?.search,
       });
       return {
         items: Array.isArray(data?.items) ? data.items : [],
-        meta: data?.meta ?? { page: 1, limit: 200, total: 0, totalPages: 0 },
+        meta: data?.meta ?? { page: 1, limit: 500, total: 0, totalPages: 0 },
       };
     },
-    staleTime: 5 * 60_000,
+    ...staticCatalogQueryOptions,
     placeholderData: keepPreviousData,
   });
 }
@@ -73,29 +61,23 @@ export function useBrandModels(
   return useQuery({
     queryKey: ["brand-models", brandId, params],
     enabled: Boolean(brandId),
-    queryFn: async () => {
-      const { data } = await api.get<Paginated<ApiCarModel>>(
-        `/brands/${brandId}/models`,
-        {
-          params: {
-            page: 1,
-            limit: params?.limit ?? 200,
-            search: params?.search || undefined,
-          },
-        },
-      );
+    queryFn: async (): Promise<Paginated<ApiCarModel>> => {
+      const data = await fetchStaticBrandModels(brandId!, {
+        limit: params?.limit ?? 1000,
+        search: params?.search,
+      });
       return {
         items: Array.isArray(data?.items) ? data.items : [],
-        meta: data?.meta ?? { page: 1, limit: 200, total: 0, totalPages: 0 },
+        meta: data?.meta ?? { page: 1, limit: 1000, total: 0, totalPages: 0 },
       };
     },
-    staleTime: 5 * 60_000,
+    ...staticCatalogQueryOptions,
   });
 }
 
 /** Orqa moslik: eski mashinalar/markalar/batafsil o‘rniga yangi katalog */
 export function useBrandsDetailed() {
-  const brandsQuery = useBrands({ limit: 200 });
+  const brandsQuery = useBrands({ limit: 500 });
 
   return useQuery({
     queryKey: ["brands-detailed-compat", brandsQuery.dataUpdatedAt],
@@ -110,6 +92,6 @@ export function useBrandsDetailed() {
         imageUrl: b.logo || "",
       }));
     },
-    staleTime: 5 * 60_000,
+    ...staticCatalogQueryOptions,
   });
 }

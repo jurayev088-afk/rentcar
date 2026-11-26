@@ -103,11 +103,13 @@ export default function CarDetails() {
   const router = useRouter();
   const { user, loading: authLoading } = useUser();
 
-  const { data: apiCar, isLoading, isError } = useCar(id);
+  const { data: apiCar, isLoading, isFetching, isError, isPending } =
+    useCar(id);
   const car = useMemo(
     () => (apiCar ? mapApiCarToUi(apiCar) : undefined),
     [apiCar],
   );
+  const showLoading = !id || isPending || isLoading || (isFetching && !apiCar);
 
   const [activeImage, setActiveImage] = useState(0);
   const [lightbox, setLightbox] = useState(false);
@@ -156,14 +158,37 @@ export default function CarDetails() {
     };
   }, [lightbox, images.length]);
 
-  if (isLoading) {
+  if (showLoading) {
     return (
-      <div className="mx-auto max-w-[1100px] px-3 py-6 sm:px-5">
-        <div className="mb-4 h-8 w-28 animate-pulse rounded-full bg-[#eef2f0]" />
-        <div className="mb-4 h-9 w-2/3 max-w-md animate-pulse rounded-xl bg-[#eef2f0]" />
-        <div className="grid gap-4 lg:grid-cols-[1.45fr_0.9fr]">
-          <div className="h-[240px] animate-pulse rounded-2xl bg-[#eef2f0] sm:h-[300px]" />
-          <div className="h-[320px] animate-pulse rounded-2xl bg-[#eef2f0]" />
+      <div className="min-h-[70vh] bg-[#f4f6f5] px-3 py-6 sm:px-5">
+        <div className="mx-auto max-w-[1100px]">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="h-8 w-24 animate-pulse rounded-full bg-[#dde5e1]" />
+            <p className="text-sm font-semibold text-[#00863e]">
+              Yuklanmoqda...
+            </p>
+          </div>
+          <div className="mb-4 h-8 w-48 animate-pulse rounded-xl bg-[#dde5e1] sm:w-72" />
+          <div className="grid gap-4 lg:grid-cols-[1.45fr_0.9fr]">
+            <div className="space-y-3">
+              <div className="aspect-[16/10] w-full animate-pulse rounded-2xl bg-[#dde5e1]" />
+              <div className="grid grid-cols-4 gap-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-14 animate-pulse rounded-xl bg-[#dde5e1] sm:h-16"
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="h-[300px] animate-pulse rounded-2xl bg-[#dde5e1] lg:h-[360px]" />
+          </div>
+          <div className="mt-8 flex flex-col items-center gap-2">
+            <span className="inline-flex h-10 w-10 animate-spin rounded-full border-[3px] border-[#c5d9cc] border-t-[#00863e]" />
+            <p className="text-xs font-medium text-[#6d7a73]">
+              Mashina ma’lumotlari yuklanmoqda
+            </p>
+          </div>
         </div>
       </div>
     );

@@ -1,28 +1,20 @@
 "use client";
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import api from "../services/api";
+import {
+  fetchHomeData,
+  HOME_REVALIDATE_SECONDS,
+} from "../lib/home-data";
 import type { HomeData } from "../types/api";
 
-export function useHome() {
+export function useHome(initialData?: HomeData) {
   return useQuery({
     queryKey: ["home"],
-    queryFn: async () => {
-      const { data } = await api.get<HomeData>("/bosh-sahifa");
-      return {
-        topCars: Array.isArray(data?.topCars) ? data.topCars : [],
-        newestCars: Array.isArray(data?.newestCars) ? data.newestCars : [],
-        categories: Array.isArray(data?.categories) ? data.categories : [],
-        brands: Array.isArray(data?.brands) ? data.brands : [],
-        brandCards: Array.isArray(data?.brandCards) ? data.brandCards : [],
-        topCompanies: Array.isArray(data?.topCompanies)
-          ? data.topCompanies
-          : [],
-        regions: Array.isArray(data?.regions) ? data.regions : [],
-        stats: data?.stats ?? { companiesCount: 0, carsCount: 0 },
-      } satisfies HomeData;
-    },
-    staleTime: 30_000,
+    queryFn: fetchHomeData,
+    initialData,
+    staleTime: HOME_REVALIDATE_SECONDS * 1000,
+    gcTime: 10 * 60_000,
+    refetchOnWindowFocus: false,
     placeholderData: keepPreviousData,
   });
 }

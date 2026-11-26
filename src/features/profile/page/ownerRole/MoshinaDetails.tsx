@@ -21,6 +21,7 @@ import {
 import Link from "next/link";
 import SafeImage from "@/src/components/SafeImage";
 import { useCar } from "@/src/hooks/use-cars";
+import { toMoneyNumber } from "@/src/lib/format";
 import { mapApiCarToUi } from "@/src/lib/map-car";
 
 export default function MoshinaDetails() {
@@ -59,7 +60,7 @@ export default function MoshinaDetails() {
   }
 
   const formatPrice = (price: number | string) =>
-    Number(String(price).replace(/\s/g, "")).toLocaleString("uz-UZ");
+    toMoneyNumber(price).toLocaleString("uz-UZ");
 
   const fuelLabels: Record<string, string> = {
     hybrid: "Gibrid",

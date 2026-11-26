@@ -24,6 +24,7 @@ import {
   formatDateShort,
   formatMoney,
   monthBucketsFromBookings,
+  toMoneyNumber,
 } from "@/src/lib/format";
 import {
   Area,
@@ -103,8 +104,8 @@ export default function ProfileOwner() {
     .sort((a, b) => Number(b.bookingsCount ?? 0) - Number(a.bookingsCount ?? 0))
     .slice(0, 3);
 
-  const ratingAvg = Number(company?.ratingAvg ?? 0);
-  const ratingCount = Number(company?.ratingCount ?? 0);
+  const ratingAvg = toMoneyNumber(company?.ratingAvg, 0);
+  const ratingCount = toMoneyNumber(company?.ratingCount, 0);
   const loading =
     carsQuery.isLoading || bookingsQuery.isLoading || companyQuery.isLoading;
 
