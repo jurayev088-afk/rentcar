@@ -2,23 +2,31 @@
 
 import Image, { type ImageProps } from "next/image";
 
-function isLocalUpload(src: ImageProps["src"]) {
+/** Backend upload (localhost / Render /uploads) — next optimize kerak emas */
+function isBackendUpload(src: ImageProps["src"]) {
   if (typeof src !== "string") return false;
-  return (
-    src.startsWith("http://localhost") ||
-    src.startsWith("http://127.0.0.1") ||
-    src.startsWith("/uploads/")
-  );
+  if (src.startsWith("/uploads/")) return true;
+  try {
+    const u = new URL(src);
+    return (
+      u.pathname.startsWith("/uploads/") ||
+      u.hostname === "localhost" ||
+      u.hostname === "127.0.0.1" ||
+      u.hostname.endsWith(".onrender.com")
+    );
+  } catch {
+    return false;
+  }
 }
 
 /** Lokal API/uploads va remote rasmlar uchun next/image wrapper */
 export default function SafeImage({ src, alt, ...rest }: ImageProps) {
-  const local = isLocalUpload(src);
+  const backendUpload = isBackendUpload(src);
   return (
     <Image
       src={src}
       alt={alt}
-      unoptimized={local || rest.unoptimized}
+      unoptimized={backendUpload || rest.unoptimized}
       {...rest}
     />
   );

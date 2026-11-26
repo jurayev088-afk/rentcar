@@ -8,7 +8,6 @@ import CarsLoadingGrid from "@/src/components/CarsLoadingGrid";
 import UseWishlistContext from "@/src/constants/UseWishlist";
 import { useHome } from "@/src/hooks/use-home";
 import { mapApiCarToUi } from "@/src/lib/map-car";
-import HomeCarousel from "./HomeCarousel";
 
 const shell =
   "mx-auto w-[min(calc(100%-80px),944px)] max-[860px]:w-[min(calc(100%-40px),760px)] max-[365px]:w-[calc(100%-28px)] lg:w-[min(calc(100%-8vw),1440px)]";
@@ -19,7 +18,7 @@ const eyebrow =
 export default function PopularCars() {
   const { data, isLoading, isFetching, isError } = useHome();
   const cars = useMemo(
-    () => (data?.topCars ?? []).slice(0, 8).map(mapApiCarToUi),
+    () => (data?.topCars ?? []).slice(0, 10).map(mapApiCarToUi),
     [data?.topCars],
   );
 
@@ -29,15 +28,10 @@ export default function PopularCars() {
   return (
     <section
       id="popular"
-      className={`${shell} scroll-mt-24 py-[clamp(24px,3vw,44px)]`}
+      className={`${shell} scroll-mt-24 overflow-x-hidden py-[clamp(24px,3vw,44px)]`}
     >
       <div className="mb-5 flex items-center justify-between gap-3 sm:mb-6">
-        <p className={eyebrow}>
-          Top ijaralar
-          {/* {isFetching && cars.length > 0 && (
-            <span className="ml-2 inline-block h-2 w-2 animate-pulse rounded-full bg-[#00863e] align-middle" />
-          )} */}
-        </p>
+        <p className={eyebrow}>Top ijaralar</p>
         <Link
           className="inline-flex cursor-pointer shrink-0 items-center gap-1.5 text-sm font-bold text-[#00863e] no-underline hover:underline"
           href="/top-mashinalar"
@@ -51,11 +45,7 @@ export default function PopularCars() {
         <p className="text-sm text-red-600">Mashinalarni yuklashda xatolik.</p>
       )}
 
-      {showSkeleton && (
-        <div className="overflow-hidden">
-          <CarsLoadingGrid count={4} />
-        </div>
-      )}
+      {showSkeleton && <CarsLoadingGrid count={10} />}
 
       {showEmpty && (
         <p className="rounded-2xl border border-dashed border-[#d7e8dd] bg-[#f6faf7] px-4 py-6 text-sm text-[#6d7a73]">
@@ -65,15 +55,11 @@ export default function PopularCars() {
 
       {cars.length > 0 && (
         <UseWishlistContext>
-          <HomeCarousel itemCount={cars.length}>
+          <div className="grid grid-cols-2 gap-1.5 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {cars.map((car) => (
-              <CarCard
-                key={car.id}
-                car={car}
-                className="w-[min(100%,300px)] shrink-0 sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]"
-              />
+              <CarCard key={car.id} car={car} />
             ))}
-          </HomeCarousel>
+          </div>
         </UseWishlistContext>
       )}
     </section>

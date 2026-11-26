@@ -211,8 +211,8 @@ export default function Filter() {
 
   const panel = (
     <>
-      <div className="flex items-center justify-between border-b border-[#eef2f0] pb-3">
-        <h2 className="text-base font-bold text-[#1f2d25]">Filtrlar</h2>
+      <div className="flex items-center justify-between border-b border-[#eef2f0] pb-2.5">
+        <h2 className="text-sm font-bold text-[#1f2d25]">Filtrlar</h2>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -232,13 +232,13 @@ export default function Filter() {
         </div>
       </div>
 
-      <section className="border-b border-[#eef2f0] py-4">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#6d7a73]">
+      <section className="border-b border-[#eef2f0] py-3">
+        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[#6d7a73]">
           Mashina turi
         </h3>
-        <div className="max-h-44 overflow-y-auto pr-1">
+        <div className="max-h-40 overflow-y-auto pr-0.5">
           <Checkbox.Group
-            className="flex flex-col gap-2.5"
+            className="flex flex-col gap-1.5 text-[13px]"
             options={categoryOptions}
             value={draftCategories}
             onChange={(vals) => setDraftCategories(vals as string[])}
@@ -246,13 +246,13 @@ export default function Filter() {
         </div>
       </section>
 
-      <section className="border-b border-[#eef2f0] py-4">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#6d7a73]">
+      <section className="border-b border-[#eef2f0] py-3">
+        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[#6d7a73]">
           Marka
         </h3>
-        <div className="max-h-44 overflow-y-auto pr-1">
+        <div className="max-h-40 overflow-y-auto pr-0.5">
           <Checkbox.Group
-            className="flex flex-col gap-2.5"
+            className="flex flex-col gap-1.5 text-[13px]"
             options={brandOptions}
             value={draftBrands}
             onChange={(vals) => setDraftBrands(vals as string[])}
@@ -260,14 +260,14 @@ export default function Filter() {
         </div>
       </section>
 
-      <section className="relative py-4">
-        <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#6d7a73]">
+      <section className="relative py-3">
+        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[#6d7a73]">
           Kunlik narx
         </h3>
 
-        <div className="mb-3 grid grid-cols-2 gap-2">
+        <div className="mb-2 grid grid-cols-2 gap-1.5">
           <label className="block">
-            <span className="mb-1 block text-[11px] text-[#8d9892]">Ot</span>
+            <span className="mb-0.5 block text-[10px] text-[#8d9892]">Ot</span>
             <input
               type="number"
               min={PRICE_MIN}
@@ -281,11 +281,11 @@ export default function Filter() {
                   draftPrice[1],
                 ]);
               }}
-              className="h-10 w-full rounded-xl border border-[#e5e9e7] px-3 text-sm text-[#1f2d25] outline-none focus:border-[#00863e]"
+              className="h-9 w-full rounded-lg border border-[#e5e9e7] px-2 text-xs text-[#1f2d25] outline-none focus:border-[#00863e]"
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-[11px] text-[#8d9892]">Do</span>
+            <span className="mb-0.5 block text-[10px] text-[#8d9892]">Do</span>
             <input
               type="number"
               min={draftPrice[0]}
@@ -299,7 +299,7 @@ export default function Filter() {
                   Math.max(Math.min(v, PRICE_MAX), draftPrice[0]),
                 ]);
               }}
-              className="h-10 w-full rounded-xl border border-[#e5e9e7] px-3 text-sm text-[#1f2d25] outline-none focus:border-[#00863e]"
+              className="h-9 w-full rounded-lg border border-[#e5e9e7] px-2 text-xs text-[#1f2d25] outline-none focus:border-[#00863e]"
             />
           </label>
         </div>
@@ -325,15 +325,15 @@ export default function Filter() {
           <span>{formatPrice(PRICE_MIN)}</span>
           <span>{formatPrice(PRICE_MAX)} so‘m</span>
         </div>
-        <p className="mt-2 text-sm font-semibold text-[#00863e]">
-          Narx: {formatPrice(draftPrice[0])} – {formatPrice(draftPrice[1])} so‘m
+        <p className="mt-1.5 text-xs font-semibold text-[#00863e]">
+          {formatPrice(draftPrice[0])} – {formatPrice(draftPrice[1])} so‘m
         </p>
 
         {isDirty && (
           <button
             type="button"
             onClick={applyAll}
-            className="mt-4 inline-flex w-full cursor-pointer items-center justify-center rounded-xl bg-[#00863e] px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(0,134,62,0.28)] transition hover:bg-[#006f35] lg:absolute lg:right-0 lg:top-8 lg:z-30 lg:mt-0 lg:w-auto lg:translate-x-[calc(100%+12px)] lg:rounded-lg lg:px-3.5 lg:py-2"
+            className="mt-3 inline-flex w-full cursor-pointer items-center justify-center rounded-lg bg-[#00863e] px-3 py-2 text-xs font-bold text-white shadow-[0_6px_14px_rgba(0,134,62,0.24)] transition hover:bg-[#006f35] lg:absolute lg:right-0 lg:top-7 lg:z-30 lg:mt-0 lg:w-auto lg:translate-x-[calc(100%+10px)] lg:px-3 lg:py-1.5"
           >
             O‘tish
           </button>
@@ -372,7 +372,7 @@ export default function Filter() {
         </button>
       </div>
 
-      <aside className="relative z-20 hidden w-full shrink-0 overflow-visible rounded-3xl border border-[#e5e9e7] bg-white p-5 shadow-[0_8px_24px_rgba(16,37,26,0.03)] lg:sticky lg:top-24 lg:block lg:max-w-[280px]">
+      <aside className="relative z-20 hidden w-[220px] shrink-0 overflow-visible rounded-2xl border border-[#e5e9e7] bg-white p-3 shadow-[0_8px_24px_rgba(16,37,26,0.03)] lg:sticky lg:top-24 lg:block xl:w-[240px]">
         {panel}
       </aside>
 

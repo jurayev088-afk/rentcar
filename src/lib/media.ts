@@ -121,13 +121,37 @@ export function brandImage(brand: string, apiLogo?: string | null) {
   return brandLogo(brand, apiLogo) || fallbackCar;
 }
 
+/** API host ( /api/v1 siz ) — lokal upload URL’larini to‘g‘rilash uchun */
+export function apiOrigin() {
+  const base =
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+    "http://localhost:3000/api/v1";
+  return base.replace(/\/api\/v1$/i, "") || base;
+}
+
+/**
+ * Backend ba’zan http://localhost:3000/uploads/... saqlaydi.
+ * Brauzerda Render hostiga almashtiramiz.
+ */
+export function resolveMediaUrl(url?: string | null): string {
+  if (!url) return "";
+  if (url.startsWith("/uploads/")) return `${apiOrigin()}${url}`;
+  const local = url.match(
+    /^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(\/uploads\/.+)$/i,
+  );
+  if (local) return `${apiOrigin()}${local[1]}`;
+  return url;
+}
+
 export function carPrimaryImage(images?: { url: string; isPrimary?: boolean }[]) {
   if (!images?.length) return fallbackCar;
-  return images.find((img) => img.isPrimary)?.url || images[0].url || fallbackCar;
+  const raw =
+    images.find((img) => img.isPrimary)?.url || images[0].url || fallbackCar;
+  return resolveMediaUrl(raw) || fallbackCar;
 }
 
 export function companyLogo(logoUrl?: string | null) {
-  return logoUrl || fallbackCompany;
+  return resolveMediaUrl(logoUrl) || fallbackCompany;
 }
 
 const categoryFallback: Record<string, string> = {

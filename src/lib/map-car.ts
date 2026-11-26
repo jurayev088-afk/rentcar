@@ -1,6 +1,6 @@
 import type { ApiCar } from "../types/api";
 import type { Car, CarStatus } from "../types";
-import { carPrimaryImage } from "./media";
+import { carPrimaryImage, resolveMediaUrl } from "./media";
 
 function mapStatus(status?: string): CarStatus {
   switch (status) {
@@ -24,7 +24,11 @@ function mapStatus(status?: string): CarStatus {
 
 /** Backend ApiCar → UI Car (Filter / Cars / CarDetails) */
 export function mapApiCarToUi(car: ApiCar): Car {
-  const imageUrls = (car.images ?? []).map((img) => img.url).filter(Boolean);
+  const imageUrls = (car.images ?? [])
+    .map((img) =>
+      resolveMediaUrl(img.url || img.thumbnailUrl || ""),
+    )
+    .filter(Boolean);
   const primary = carPrimaryImage(car.images);
   const images =
     imageUrls.length > 0

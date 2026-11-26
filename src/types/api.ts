@@ -84,6 +84,7 @@ export type Company = {
 export type CarImage = {
   id?: string;
   url: string;
+  thumbnailUrl?: string | null;
   isPrimary?: boolean;
 };
 

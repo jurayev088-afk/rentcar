@@ -84,12 +84,12 @@ export default function CarsPage() {
         </p>
       )}
 
-      <div className="flex w-full flex-col items-start gap-3 overflow-visible lg:flex-row lg:gap-8">
+      <div className="flex w-full flex-col items-start gap-3 overflow-visible lg:flex-row lg:gap-4 xl:gap-5">
         <Filter />
-        <div className="min-w-0 w-full flex-1">
+        <div className="min-w-0 w-full flex-1 lg:min-w-0">
           <UseWishlistContext>
             {isFilterLoading ? (
-              <CarsLoadingGrid count={6} />
+              <CarsLoadingGrid count={8} />
             ) : (
               <>
                 <Cars
