@@ -146,10 +146,7 @@
 
 @media (max-width: 600px) {
   .rent-hero-art {
-    top: 212px;
-    height: clamp(151px, 42vw, 250px);
-    background: var(--hero-mobile) center / 100% auto no-repeat;
-    mask-image: linear-gradient(transparent, #000 21%, #000 83%, transparent);
+    display: none;
   }
 }
 

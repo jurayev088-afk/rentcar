@@ -2,6 +2,7 @@
 
 import Image, { type ImageProps } from "next/image";
 import { useEffect, useState } from "react";
+import { resolveMediaUrl } from "../lib/media";
 
 const FALLBACK =
   "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=800&q=80";
@@ -16,22 +17,26 @@ function isBackendUpload(src: ImageProps["src"]) {
       u.pathname.startsWith("/uploads/") ||
       u.hostname === "localhost" ||
       u.hostname === "127.0.0.1" ||
-      u.hostname.endsWith(".onrender.com")
+      u.hostname.endsWith(".onrender.com") ||
+      u.hostname.endsWith(".r2.dev") ||
+      u.hostname.endsWith(".r2.cloudflarestorage.com")
     );
   } catch {
     return false;
   }
 }
 
-/** Lokal API/uploads va remote rasmlar; 404 bo‘lsa fallback */
+/** Lokal API/uploads va remote rasmlar; 404 bo‘lsa fallback (broken icon chiqmasin) */
 export default function SafeImage({ src, alt, ...rest }: ImageProps) {
-  const [current, setCurrent] = useState(src);
+  const normalized =
+    typeof src === "string" ? resolveMediaUrl(src) || src : src;
+  const [current, setCurrent] = useState(normalized);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    setCurrent(src);
+    setCurrent(normalized);
     setFailed(false);
-  }, [src]);
+  }, [normalized]);
 
   const resolved = failed || !current ? FALLBACK : current;
   const backendUpload = isBackendUpload(resolved);

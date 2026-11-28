@@ -91,12 +91,12 @@ export default function HeaderSearch() {
       onFinish={onFinish}
       layout="vertical"
       initialValues={{ brand: ALL_BRANDS }}
-      className="mb-10! w-full rounded-[25px] border border-white bg-white p-3 shadow-[0_16px_50px_rgba(20,35,28,0.10)] sm:rounded-[30px] sm:p-4 lg:p-[18px]"
+      className="mb-6! w-full rounded-[22px] border border-white bg-white p-2.5 shadow-[0_16px_50px_rgba(20,35,28,0.10)] max-[600px]:mb-0! max-[600px]:p-2 sm:mb-10! sm:rounded-[30px] sm:p-4 lg:p-[18px]"
     >
-      <div className="flex w-full min-w-0 flex-col gap-3 p-3 sm:gap-3.5 lg:flex-row lg:items-stretch lg:gap-3">
-        <div className={fieldClass}>
-          <div className={iconClass}>
-            <MapPin size={19} strokeWidth={2} />
+      <div className="flex w-full min-w-0 flex-col gap-2.5 p-2 max-[600px]:gap-1.5 max-[600px]:p-1 sm:gap-3.5 sm:p-3 lg:flex-row lg:items-stretch lg:gap-3">
+        <div className={`${fieldClass} max-[600px]:h-11 max-[600px]:gap-2 max-[600px]:rounded-[12px] max-[600px]:px-2.5 max-[600px]:py-1.5`}>
+          <div className={`${iconClass} max-[600px]:h-7 max-[600px]:w-7 max-[600px]:rounded-[9px]`}>
+            <MapPin size={19} strokeWidth={2} className="max-[600px]:h-3.5 max-[600px]:w-3.5" />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Form.Item name="regionId" className={itemClass}>
@@ -117,9 +117,9 @@ export default function HeaderSearch() {
           </div>
         </div>
 
-        <div className={fieldClass}>
-          <div className={iconClass}>
-            <Tags size={19} strokeWidth={2} />
+        <div className={`${fieldClass} max-[600px]:h-11 max-[600px]:gap-2 max-[600px]:rounded-[12px] max-[600px]:px-2.5 max-[600px]:py-1.5`}>
+          <div className={`${iconClass} max-[600px]:h-7 max-[600px]:w-7 max-[600px]:rounded-[9px]`}>
+            <Tags size={19} strokeWidth={2} className="max-[600px]:h-3.5 max-[600px]:w-3.5" />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Form.Item name="brand" className={itemClass}>
@@ -140,9 +140,9 @@ export default function HeaderSearch() {
           </div>
         </div>
 
-        <div className={fieldClass}>
-          <div className={iconClass}>
-            <CarFront size={19} strokeWidth={2} />
+        <div className={`${fieldClass} max-[600px]:h-11 max-[600px]:gap-2 max-[600px]:rounded-[12px] max-[600px]:px-2.5 max-[600px]:py-1.5`}>
+          <div className={`${iconClass} max-[600px]:h-7 max-[600px]:w-7 max-[600px]:rounded-[9px]`}>
+            <CarFront size={19} strokeWidth={2} className="max-[600px]:h-3.5 max-[600px]:w-3.5" />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <Form.Item name="model" className={itemClass}>
@@ -170,7 +170,7 @@ export default function HeaderSearch() {
           htmlType="submit"
           size="large"
           icon={<Search size={20} strokeWidth={2.3} />}
-          className="h-15! rounded-[15px]! !bg-[#00863e] hover:!bg-[#006f35]"
+          className="h-15! rounded-[15px]! !bg-[#00863e] hover:!bg-[#006f35] max-[600px]:h-10! max-[600px]:text-[13px]!"
         >
           Mashina qidirish
           <ArrowRight size={17} />

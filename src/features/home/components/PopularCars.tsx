@@ -42,7 +42,7 @@ export default function PopularCars({ data }: { data: HomeData }) {
         </p>
       ) : (
         <UseWishlistContext>
-          <div className="grid grid-cols-2 gap-1.5 sm:gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 md:grid-cols-3 lg:grid-cols-4">
             {cars.map((car) => (
               <CarCard key={car.id} car={car} />
             ))}

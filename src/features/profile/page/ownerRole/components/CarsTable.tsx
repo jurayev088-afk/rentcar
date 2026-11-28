@@ -1,12 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { Table, Image } from "antd";
+import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMyCars } from "@/src/hooks/use-my-cars";
 import { formatMoney } from "@/src/lib/format";
 import { mapApiCarToUi } from "@/src/lib/map-car";
+import { carPrimaryImage } from "@/src/lib/media";
 import { Car, carStatus } from "@/src/types";
+import SafeImage from "@/src/components/SafeImage";
 import CarActions from "./CarActions";
 
 export default function CarsTable() {
@@ -22,18 +24,20 @@ export default function CarsTable() {
       dataIndex: "images",
       key: "images",
       width: 100,
-      render: (images) =>
-        images?.[0] ? (
-          <Image
-            src={images[0].thumbUrl || images[0].url}
-            alt="Car"
-            width={75}
-            height={55}
-            className="rounded-xl object-cover"
-          />
-        ) : (
-          <span className="text-[#8d9892]">Rasm yo‘q</span>
-        ),
+      render: (images) => {
+        const src = carPrimaryImage(images);
+        return (
+          <div className="relative h-[55px] w-[75px] overflow-hidden rounded-xl bg-[#eef2f0]">
+            <SafeImage
+              src={src}
+              alt="Car"
+              width={75}
+              height={55}
+              className="!h-[55px] !w-[75px] !rounded-xl !object-cover"
+            />
+          </div>
+        );
+      },
     },
     {
       title: "Avtomobil",

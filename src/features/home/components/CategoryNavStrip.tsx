@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import MobileSnapRow, { SnapSlide } from "@/src/components/MobileSnapRow";
 import { categoryImage } from "@/src/lib/media";
 import type { Category, HomeData } from "@/src/types/api";
 
@@ -50,9 +51,8 @@ function CategoryCard({
     <Link
       href={`/cars?categoryId=${encodeURIComponent(category.id)}`}
       prefetch
-      className={`group relative flex h-[128px] overflow-hidden rounded-[20px] bg-gradient-to-r ${theme} no-underline shadow-[0_10px_28px_rgba(16,37,26,0.07)] ring-1 ring-[#d7e8dd] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(0,134,62,0.14)] hover:ring-[#b9dfc6] sm:h-[148px] sm:rounded-[22px]`}
+      className={`relative flex h-[128px] w-full overflow-hidden rounded-[20px] bg-gradient-to-r ${theme} no-underline  ring-1 ring-[#d7e8dd] active:opacity-95 sm:h-[148px] sm:rounded-[22px] sm:transition sm:hover:ring-[#b9dfc6]`}
     >
-      {/* Chap — matn */}
       <div className="relative z-[2] flex w-[38%] min-w-0 flex-col justify-between py-3.5 pl-3.5 pr-1 sm:w-[36%] sm:py-4 sm:pl-4">
         <div>
           <h3 className="m-0 text-[14px] font-extrabold leading-tight tracking-tight text-[#1f2d25] sm:text-[16px]">
@@ -63,18 +63,13 @@ function CategoryCard({
           </p>
         </div>
 
-        <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#00863e] transition group-hover:gap-1 sm:text-[12px]">
+        <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#00863e] sm:text-[12px]">
           Ko‘rish
           <ChevronRight className="h-3.5 w-3.5" aria-hidden />
         </span>
       </div>
 
-      {/* O‘ng — mashina (kattaroq, markazda) */}
       <div className="relative z-[1] w-[62%] self-stretch sm:w-[64%]">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_55%_55%,rgba(255,255,255,0.92)_0%,transparent_72%)]"
-        />
         <div className="absolute inset-y-1 right-0 left-0 flex items-center justify-center sm:inset-y-2">
           <div className="relative h-full w-[108%] max-w-none translate-x-[2%] sm:w-[112%]">
             <Image
@@ -82,9 +77,9 @@ function CategoryCard({
               alt={label}
               fill
               unoptimized
-              sizes="(max-width: 640px) 55vw, (max-width: 1024px) 30vw, 280px"
-              className="object-contain object-center drop-shadow-[0_10px_18px_rgba(16,37,26,0.18)] transition duration-500 group-hover:scale-[1.06]"
-              priority={index < 4}
+              sizes="(max-width: 640px) 90vw, (max-width: 1024px) 30vw, 280px"
+              className="object-contain object-center drop-shadow-[0_8px_14px_rgba(16,37,26,0.14)]"
+              priority={index < 2}
             />
           </div>
         </div>
@@ -102,7 +97,7 @@ export default function CategoryNavStrip({ data }: { data: HomeData }) {
     <section
       id="categories"
       aria-label="Kategoriyalar"
-      className={`${shell} scroll-mt-24 overflow-x-hidden py-[clamp(18px,2.4vw,32px)]`}
+      className={`${shell} scroll-mt-24 py-[clamp(18px,2.4vw,32px)]`}
     >
       <div className="mb-3.5 flex items-center justify-between gap-3 sm:mb-4">
         <h2 className="m-0 text-[22px] font-bold leading-[1.15] tracking-[-0.03em] text-[#1f2d25] sm:text-[25px]">
@@ -117,7 +112,19 @@ export default function CategoryNavStrip({ data }: { data: HomeData }) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
+      {/* Mobile: 1 tadan snap */}
+      <div className="sm:hidden">
+        <MobileSnapRow perPage={1} gapClassName="gap-0">
+          {categories.map((category, index) => (
+            <SnapSlide key={category.id} perPage={1} className="px-0.5">
+              <CategoryCard category={category} index={index} />
+            </SnapSlide>
+          ))}
+        </MobileSnapRow>
+      </div>
+
+      {/* Desktop grid */}
+      <div className="hidden grid-cols-2 gap-2.5 sm:grid sm:gap-3 lg:grid-cols-4">
         {categories.map((category, index) => (
           <CategoryCard
             key={category.id}

@@ -59,6 +59,11 @@ const nextConfig: NextConfig = {
         hostname: "rentcar-backend-sljb.onrender.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "*.r2.dev",
+        pathname: "/**",
+      },
       ...apiImageHosts(),
       {
         protocol: "https",

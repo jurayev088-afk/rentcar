@@ -418,10 +418,15 @@ export default function ProfileOwner() {
               popularCars.map((car) => (
                 <div key={car.id} className="flex gap-3">
                   <div className="relative h-[65px] w-[85px] shrink-0 overflow-hidden rounded-xl bg-[#eef2f0]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={carPrimaryImage(car.images)}
                       alt={`${car.brand} ${car.model}`}
                       className="h-full w-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=400&q=80";
+                      }}
                     />
                   </div>
                   <div className="min-w-0 flex-1">

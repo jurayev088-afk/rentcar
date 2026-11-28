@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Cars from "@/src/components/Cars";
 import CarsLoadingGrid from "@/src/components/CarsLoadingGrid";
 import Filter from "../components/Filter";
+import MobileCategoryChips from "../components/MobileCategoryChips";
 import UseWishlistContext from "@/src/constants/UseWishlist";
 import { useInfiniteCars } from "@/src/hooks/use-cars";
 import { mapApiCarToUi } from "@/src/lib/map-car";
@@ -87,6 +88,7 @@ export default function CarsPage() {
       <div className="flex w-full flex-col items-start gap-3 overflow-visible lg:flex-row lg:gap-4 xl:gap-5">
         <Filter />
         <div className="min-w-0 w-full flex-1 lg:min-w-0">
+          <MobileCategoryChips />
           <UseWishlistContext>
             {isFilterLoading ? (
               <CarsLoadingGrid count={8} />
