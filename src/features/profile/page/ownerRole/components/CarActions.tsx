@@ -37,7 +37,7 @@ export default function CarActions({ record }: { record: Car }) {
       />
       <Popconfirm
         title="Avtomobilni o‘chirasizmi?"
-        description="Bu amalni bekor qilib bo‘lmaydi (bron bo‘lsa yashiriladi)."
+        description="Bu amalni bekor qilib bo‘lmaydi. Mashina butunlay o‘chiriladi."
         okText="Ha, o‘chirish"
         cancelText="Yo‘q"
         onConfirm={handleDelete}
